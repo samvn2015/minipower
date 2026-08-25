@@ -1,2 +1,6 @@
 .DS_Store
 **/.DS_Store
+
+# SSH keys nhầm vào thư mục dự án — không commit
+/github
+/github.pub
