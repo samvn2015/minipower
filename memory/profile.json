@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "user_name": "Dư Hùng",
+  "honorific": "anh",
+  "agent_pronoun": "em",
+  "roles": ["BA", "PM", "SA", "DEV", "QC", "DevOps", "Support"],
+  "project_name": "HRM",
+  "project_summary": "Số hóa toàn diện vòng đời nhân sự, tự động hóa luồng duyệt/cảnh báo, chuẩn hóa quản lý công - lương và nâng cao trải nghiệm nhân viên.",
+  "current_phase": "requirements",
+  "minipower_experience": "returning",
+  "completed_at": "2026-08-24"
+}
