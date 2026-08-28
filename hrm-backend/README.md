@@ -31,11 +31,15 @@ Hoặc env: `ConnectionStrings__AppDbContext=...`
 - Swagger: https://localhost:7006/swagger
 - `GET /api/ping` — không cần DB
 - `GET /v1/iam/me` — cần Bearer JWT (`[Authorize]`)
+- `GET /v1/iam/accounts` — IAM-SCR-003 (HR/IT)
+- `POST /v1/iam/accounts/{id}/roles` · `DELETE .../roles/{code}` — gán/gỡ role
+- `POST /v1/iam/accounts/{id}/disable` — IAM-SCR-004 (IT)
+- `GET/PATCH /v1/emp/employees/{id}` — EMP skeleton
 - `/health/live` — liveness (không cần DB)
 
 ## Ghi chú HRM
 
-- JWT OIDC **Lark** (ADR-007 v0.2): Authority thật = **OQ-DLV-001** (IT). Local: `ValidateIssuerSigningKey: false`. Dev account seed: `sub=local-dev`.
+- JWT OIDC **Lark** (ADR-007 v0.2): Authority thật = **OQ-DLV-001** (IT). Local: `ValidateIssuerSigningKey: false`. Dev seed: `sub=local-dev` (HR+NV), `sub=it-dev` (IT), EMP `MNV-DEV` ↔ `bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb`.
 - PostgreSQL **local DEV:** Postgres.app 16.8 · `scripts/pg-local.sh start|stop|status` · DB `hrm` / user `admin` qua User Secrets. Prod connection vẫn OQ-DLV-003 (IT).
 - Host IAM cũ `HRM/src/iam` giữ để tham chiếu; composition root mới là `hrm-backend`.
 

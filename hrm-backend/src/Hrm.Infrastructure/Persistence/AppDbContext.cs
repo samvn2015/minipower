@@ -1,3 +1,4 @@
+using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Identity.Entities;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
@@ -12,6 +13,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<Role> Roles => Set<Role>();
 
     public DbSet<AccountRole> AccountRoles => Set<AccountRole>();
+
+    public DbSet<Employee> Employees => Set<Employee>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

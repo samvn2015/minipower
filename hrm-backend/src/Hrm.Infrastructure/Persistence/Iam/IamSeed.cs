@@ -5,8 +5,12 @@ internal static class IamSeed
 {
     public static readonly Guid DevAccountId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
+    public static readonly Guid ItDevAccountId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
+
     /// <summary>Sub mặc định local khi test Swagger không có JWT thật.</summary>
     public const string DevIdpSubject = "local-dev";
+
+    public const string ItDevIdpSubject = "it-dev";
 
     public static class Roles
     {

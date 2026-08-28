@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using Hrm.Application.Identity.Dtos;
 using Hrm.Application.Identity.Queries;
+using Hrm.Host.Extensions;
 using Jarvis.Application.Contracts.Queries;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -20,9 +21,7 @@ public sealed class MeController(IAsyncQueryDispatcher queries) : ControllerBase
     [Authorize]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
-        var subject = User.FindFirstValue("sub")
-                      ?? User.FindFirstValue(ClaimTypes.NameIdentifier)
-                      ?? User.Identity?.Name;
+        var subject = User.GetIdpSubject();
 
         var roleClaims = User.FindAll(ClaimTypes.Role)
             .Concat(User.FindAll("role"))

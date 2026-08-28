@@ -1,0 +1,70 @@
+using Hrm.Application.Employees.Queries;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
+using Hrm.Domain.Identity;
+using Hrm.Domain.Identity.Repositories;
+using Jarvis.Domain.Shared.ExceptionHandling;
+
+namespace Hrm.Application.Tests.Employees;
+
+public sealed class GetEmployeeQueryHandlerTests
+{
+    private static readonly Guid EmployeeId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
+
+    [Fact]
+    public async Task HandleAsync_NvCanReadOwnProfile()
+    {
+        var handler = new GetEmployeeQueryHandler(
+            new FakeAccountRepo(NvActor),
+            new FakeEmployeeRepo(DevEmployee));
+
+        var result = await handler.HandleAsync(
+            new GetEmployeeQuery(EmployeeId, "local-dev"));
+
+        Assert.Equal("MNV-DEV", result.EmployeeCode);
+    }
+
+    [Fact]
+    public async Task HandleAsync_NvCannotReadOtherProfile()
+    {
+        var handler = new GetEmployeeQueryHandler(
+            new FakeAccountRepo(NvActor),
+            new FakeEmployeeRepo(OtherEmployee));
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            handler.HandleAsync(new GetEmployeeQuery(EmployeeId, "local-dev")));
+    }
+
+    private static readonly IdentityAccountSnapshot NvActor = new(
+        Guid.NewGuid(), "local-dev", "Dev", null, "MNV-DEV",
+        IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
+
+    private static readonly EmployeeSnapshot DevEmployee = new(
+        EmployeeId, "MNV-DEV", "Dev IAM", null, "dev@company.local", null, null, EmployeeStatus.Active);
+
+    private static readonly EmployeeSnapshot OtherEmployee = new(
+        EmployeeId, "MNV-OTHER", "Other", null, null, null, null, EmployeeStatus.Active);
+
+    private sealed class FakeAccountRepo(IdentityAccountSnapshot snapshot) : IIdentityAccountReadRepository
+    {
+        public Task<IdentityAccountSnapshot?> FindByIdpSubjectAsync(
+            string idpSubject,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IdentityAccountSnapshot?>(
+                snapshot.IdpSubject == idpSubject ? snapshot : null);
+    }
+
+    private sealed class FakeEmployeeRepo(EmployeeSnapshot snapshot) : IEmployeeReadRepository
+    {
+        public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<EmployeeSnapshot?>(snapshot.Id == id ? snapshot : null);
+
+        public Task<EmployeeSnapshot?> FindByEmployeeCodeAsync(
+            string employeeCode,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<EmployeeSnapshot?>(
+                string.Equals(snapshot.EmployeeCode, employeeCode, StringComparison.OrdinalIgnoreCase)
+                    ? snapshot
+                    : null);
+    }
+}

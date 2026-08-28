@@ -25,6 +25,7 @@ internal sealed class AccountRoleConfiguration : IEntityTypeConfiguration<Accoun
 
         builder.HasData(
             new AccountRole { AccountId = IamSeed.DevAccountId, RoleCode = IamSeed.Roles.Nv },
-            new AccountRole { AccountId = IamSeed.DevAccountId, RoleCode = IamSeed.Roles.Hr });
+            new AccountRole { AccountId = IamSeed.DevAccountId, RoleCode = IamSeed.Roles.Hr },
+            new AccountRole { AccountId = IamSeed.ItDevAccountId, RoleCode = IamSeed.Roles.It });
     }
 }
