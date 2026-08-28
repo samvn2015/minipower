@@ -1,0 +1,184 @@
+openapi: 3.0.3
+info:
+  title: HRM Gateway API
+  version: 0.1.0
+  description: >
+    Khung OAS v0.1 (DOC-12 Chốt DEC-ARC-010). Base URL và issuer OIDC TBD.
+    Không có login password. JWT từ IdP Cty (ADR-007).
+servers:
+  - url: https://{host}/v1
+    variables:
+      host:
+        default: hrm.example.internal
+        description: TBD DOC-17
+tags:
+  - name: iam
+  - name: emp
+  - name: lev
+  - name: tim
+  - name: pay
+  - name: prb
+  - name: lif
+paths:
+  /iam/me:
+    get:
+      tags: [iam]
+      summary: Current user and HRM roles after SSO
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+        "401": { description: No/expired JWT }
+  /emp/employees/{id}:
+    get:
+      tags: [emp]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200": { description: OK }
+        "403": { description: Forbidden }
+    patch:
+      tags: [emp]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200": { description: OK }
+  /lev/balances:
+    get:
+      tags: [lev]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: OK }
+  /lev/requests:
+    post:
+      tags: [lev]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "201": { description: Created }
+  /lev/requests/{id}/c1:
+    post:
+      tags: [lev]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200": { description: OK }
+        "403": { description: Not LM }
+  /lev/requests/{id}/c2:
+    post:
+      tags: [lev]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200": { description: OK }
+        "403": { description: Not HR }
+  /tim/imports:
+    post:
+      tags: [tim]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Preview/import }
+        "403": { description: Not HR }
+  /tim/periods/{ym}/close:
+    post:
+      tags: [tim]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: ym
+          in: path
+          required: true
+          schema: { type: string, example: "2026-08" }
+      responses:
+        "200": { description: Closed }
+        "403": { description: Not HR }
+  /pay/payslips/me:
+    get:
+      tags: [pay]
+      security: [{ bearerAuth: [] }]
+      responses:
+        "200": { description: Own payslip }
+  /pay/payslips/{id}:
+    get:
+      tags: [pay]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/Id"
+      responses:
+        "200": { description: OK }
+        "403": { description: LM cannot view subordinate pay }
+  /pay/periods/{ym}/run:
+    post:
+      tags: [pay]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - name: ym
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Run }
+        "403": { description: Not HR }
+  /prb/cases/{employeeId}:
+    get:
+      tags: [prb]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200": { description: OK }
+  /prb/cases/{employeeId}/propose:
+    post:
+      tags: [prb]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200": { description: LM proposal stored }
+        "403": { description: Not LM }
+  /prb/cases/{employeeId}/decide:
+    post:
+      tags: [prb]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200": { description: HR decision }
+        "403": { description: LM/NV cannot decide }
+  /lif/cases/{employeeId}:
+    get:
+      tags: [lif]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200": { description: OK }
+  /lif/cases/{employeeId}/locks:
+    post:
+      tags: [lif]
+      security: [{ bearerAuth: [] }]
+      parameters:
+        - $ref: "#/components/parameters/EmployeeId"
+      responses:
+        "200": { description: Git/CRM product lock N+3 }
+        "403": { description: Not IT/system }
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  parameters:
+    Id:
+      name: id
+      in: path
+      required: true
+      schema: { type: string }
+    EmployeeId:
+      name: employeeId
+      in: path
+      required: true
+      schema: { type: string }
+security:
+  - bearerAuth: []

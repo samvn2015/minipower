@@ -1,0 +1,42 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Hrm.Host</RootNamespace>
+    <AssemblyName>Hrm.Host</AssemblyName>
+    <UserSecretsId>4d509ed6-24dd-42c2-bb98-e65164b4ff4c</UserSecretsId>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageReference Include="OpenTelemetry" Version="1.15.3" />
+    <PackageReference Include="OpenTelemetry.Api" Version="1.15.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hrm.Application\Hrm.Application.csproj" />
+    <ProjectReference Include="..\Hrm.Infrastructure\Hrm.Infrastructure.csproj" />
+    <!-- JarvisRoot: /Users/Hung/Documents/Học AI/jarvis -->
+    <ProjectReference Include="../../../../jarvis/Jarvis.Mvc/Jarvis.Mvc.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.Domain/Jarvis.Domain.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.Authentication/Jarvis.Authentication.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.Authentication.Jwt/Jarvis.Authentication.Jwt.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.Swashbuckle/Jarvis.Swashbuckle.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.HealthChecks/Jarvis.HealthChecks.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.OpenTelemetry/Jarvis.OpenTelemetry.csproj" />
+  </ItemGroup>
+
+</Project>

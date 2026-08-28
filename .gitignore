@@ -4,3 +4,21 @@
 # SSH keys nhầm vào thư mục dự án — không commit
 /github
 /github.pub
+
+# .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+TestResults/
+*.DotSettings.user
+
+# Secrets
+.env
+.env.*
+!.env.example
+**/secrets.json

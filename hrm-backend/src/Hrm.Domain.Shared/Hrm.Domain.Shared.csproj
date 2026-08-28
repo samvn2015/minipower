@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!-- JarvisRoot: /Users/Hung/Documents/Học AI/jarvis -->
+    <ProjectReference Include="../../../../jarvis/Jarvis.Domain.Shared/Jarvis.Domain.Shared.csproj" />
+  </ItemGroup>
+
+</Project>

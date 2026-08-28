@@ -10,7 +10,7 @@
 |-----|---------|
 | **Tên** | HRM |
 | **Khách hàng** | *(chưa xác định)* |
-| **Phase hiện tại** | requirements |
+| **Phase hiện tại** | delivery |
 | **Baseline** | — *(draft)* |
 | **Ưu tiên workspace** | **HRM** — CRM **PARKED** (DEC-DIS-008), không trộn DOC |
 

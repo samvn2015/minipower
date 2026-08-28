@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>HRM TIM — HTML mockup (wireframe)</title>
+  <style>
+    :root {
+      --bg: #f4f1ea;
+      --ink: #1c1917;
+      --muted: #78716c;
+      --line: #d6d3d1;
+      --card: #fffcf8;
+      --accent: #1d4e4a;
+      --danger: #9f1239;
+      --ok: #166534;
+      --dis: #a8a29e;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      font: 14px/1.45 "Segoe UI", system-ui, sans-serif;
+      color: var(--ink);
+      background: var(--bg);
+    }
+    .banner {
+      background: #44403c;
+      color: #fafaf9;
+      padding: 8px 16px;
+      font-size: 12px;
+    }
+    .banner strong { color: #fde68a; }
+    header.app {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 12px 16px;
+      background: var(--card);
+      border-bottom: 1px solid var(--line);
+    }
+    header.app h1 { margin: 0; font-size: 16px; }
+    .role { font-size: 12px; color: var(--muted); }
+    nav.screens {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 10px 16px;
+      background: #e7e5e4;
+    }
+    nav.screens button {
+      border: 1px solid var(--line);
+      background: var(--card);
+      padding: 6px 10px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 12px;
+    }
+    nav.screens button[aria-current="true"] {
+      background: var(--accent);
+      color: #fff;
+      border-color: var(--accent);
+    }
+    main { padding: 16px; max-width: 1100px; }
+    .screen { display: none; }
+    .screen.on { display: block; }
+    .card {
+      background: var(--card);
+      border: 1px dashed var(--line);
+      border-radius: 10px;
+      padding: 16px;
+      margin-bottom: 12px;
+    }
+    h2 { margin: 0 0 8px; font-size: 18px; }
+    .meta { color: var(--muted); font-size: 12px; margin-bottom: 12px; }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    th, td { border-bottom: 1px solid var(--line); padding: 8px; text-align: left; }
+    th { color: var(--muted); font-weight: 600; }
+    .btn {
+      display: inline-block;
+      padding: 8px 14px;
+      border-radius: 6px;
+      border: 0;
+      background: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      font-size: 13px;
+      text-decoration: none;
+    }
+    .btn.ghost { background: #fff; color: var(--ink); border: 1px solid var(--line); }
+    .btn[disabled], .btn.dis {
+      background: var(--dis);
+      cursor: not-allowed;
+      pointer-events: none;
+    }
+    .warn { color: var(--danger); font-size: 13px; }
+    .ok { color: var(--ok); }
+    .wire { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .04em; }
+    label { display: block; margin: 8px 0 4px; font-size: 12px; color: var(--muted); }
+    input, select { padding: 6px 8px; border: 1px solid var(--line); border-radius: 4px; }
+    .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-top: 12px; }
+    .note { font-size: 12px; color: var(--muted); margin-top: 10px; }
+  </style>
+</head>
+<body>
+  <div class="banner">
+    <strong>Wireframe HTML</strong> — timekeeping · không pixel production · không màn NV/LM · không máy chấm công · cột Excel = master (không hardcode tên cột)
+  </div>
+  <header class="app">
+    <h1>HRM · Công</h1>
+    <span class="role">Phiên: HR/C&amp;B (mock) · NV/LM 403 / không menu</span>
+  </header>
+  <nav class="screens" aria-label="Màn TIM-SCR">
+    <button type="button" data-go="s1" aria-current="true">TIM-SCR-001 DS tháng</button>
+    <button type="button" data-go="s2">TIM-SCR-002 Mẫu</button>
+    <button type="button" data-go="s3">TIM-SCR-003 Import</button>
+    <button type="button" data-go="s4">TIM-SCR-004 Commit</button>
+    <button type="button" data-go="s5">TIM-SCR-005 Chốt</button>
+    <button type="button" data-go="s6">TIM-SCR-006 Bỏ chốt</button>
+  </nav>
+  <main>
+    <section id="s1" class="screen on">
+      <p class="wire">TIM-SCR-001</p>
+      <h2>Danh sách tháng công</h2>
+      <p class="meta">Actor HR/C&amp;B · ẩn với NV/LM (TIM-AC-013)</p>
+      <div class="card">
+        <div class="row">
+          <button class="btn ghost" type="button" data-go="s2">Mẫu Excel</button>
+          <button class="btn" type="button" data-go="s3">Import</button>
+        </div>
+        <table>
+          <thead>
+            <tr><th>Tháng</th><th>Trạng thái</th><th>Version mẫu</th><th></th></tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2026-07</td>
+              <td>Draft</td>
+              <td>V2 (hiệu lực)</td>
+              <td><button class="btn ghost" type="button" data-go="s3">Mở import</button></td>
+            </tr>
+            <tr>
+              <td>2026-06</td>
+              <td>Chốt</td>
+              <td>V2</td>
+              <td><button class="btn ghost" type="button" data-go="s6">Bỏ chốt…</button></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <section id="s2" class="screen">
+      <p class="wire">TIM-SCR-002</p>
+      <h2>Công bố version mẫu</h2>
+      <p class="meta">Một mẫu Active · cấm V1+V2 cùng hiệu lực (TIM-AC-015)</p>
+      <div class="card">
+        <p>Version đang hiệu lực: <strong>V2</strong> · công bố 2026-06-01</p>
+        <p class="note">Cột file: theo <em>master kỳ</em> — không liệt kê tên cột cứng trên UI.</p>
+        <div class="row">
+          <button class="btn" type="button">Công bố mẫu mới (V3)</button>
+        </div>
+        <p class="warn">Mock: không cho tick “giữ V2 Active song song”.</p>
+      </div>
+    </section>
+
+    <section id="s3" class="screen">
+      <p class="wire">TIM-SCR-003</p>
+      <h2>Import + preview lỗi</h2>
+      <p class="meta">Chưa ghi sổ · không ô sửa công kiểu PAY</p>
+      <div class="card">
+        <label>Tháng</label>
+        <select><option>2026-07 (Draft)</option></select>
+        <label>File Excel (đúng version hiệu lực)</label>
+        <input type="file" disabled title="Mock — không upload thật" />
+        <p class="note">INT-003: chỉ Excel mẫu. API máy CC = ngoài scope.</p>
+        <table>
+          <thead>
+            <tr><th>Dòng</th><th>Kết quả</th><th>Ghi chú</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>12</td><td class="ok">OK</td><td>—</td></tr>
+            <tr><td>18</td><td class="warn">Must</td><td>Thiếu MNV</td></tr>
+            <tr><td>21</td><td class="warn">Must</td><td>Sai version mẫu (file V1)</td></tr>
+            <tr><td>30</td><td class="warn">Must</td><td>Có giờ OT, chưa loại 1.5/2.0/3.0</td></tr>
+          </tbody>
+        </table>
+        <div class="row">
+          <span class="btn dis">Ghi — disabled (còn lỗi Must)</span>
+          <button class="btn ghost" type="button" data-go="s1">Về DS</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="s4" class="screen">
+      <p class="wire">TIM-SCR-004</p>
+      <h2>Xác nhận ghi (commit)</h2>
+      <p class="meta">Preview sạch → bảng công Draft, chưa chốt</p>
+      <div class="card">
+        <p>Dòng OK: <strong>240</strong> · lỗi Must: <strong>0</strong></p>
+        <div class="row">
+          <button class="btn" type="button" data-go="s5">Ghi bảng công</button>
+        </div>
+        <p class="note">Nếu còn lỗi Must: chặn (TIM-AC-004).</p>
+      </div>
+    </section>
+
+    <section id="s5" class="screen">
+      <p class="wire">TIM-SCR-005</p>
+      <h2>Xác nhận chốt tháng</h2>
+      <p class="meta">PAY chỉ đọc sau chốt · phép Chờ C1 không vào công</p>
+      <div class="card">
+        <label>
+          <input type="checkbox" checked />
+          Merge phép <strong>Đã duyệt</strong> vào bảng công
+        </label>
+        <label>
+          <input type="checkbox" checked />
+          N_thực <strong>gồm</strong> ngày phép hưởng (không tách để PAY cộng)
+        </label>
+        <p class="warn">Cảnh báo: còn dòng OT chưa loại → chặn chốt (TIM-AC-007).</p>
+        <div class="row">
+          <button class="btn" type="button">Chốt tháng</button>
+          <button class="btn ghost" type="button" data-go="s1">Hủy</button>
+        </div>
+      </div>
+    </section>
+
+    <section id="s6" class="screen">
+      <p class="wire">TIM-SCR-006</p>
+      <h2>Bỏ chốt tháng</h2>
+      <p class="meta">Được khi PAY còn Draft · cấm nếu kỳ PAY đã Chốt</p>
+      <div class="card">
+        <p>Tháng <strong>2026-06</strong> đang <strong>Chốt</strong>.</p>
+        <p class="ok">Kỳ PAY 2026-06: Draft → cho bỏ chốt TIM.</p>
+        <div class="row">
+          <button class="btn" type="button" data-go="s3">Bỏ chốt (về Draft, import lại)</button>
+        </div>
+        <hr style="border:0;border-top:1px dashed var(--line);margin:16px 0" />
+        <p>Tháng <strong>2026-05</strong> · PAY đã <strong>Chốt</strong></p>
+        <span class="btn dis">Bỏ chốt — disabled</span>
+        <p class="note">Không form sửa ô công trên PAY (TIM-AC-012).</p>
+      </div>
+    </section>
+  </main>
+  <script>
+    const show = (id) => {
+      document.querySelectorAll(".screen").forEach((el) => el.classList.toggle("on", el.id === id));
+      document.querySelectorAll("nav.screens button").forEach((b) => {
+        b.setAttribute("aria-current", b.getAttribute("data-go") === id ? "true" : "false");
+      });
+    };
+    document.querySelectorAll("[data-go]").forEach((el) => {
+      el.addEventListener("click", () => show(el.getAttribute("data-go")));
+    });
+  </script>
+</body>
+</html>

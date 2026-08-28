@@ -1,0 +1,26 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>Hrm.Iam.Host</RootNamespace>
+    <AssemblyName>Hrm.Iam.Host</AssemblyName>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Asp.Versioning.Mvc" Version="8.1.0" />
+    <PackageReference Include="Asp.Versioning.Mvc.ApiExplorer" Version="8.1.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.NewtonsoftJson" Version="8.0.6" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="7.2.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Filters" Version="8.0.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <!-- JarvisRoot: /Users/Hung/Documents/Học AI/jarvis (hoangnh2412/jarvis) -->
+    <ProjectReference Include="..\..\..\..\jarvis\Jarvis.Mvc\Jarvis.Mvc.csproj" />
+    <ProjectReference Include="..\..\..\..\jarvis\Jarvis.Domain\Jarvis.Domain.csproj" />
+    <ProjectReference Include="..\..\..\..\jarvis\Jarvis.Authentication\Jarvis.Authentication.csproj" />
+    <ProjectReference Include="..\..\..\..\jarvis\Jarvis.Authentication.Jwt\Jarvis.Authentication.Jwt.csproj" />
+    <ProjectReference Include="..\..\..\..\jarvis\Jarvis.Swashbuckle\Jarvis.Swashbuckle.csproj" />
+  </ItemGroup>
+</Project>

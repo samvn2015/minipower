@@ -1,6 +1,6 @@
 # DOC Registry — {Tên dự án}
 
-| Cập nhật | YYYY-MM-DD |
+| Cập nhật | 2026-08-28 |
 |----------|------------|
 
 Đăng ký DOC theo module. **REQ owner (sign-off → Baseline):** {Tên REQ owner} — phê duyệt **mọi** DOC active ([Luồng phê duyệt tài liệu](../01-project/DOC-02-stakeholder-analysis.md#23-luồng-phê-duyệt-tài-liệu)). Mọi DOC active phải có mục Approval với dòng sign-off REQ owner.

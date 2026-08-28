@@ -1,0 +1,6 @@
+@Hrm.Host_HostAddress = http://localhost:5271
+
+GET {{Hrm.Host_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
