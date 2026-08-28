@@ -39,13 +39,26 @@ public sealed class UpdateEmployeeCommandHandler(
             }
         }
 
+        var nextCccd = command.Cccd ?? employee.Cccd;
+        var nextEmail = command.EmailCty ?? employee.EmailCty;
+        var nextTaxId = command.TaxId ?? employee.TaxId;
+
+        await EmployeeUniqueGuard.EnsureUniqueAsync(
+            employees,
+            employee.EmployeeCode,
+            nextCccd,
+            nextEmail,
+            nextTaxId,
+            command.EmployeeId,
+            cancellationToken).ConfigureAwait(false);
+
         var updated = await employeeWrites.UpdateAsync(
             command.EmployeeId,
-            new EmployeePatch(command.FullName, command.EmailCty, command.Cccd),
+            new EmployeePatch(command.FullName, command.EmailCty, command.Cccd, command.TaxId),
             cancellationToken).ConfigureAwait(false);
 
         if (!updated)
-            throw new NotFoundException($"Employee {command.EmployeeId} không tồn tại.");
+            throw new NotFoundException(HrmErrorCodes.NotFound, $"Employee {command.EmployeeId} không tồn tại.");
 
         var refreshed = await employees.FindByIdAsync(command.EmployeeId, cancellationToken).ConfigureAwait(false);
         return new EmployeeUpdateResult(command.EmployeeId, refreshed!.Status.ToString());

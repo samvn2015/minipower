@@ -35,11 +35,14 @@ Hoặc env: `ConnectionStrings__AppDbContext=...`
 - `POST /v1/iam/accounts/{id}/roles` · `DELETE .../roles/{code}` — gán/gỡ role
 - `POST /v1/iam/accounts/{id}/disable` — IAM-SCR-004 (IT)
 - `GET/PATCH /v1/emp/employees/{id}` — EMP skeleton
+- `GET /v1/emp/employees` · `POST /v1/emp/employees` — list/tạo NV (HR/IT)
+- `/dev/token?sub=local-dev` — JWT dev (Development only)
+- `./scripts/e2e-smoke.sh` — smoke E2E local
 - `/health/live` — liveness (không cần DB)
 
 ## Ghi chú HRM
 
-- JWT OIDC **Lark** (ADR-007 v0.2): Authority thật = **OQ-DLV-001** (IT). Local: `ValidateIssuerSigningKey: false`. Dev seed: `sub=local-dev` (HR+NV), `sub=it-dev` (IT), EMP `MNV-DEV` ↔ `bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb`.
+- JWT OIDC **Lark** (ADR-007 v0.2): Authority thật = **OQ-DLV-001** (IT). **Development:** symmetric key trong `appsettings.Development.json` + `GET /dev/token?sub=...`. Dev seed: `sub=local-dev` (HR+NV), `sub=it-dev` (IT), EMP `MNV-DEV` ↔ `bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb`.
 - PostgreSQL **local DEV:** Postgres.app 16.8 · `scripts/pg-local.sh start|stop|status` · DB `hrm` / user `admin` qua User Secrets. Prod connection vẫn OQ-DLV-003 (IT).
 - Host IAM cũ `HRM/src/iam` giữ để tham chiếu; composition root mới là `hrm-backend`.
 

@@ -16,4 +16,7 @@ public sealed class HrmErrorCodes : IErrorCode
 
     [Display(Description = "Bad request")]
     public const string BadRequest = "40001";
+
+    [Display(Description = "Conflict")]
+    public const string Conflict = "40901";
 }

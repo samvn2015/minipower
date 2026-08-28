@@ -2,12 +2,12 @@ using Jarvis.Domain.Shared.Messaging;
 
 namespace Hrm.Application.Employees.Commands;
 
-public sealed record UpdateEmployeeCommand(
-    Guid EmployeeId,
+public sealed record CreateEmployeeCommand(
     string? ActorIdpSubject,
+    string EmployeeCode,
     string? FullName,
-    string? EmailCty,
     string? Cccd,
+    string? EmailCty,
     string? TaxId) : ICommand;
 
-public sealed record EmployeeUpdateResult(Guid EmployeeId, string Status);
+public sealed record EmployeeCreateResult(Guid Id, string EmployeeCode, string Status);
