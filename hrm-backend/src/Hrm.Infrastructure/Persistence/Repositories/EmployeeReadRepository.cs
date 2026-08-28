@@ -65,6 +65,29 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
             .FirstOrDefaultAsync(cancellationToken);
     }
 
+    public async Task<EmployeeSnapshot?> FindByEmailCtyAsync(
+        string emailCty,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(emailCty))
+            return null;
+
+        var normalized = emailCty.Trim().ToLowerInvariant();
+        return await db.Employees
+            .AsNoTracking()
+            .Where(e => e.EmailCty != null && e.EmailCty.ToLower() == normalized)
+            .Select(e => new EmployeeSnapshot(
+                e.Id,
+                e.EmployeeCode,
+                e.FullName,
+                e.Cccd,
+                e.EmailCty,
+                e.TaxId,
+                e.LineManagerEmployeeId,
+                e.Status))
+            .FirstOrDefaultAsync(cancellationToken);
+    }
+
     public async Task<EmployeeUniqueField?> FindDuplicateAsync(
         string employeeCode,
         string? cccd,

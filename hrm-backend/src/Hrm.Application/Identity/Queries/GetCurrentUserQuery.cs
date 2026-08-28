@@ -8,4 +8,5 @@ namespace Hrm.Application.Identity.Queries;
 public sealed record GetCurrentUserQuery(
     string? Subject,
     string? Name,
+    string? EmailCty,
     IReadOnlyList<string> RoleClaims) : IQuery;

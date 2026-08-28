@@ -50,6 +50,11 @@ public sealed class DisableIdentityAccountCommandHandlerTests
             CancellationToken cancellationToken = default)
             => Task.FromResult(
                 snapshot is not null && snapshot.IdpSubject == idpSubject ? snapshot : null);
+
+        public Task<IdentityAccountSnapshot?> FindByEmployeeCodeAsync(
+            string employeeCode,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IdentityAccountSnapshot?>(null);
     }
 
     private sealed class FakeAdminRepo : IIdentityAccountAdminRepository

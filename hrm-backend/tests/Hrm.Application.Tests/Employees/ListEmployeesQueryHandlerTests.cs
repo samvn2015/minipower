@@ -52,6 +52,11 @@ public sealed class ListEmployeesQueryHandlerTests
             CancellationToken cancellationToken = default)
             => Task.FromResult<IdentityAccountSnapshot?>(
                 snapshot.IdpSubject == idpSubject ? snapshot : null);
+
+        public Task<IdentityAccountSnapshot?> FindByEmployeeCodeAsync(
+            string employeeCode,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult<IdentityAccountSnapshot?>(null);
     }
 
     private sealed class FakeEmployeeRepo(IReadOnlyList<EmployeeSnapshot> items) : IEmployeeReadRepository
@@ -67,6 +72,13 @@ public sealed class ListEmployeesQueryHandlerTests
             CancellationToken cancellationToken = default)
             => Task.FromResult(items.FirstOrDefault(e =>
                 string.Equals(e.EmployeeCode, employeeCode, StringComparison.OrdinalIgnoreCase)));
+
+        public Task<EmployeeSnapshot?> FindByEmailCtyAsync(
+            string emailCty,
+            CancellationToken cancellationToken = default)
+            => Task.FromResult(items.FirstOrDefault(e =>
+                e.EmailCty is not null
+                && string.Equals(e.EmailCty, emailCty, StringComparison.OrdinalIgnoreCase)));
 
         public Task<EmployeeUniqueField?> FindDuplicateAsync(
             string employeeCode,

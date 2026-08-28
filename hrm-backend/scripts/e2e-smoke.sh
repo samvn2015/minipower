@@ -24,9 +24,19 @@ echo "== GET /v1/emp/employees/$DEV_EMP_ID =="
 curl -sf "${AUTH[@]}" "$BASE/v1/emp/employees/$DEV_EMP_ID" | python3 -m json.tool
 
 NEW_CODE="MNV-E2E-$(date +%s)"
+NEW_EMAIL="$NEW_CODE@test.local"
 echo "== POST /v1/emp/employees ($NEW_CODE) =="
 curl -sf "${AUTH[@]}" -H "Content-Type: application/json" \
-  -d "{\"employeeCode\":\"$NEW_CODE\",\"fullName\":\"E2E NV\",\"emailCty\":\"$NEW_CODE@test.local\"}" \
+  -d "{\"employeeCode\":\"$NEW_CODE\",\"fullName\":\"E2E NV\",\"emailCty\":\"$NEW_EMAIL\"}" \
   "$BASE/v1/emp/employees" | python3 -m json.tool
+
+PROVISION_SUB="provision-$(date +%s)"
+echo "== auto-provision IAM ($PROVISION_SUB → $NEW_EMAIL) =="
+PROVISION_TOKEN=$(curl -sf "$BASE/dev/token?sub=$PROVISION_SUB&email=$NEW_EMAIL" | python3 - <<'PY'
+import json, sys
+print(json.load(sys.stdin)["accessToken"])
+PY
+)
+curl -sf -H "Authorization: Bearer $PROVISION_TOKEN" "$BASE/v1/iam/me" | python3 -m json.tool
 
 echo "OK — E2E smoke passed"

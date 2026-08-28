@@ -10,6 +10,10 @@ public interface IEmployeeReadRepository
         string employeeCode,
         CancellationToken cancellationToken = default);
 
+    Task<EmployeeSnapshot?> FindByEmailCtyAsync(
+        string emailCty,
+        CancellationToken cancellationToken = default);
+
     Task<EmployeeUniqueField?> FindDuplicateAsync(
         string employeeCode,
         string? cccd,

@@ -17,7 +17,7 @@ public sealed class DevAuthController(IConfiguration configuration, IHostEnviron
 
     [HttpGet("token")]
     [ProducesResponseType(typeof(DevTokenResponse), StatusCodes.Status200OK)]
-    public IActionResult GetToken([FromQuery] string sub = "local-dev")
+    public IActionResult GetToken([FromQuery] string sub = "local-dev", [FromQuery] string? email = null)
     {
         if (!environment.IsDevelopment())
             return NotFound();
@@ -30,8 +30,12 @@ public sealed class DevAuthController(IConfiguration configuration, IHostEnviron
         var credentials = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
         var expires = DateTime.UtcNow.AddHours(8);
 
+        var claims = new List<Claim> { new("sub", sub.Trim()) };
+        if (!string.IsNullOrWhiteSpace(email))
+            claims.Add(new Claim("email", email.Trim()));
+
         var token = new JwtSecurityToken(
-            claims: [new Claim("sub", sub.Trim())],
+            claims: claims,
             expires: expires,
             signingCredentials: credentials);
 

@@ -25,6 +25,7 @@ public static class InfrastructureLayerExtension
 
         builder.Services.AddScoped<IAppUnitOfWork, AppUnitOfWork>();
         builder.Services.AddScoped<IIdentityAccountReadRepository, IdentityAccountReadRepository>();
+        builder.Services.AddScoped<IIdentityAccountWriteRepository, IdentityAccountWriteRepository>();
         builder.Services.AddScoped<IIdentityAccountAdminRepository, IdentityAccountAdminRepository>();
         builder.Services.AddScoped<IEmployeeReadRepository, EmployeeReadRepository>();
         builder.Services.AddScoped<IEmployeeWriteRepository, EmployeeWriteRepository>();

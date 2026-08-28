@@ -36,7 +36,8 @@ Hoặc env: `ConnectionStrings__AppDbContext=...`
 - `POST /v1/iam/accounts/{id}/disable` — IAM-SCR-004 (IT)
 - `GET/PATCH /v1/emp/employees/{id}` — EMP skeleton
 - `GET /v1/emp/employees` · `POST /v1/emp/employees` — list/tạo NV (HR/IT)
-- `/dev/token?sub=local-dev` — JWT dev (Development only)
+- `/dev/token?sub=local-dev&email=...` — JWT dev (Development only)
+- First login: `GET /v1/iam/me` auto-provision IAM từ email ↔ EMP (IAM-FR-017)
 - `./scripts/e2e-smoke.sh` — smoke E2E local
 - `/health/live` — liveness (không cần DB)
 

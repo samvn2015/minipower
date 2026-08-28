@@ -1,6 +1,7 @@
 using Hrm.Application.Employees.Commands;
 using Hrm.Application.Employees.Dtos;
 using Hrm.Application.Employees.Queries;
+using Hrm.Application.Identity;
 using Hrm.Application.Identity.Admin.Commands;
 using Hrm.Application.Identity.Admin.Dtos;
 using Hrm.Application.Identity.Admin.Queries;
@@ -20,6 +21,7 @@ public static class ApplicationLayerExtension
     {
         builder.AddCoreApplication();
 
+        builder.Services.AddScoped<IdentityAccountProvisioner>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetCurrentUserQuery, CurrentUserDto>, GetCurrentUserQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListIdentityAccountsQuery, IReadOnlyList<IdentityAccountDto>>, ListIdentityAccountsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetIdentityAccountQuery, IdentityAccountDto>, GetIdentityAccountQueryHandler>();

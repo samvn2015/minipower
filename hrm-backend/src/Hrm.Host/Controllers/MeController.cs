@@ -29,7 +29,7 @@ public sealed class MeController(IAsyncQueryDispatcher queries) : ControllerBase
             .ToArray();
 
         var dto = await queries.DispatchAsync<GetCurrentUserQuery, CurrentUserDto>(
-            new GetCurrentUserQuery(subject, User.Identity?.Name, roleClaims),
+            new GetCurrentUserQuery(subject, User.Identity?.Name, User.GetEmailCty(), roleClaims),
             cancellationToken);
 
         return Ok(dto);

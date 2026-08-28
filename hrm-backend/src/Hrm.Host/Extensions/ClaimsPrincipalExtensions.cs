@@ -8,4 +8,8 @@ internal static class ClaimsPrincipalExtensions
         user.FindFirstValue("sub")
         ?? user.FindFirstValue(ClaimTypes.NameIdentifier)
         ?? user.Identity?.Name;
+
+    public static string? GetEmailCty(this ClaimsPrincipal user) =>
+        user.FindFirstValue("email")
+        ?? user.FindFirstValue(ClaimTypes.Email);
 }

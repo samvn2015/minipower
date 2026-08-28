@@ -1,3 +1,4 @@
+using Hrm.Application.Identity;
 using Hrm.Application.Identity.Dtos;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
@@ -5,7 +6,9 @@ using Jarvis.Application.Contracts.Queries;
 
 namespace Hrm.Application.Identity.Queries;
 
-public sealed class GetCurrentUserQueryHandler(IIdentityAccountReadRepository accounts)
+public sealed class GetCurrentUserQueryHandler(
+    IIdentityAccountReadRepository accounts,
+    IdentityAccountProvisioner provisioner)
     : IAsyncQueryHandler<GetCurrentUserQuery, CurrentUserDto>
 {
     public async Task<CurrentUserDto> HandleAsync(
@@ -29,11 +32,23 @@ public sealed class GetCurrentUserQueryHandler(IIdentityAccountReadRepository ac
 
         if (account is null)
         {
-            return new CurrentUserDto(
-                Sub: query.Subject,
-                Name: query.Name,
-                Roles: [],
-                Note: "Chưa có IdentityAccount trong IAM DB (SoT ADR-002).");
+            var provision = await provisioner.TryProvisionAsync(
+                    query.Subject,
+                    query.EmailCty,
+                    query.Name,
+                    cancellationToken)
+                .ConfigureAwait(false);
+
+            account = provision.Account;
+            if (account is null)
+            {
+                return new CurrentUserDto(
+                    Sub: query.Subject,
+                    Name: query.Name,
+                    Roles: [],
+                    Note: provision.Note
+                        ?? "Chưa có IdentityAccount trong IAM DB (SoT ADR-002).");
+            }
         }
 
         if (account.Status == IdentityAccountStatus.Disabled)
