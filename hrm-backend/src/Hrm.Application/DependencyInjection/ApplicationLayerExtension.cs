@@ -8,6 +8,9 @@ using Hrm.Application.Identity.Admin.Dtos;
 using Hrm.Application.Identity.Admin.Queries;
 using Hrm.Application.Identity.Dtos;
 using Hrm.Application.Identity.Queries;
+using Hrm.Application.Leave.Commands;
+using Hrm.Application.Leave.Dtos;
+using Hrm.Application.Leave.Queries;
 using Jarvis.Application;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
@@ -42,6 +45,11 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<ApproveLineManagerChangeCommand, LineManagerChangeResult>, ApproveLineManagerChangeCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RejectLineManagerChangeCommand, LineManagerChangeResult>, RejectLineManagerChangeCommandHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListPendingLineManagerChangesQuery, IReadOnlyList<LineManagerChangeDto>>, ListPendingLineManagerChangesQueryHandler>();
+
+        builder.Services.AddScoped<IAsyncQueryHandler<ListLeaveTypesQuery, IReadOnlyList<LeaveTypeDto>>, ListLeaveTypesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetMyLeaveBalanceQuery, LeaveBalanceDto>, GetMyLeaveBalanceQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListMyLeaveRequestsQuery, IReadOnlyList<LeaveRequestDto>>, ListMyLeaveRequestsQueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CreateLeaveRequestCommand, LeaveRequestCreateResult>, CreateLeaveRequestCommandHandler>();
 
         return builder;
     }

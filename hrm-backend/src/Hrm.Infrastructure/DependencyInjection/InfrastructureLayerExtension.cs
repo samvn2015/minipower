@@ -1,6 +1,7 @@
 using Hrm.Domain.DependencyInjection;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
+using Hrm.Domain.Leave.Repositories;
 using Hrm.Domain.Repositories;
 using Hrm.Infrastructure.Persistence;
 using Hrm.Infrastructure.Persistence.Repositories;
@@ -34,6 +35,9 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<ISeniorityRuleReadRepository, SeniorityRuleReadRepository>();
         builder.Services.AddScoped<IEmpAuditLogRepository, EmpAuditLogRepository>();
         builder.Services.AddScoped<ILineManagerChangeRepository, LineManagerChangeRepository>();
+        builder.Services.AddScoped<ILeaveTypeReadRepository, LeaveTypeReadRepository>();
+        builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
+        builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
 
         // Credentials: User Secrets / env (ConnectionStrings__AppDbContext). Không hard-code password.
         // Placeholder chỉ để đăng ký DI khi chưa có secret — ping/swagger vẫn chạy; mở DB thật cần OQ-DLV-003.
