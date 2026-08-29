@@ -107,6 +107,16 @@ export function MyProfilePage() {
             {profile.contract.endDate ? ` → ${profile.contract.endDate}` : ""}
           </p>
         )}
+        {profile.educationLevelName && (
+          <p>
+            <strong>Học vấn:</strong> {profile.educationLevelName}
+          </p>
+        )}
+        {profile.seniority && (
+          <p>
+            <strong>Thâm niên:</strong> {profile.seniority.displayText}
+          </p>
+        )}
       </div>
 
       <form className="form-grid" onSubmit={onSubmit}>

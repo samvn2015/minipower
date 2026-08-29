@@ -14,43 +14,21 @@ public sealed class UpdateEmployeeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_DuplicateEmailOnPatch_ThrowsConflict()
     {
-        var handler = new UpdateEmployeeCommandHandler(
-            new FakeAccountRepo(HrActor),
-            new FakeOrgUnitRepo(),
-            new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.EmailCty },
-            new FakeEmployeeWriteRepo());
+        var handler = CreateHandler(new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.EmailCty });
 
         await Assert.ThrowsAsync<ConflictException>(() =>
             handler.HandleAsync(new UpdateEmployeeCommand(
-                EmployeeId,
-                "local-dev",
-                null,
-                "other@test.local",
-                null,
-                null,
-                null,
-                null)));
+                EmployeeId, "local-dev", null, "other@test.local", null, null, null, null, null, null)));
     }
 
     [Fact]
     public async Task HandleAsync_InactiveOrgOnPatch_ThrowsBadRequest()
     {
-        var handler = new UpdateEmployeeCommandHandler(
-            new FakeAccountRepo(HrActor),
-            new FakeOrgUnitRepo(),
-            new FakeEmployeeRepo(),
-            new FakeEmployeeWriteRepo());
+        var handler = CreateHandler(new FakeEmployeeRepo());
 
         var ex = await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new UpdateEmployeeCommand(
-                EmployeeId,
-                "local-dev",
-                null,
-                null,
-                null,
-                null,
-                "ORG-INACTIVE",
-                null)));
+                EmployeeId, "local-dev", null, null, null, null, "ORG-INACTIVE", null, null, null)));
 
         Assert.Contains("Org không hiệu lực", ex.SystemMessage ?? ex.Message, StringComparison.Ordinal);
     }
@@ -58,23 +36,31 @@ public sealed class UpdateEmployeeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_NvCannotPatchOrg()
     {
-        var handler = new UpdateEmployeeCommandHandler(
-            new FakeAccountRepo(NvActor),
-            new FakeOrgUnitRepo(),
-            new FakeEmployeeRepo(),
-            new FakeEmployeeWriteRepo());
+        var handler = CreateHandler(new FakeEmployeeRepo());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new UpdateEmployeeCommand(
-                EmployeeId,
-                "local-dev",
-                null,
-                null,
-                null,
-                null,
-                "ORG-HQ",
-                null)));
+                EmployeeId, "local-dev", null, null, null, null, "ORG-HQ", null, null, null)));
     }
+
+    [Fact]
+    public async Task HandleAsync_NvCannotPatchEducation()
+    {
+        var handler = CreateHandler(new FakeEmployeeRepo());
+
+        await Assert.ThrowsAsync<ForbiddenException>(() =>
+            handler.HandleAsync(new UpdateEmployeeCommand(
+                EmployeeId, "local-dev", null, null, null, null, null, "EDU-DH", null, null)));
+    }
+
+    private static UpdateEmployeeCommandHandler CreateHandler(FakeEmployeeRepo read) =>
+        new(
+            new FakeAccountRepo(HrActor),
+            new FakeOrgUnitRepo(),
+            new FakeEducationLevelRepo(),
+            read,
+            new FakeEmployeeWriteRepo(),
+            new FakeAuditLogRepo());
 
     private static readonly IdentityAccountSnapshot HrActor = new(
         Guid.NewGuid(), "local-dev", "Dev", null, "MNV-DEV",
@@ -84,9 +70,8 @@ public sealed class UpdateEmployeeCommandHandlerTests
         Guid.NewGuid(), "local-dev", "Dev", null, "MNV-DEV",
         IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
 
-    private static readonly EmployeeSnapshot DevEmployee = new(
-        EmployeeId, "MNV-DEV", "Dev IAM", null, "dev@company.local", null, "ORG-HQ", null, null,
-        EmployeeStatus.Active);
+    private static readonly EmployeeSnapshot DevEmployee =
+        EmpTestSnapshots.DevEmployee(EmployeeId);
 
     private sealed class FakeOrgUnitRepo : IOrgUnitReadRepository
     {

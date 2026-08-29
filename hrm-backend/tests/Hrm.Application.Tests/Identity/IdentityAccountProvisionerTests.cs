@@ -1,4 +1,5 @@
 using Hrm.Application.Identity;
+using Hrm.Application.Tests.Employees;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
@@ -12,17 +13,11 @@ public sealed class IdentityAccountProvisionerTests
     [Fact]
     public async Task TryProvisionAsync_MatchesEmployeeByEmail_AssignsNvRole()
     {
-        var employee = new EmployeeSnapshot(
+        var employee = EmpTestSnapshots.DevEmployee(
             Guid.NewGuid(),
             "MNV-NEW",
             "NV Mới",
-            null,
-            "new@company.local",
-            null,
-            "ORG-HQ",
-            null,
-            null,
-            EmployeeStatus.Active);
+            "new@company.local");
 
         var writeRepo = new RecordingWriteRepository();
         var provisioner = new IdentityAccountProvisioner(
@@ -60,17 +55,11 @@ public sealed class IdentityAccountProvisionerTests
     [Fact]
     public async Task TryProvisionAsync_EmployeeAlreadyLinked_ReturnsNote()
     {
-        var employee = new EmployeeSnapshot(
+        var employee = EmpTestSnapshots.DevEmployee(
             Guid.NewGuid(),
             "MNV-LINKED",
             "Linked",
-            null,
-            "linked@company.local",
-            null,
-            "ORG-HQ",
-            null,
-            null,
-            EmployeeStatus.Active);
+            "linked@company.local");
 
         var existing = new IdentityAccountSnapshot(
             Guid.NewGuid(),

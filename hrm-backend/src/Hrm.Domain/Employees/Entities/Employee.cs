@@ -22,6 +22,14 @@ public class Employee : BaseEntity<Guid>
 
     public OrgUnit? OrgUnit { get; set; }
 
+    /// <summary>Mã bậc học vấn (catalog) — EMP-FR-017.</summary>
+    public string? EducationLevelCode { get; set; }
+
+    public EducationLevel? EducationLevel { get; set; }
+
+    /// <summary>Mốc tính thâm niên tùy chọn; mặc định lấy từ HĐ theo master.</summary>
+    public DateOnly? SeniorityStartDate { get; set; }
+
     public Guid? LineManagerEmployeeId { get; set; }
 
     public EmployeeContract? Contract { get; set; }

@@ -8,6 +8,9 @@ public sealed record EmployeeDto(
     string? EmailCty,
     string? TaxId,
     string? OrgUnitCode,
+    string? EducationLevelCode,
+    string? EducationLevelName,
+    SeniorityDto? Seniority,
     EmployeeContractDto? Contract,
     Guid? LineManagerEmployeeId,
     string Status);

@@ -41,9 +41,8 @@ public sealed class ListEmployeesQueryHandlerTests
         Guid.NewGuid(), "local-dev", "Dev", null, "MNV-DEV",
         IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
 
-    private static readonly EmployeeSnapshot DevEmployee = new(
-        Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"),
-        "MNV-DEV", "Dev IAM", null, "dev@company.local", null, "ORG-HQ", null, null, EmployeeStatus.Active);
+    private static readonly EmployeeSnapshot DevEmployee =
+        EmpTestSnapshots.DevEmployee(Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb"));
 
     private sealed class FakeAccountRepo(IdentityAccountSnapshot snapshot) : IIdentityAccountReadRepository
     {

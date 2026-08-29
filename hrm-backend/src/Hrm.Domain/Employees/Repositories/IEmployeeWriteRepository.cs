@@ -9,6 +9,8 @@ public sealed record EmployeeCreateModel(
     string? EmailCty,
     string? TaxId,
     string? OrgUnitCode,
+    string? EducationLevelCode,
+    DateOnly? SeniorityStartDate,
     EmployeeContractUpsert? Contract);
 
 public sealed record EmployeeContractUpsert(
@@ -23,6 +25,8 @@ public sealed record EmployeePatch(
     string? Cccd,
     string? TaxId,
     string? OrgUnitCode,
+    string? EducationLevelCode,
+    DateOnly? SeniorityStartDate,
     EmployeeContractUpsert? Contract);
 
 public interface IEmployeeWriteRepository

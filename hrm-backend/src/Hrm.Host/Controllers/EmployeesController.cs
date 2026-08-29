@@ -54,6 +54,8 @@ public sealed class EmployeesController(
                 body.EmailCty,
                 body.TaxId,
                 body.OrgUnitCode,
+                body.EducationLevelCode,
+                body.SeniorityStartDate,
                 MapContract(body.Contract)),
             cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
@@ -90,6 +92,8 @@ public sealed class EmployeesController(
                 body.Cccd,
                 body.TaxId,
                 body.OrgUnitCode,
+                body.EducationLevelCode,
+                body.SeniorityStartDate,
                 MapContract(body.Contract)),
             cancellationToken);
         return Ok(result);
@@ -111,6 +115,8 @@ public sealed class EmployeesController(
         string? EmailCty,
         string? TaxId,
         string OrgUnitCode,
+        string? EducationLevelCode,
+        DateOnly? SeniorityStartDate,
         EmployeeContractRequest? Contract);
 
     public sealed record UpdateEmployeeRequest(
@@ -119,6 +125,8 @@ public sealed class EmployeesController(
         string? Cccd,
         string? TaxId,
         string? OrgUnitCode,
+        string? EducationLevelCode,
+        DateOnly? SeniorityStartDate,
         EmployeeContractRequest? Contract,
         Guid? LineManagerEmployeeId);
 

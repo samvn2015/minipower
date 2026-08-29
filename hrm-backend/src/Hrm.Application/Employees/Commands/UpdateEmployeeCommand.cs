@@ -11,6 +11,8 @@ public sealed record UpdateEmployeeCommand(
     string? Cccd,
     string? TaxId,
     string? OrgUnitCode,
+    string? EducationLevelCode,
+    DateOnly? SeniorityStartDate,
     EmployeeContractUpsert? Contract) : ICommand;
 
 public sealed record EmployeeUpdateResult(Guid EmployeeId, string Status);

@@ -27,6 +27,18 @@ export type EmployeeContract = {
   isProbation: boolean;
 };
 
+export type Seniority = {
+  years: number;
+  months: number;
+  displayText: string;
+  ruleCode: string;
+};
+
+export type EducationLevel = {
+  code: string;
+  name: string;
+};
+
 export type EmployeeDetail = {
   id: string;
   employeeCode: string;
@@ -35,6 +47,9 @@ export type EmployeeDetail = {
   emailCty: string | null;
   taxId: string | null;
   orgUnitCode: string | null;
+  educationLevelCode: string | null;
+  educationLevelName: string | null;
+  seniority: Seniority | null;
   contract: EmployeeContract | null;
   lineManagerEmployeeId: string | null;
   status: string;

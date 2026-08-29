@@ -1,5 +1,6 @@
-using Hrm.Application.Common;
 using Hrm.Application.Employees.Commands;
+using Hrm.Application.Common;
+using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Shared.Constants;
@@ -11,8 +12,10 @@ namespace Hrm.Application.Employees.Commands;
 public sealed class CreateEmployeeCommandHandler(
     IIdentityAccountReadRepository accounts,
     IOrgUnitReadRepository orgUnits,
+    IEducationLevelReadRepository educationLevels,
     IEmployeeReadRepository employees,
-    IEmployeeWriteRepository employeeWrites)
+    IEmployeeWriteRepository employeeWrites,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<CreateEmployeeCommand, EmployeeCreateResult>
 {
     public async Task<EmployeeCreateResult> HandleAsync(
@@ -35,9 +38,14 @@ public sealed class CreateEmployeeCommandHandler(
 
         await EmpOrgGuard.RequireActiveOrgAsync(orgUnits, command.OrgUnitCode, cancellationToken)
             .ConfigureAwait(false);
+        await EmpEducationGuard.RequireActiveEducationLevelAsync(
+            educationLevels,
+            command.EducationLevelCode,
+            cancellationToken).ConfigureAwait(false);
 
         var contract = EmpContractGuard.Normalize(command.Contract);
         var code = command.EmployeeCode.Trim();
+        var seniorityStart = command.SeniorityStartDate ?? contract?.StartDate;
 
         await EmployeeUniqueGuard.EnsureUniqueAsync(
             employees,
@@ -56,7 +64,18 @@ public sealed class CreateEmployeeCommandHandler(
                 command.EmailCty,
                 command.TaxId,
                 command.OrgUnitCode,
+                command.EducationLevelCode,
+                seniorityStart,
                 contract),
+            cancellationToken).ConfigureAwait(false);
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.EmployeeCreated,
+                id,
+                null,
+                command.ActorIdpSubject!,
+                $"employeeCode={code}"),
             cancellationToken).ConfigureAwait(false);
 
         var warnings = new List<string>();

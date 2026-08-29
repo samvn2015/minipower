@@ -1,3 +1,4 @@
+using Hrm.Application.Employees;
 using Hrm.Application.Employees.Queries;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
@@ -15,7 +16,8 @@ public sealed class GetMyEmployeeQueryHandlerTests
     {
         var handler = new GetMyEmployeeQueryHandler(
             new FakeAccountRepo(NvActor),
-            new FakeEmployeeRepo(DevEmployee));
+            new FakeEmployeeRepo(DevEmployee),
+            new EmployeeDtoFactory(new FakeSeniorityRuleRepo()));
 
         var result = await handler.HandleAsync(new GetMyEmployeeQuery("local-dev"));
 
@@ -26,9 +28,8 @@ public sealed class GetMyEmployeeQueryHandlerTests
         Guid.NewGuid(), "local-dev", "Dev IAM", "dev@company.local", "MNV-DEV",
         IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
 
-    private static readonly EmployeeSnapshot DevEmployee = new(
-        EmployeeId, "MNV-DEV", "Dev IAM", null, "dev@company.local", null, "ORG-HQ", null, null,
-        EmployeeStatus.Active);
+    private static readonly EmployeeSnapshot DevEmployee =
+        EmpTestSnapshots.DevEmployee(EmployeeId);
 
     private sealed class FakeAccountRepo(IdentityAccountSnapshot snapshot) : IIdentityAccountReadRepository
     {

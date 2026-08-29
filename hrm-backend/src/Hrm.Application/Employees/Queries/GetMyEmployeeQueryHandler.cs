@@ -11,7 +11,8 @@ namespace Hrm.Application.Employees.Queries;
 
 public sealed class GetMyEmployeeQueryHandler(
     IIdentityAccountReadRepository accounts,
-    IEmployeeReadRepository employees)
+    IEmployeeReadRepository employees,
+    EmployeeDtoFactory dtoFactory)
     : IAsyncQueryHandler<GetMyEmployeeQuery, EmployeeDto>
 {
     public async Task<EmployeeDto> HandleAsync(
@@ -40,6 +41,6 @@ public sealed class GetMyEmployeeQueryHandler(
                 HrmErrorCodes.NotFound,
                 $"Employee {actor.EmployeeCode} không tồn tại.");
 
-        return EmployeeDtoMapper.Map(employee);
+        return await dtoFactory.MapAsync(employee, cancellationToken).ConfigureAwait(false);
     }
 }

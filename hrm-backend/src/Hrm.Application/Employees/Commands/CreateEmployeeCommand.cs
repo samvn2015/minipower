@@ -11,6 +11,8 @@ public sealed record CreateEmployeeCommand(
     string? EmailCty,
     string? TaxId,
     string? OrgUnitCode,
+    string? EducationLevelCode,
+    DateOnly? SeniorityStartDate,
     EmployeeContractUpsert? Contract) : ICommand;
 
 public sealed record EmployeeCreateResult(

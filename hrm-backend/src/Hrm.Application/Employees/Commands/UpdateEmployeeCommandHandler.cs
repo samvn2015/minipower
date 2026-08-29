@@ -1,5 +1,6 @@
-using Hrm.Application.Common;
 using Hrm.Application.Employees.Commands;
+using Hrm.Application.Common;
+using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Shared.Constants;
@@ -11,8 +12,10 @@ namespace Hrm.Application.Employees.Commands;
 public sealed class UpdateEmployeeCommandHandler(
     IIdentityAccountReadRepository accounts,
     IOrgUnitReadRepository orgUnits,
+    IEducationLevelReadRepository educationLevels,
     IEmployeeReadRepository employees,
-    IEmployeeWriteRepository employeeWrites)
+    IEmployeeWriteRepository employeeWrites,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<UpdateEmployeeCommand, EmployeeUpdateResult>
 {
     public async Task<EmployeeUpdateResult> HandleAsync(
@@ -39,9 +42,12 @@ public sealed class UpdateEmployeeCommandHandler(
                 throw new ForbiddenException(HrmErrorCodes.Forbidden, "Chỉ sửa hồ sơ của chính mình (EMP-FR-011).");
             }
 
-            if (command.OrgUnitCode is not null || command.Contract is not null)
+            if (command.OrgUnitCode is not null
+                || command.Contract is not null
+                || command.EducationLevelCode is not null
+                || command.SeniorityStartDate is not null)
             {
-                throw new ForbiddenException(HrmErrorCodes.Forbidden, "NV không sửa org/HĐ (EMP-FR-007).");
+                throw new ForbiddenException(HrmErrorCodes.Forbidden, "NV không sửa org/HĐ/học vấn (EMP-FR-007).");
             }
         }
 
@@ -49,6 +55,14 @@ public sealed class UpdateEmployeeCommandHandler(
         {
             await EmpOrgGuard.RequireActiveOrgAsync(orgUnits, command.OrgUnitCode, cancellationToken)
                 .ConfigureAwait(false);
+        }
+
+        if (command.EducationLevelCode is not null)
+        {
+            await EmpEducationGuard.RequireActiveEducationLevelAsync(
+                educationLevels,
+                command.EducationLevelCode,
+                cancellationToken).ConfigureAwait(false);
         }
 
         var contract = EmpContractGuard.Normalize(command.Contract);
@@ -74,11 +88,22 @@ public sealed class UpdateEmployeeCommandHandler(
                 command.Cccd,
                 command.TaxId,
                 command.OrgUnitCode,
+                command.EducationLevelCode,
+                command.SeniorityStartDate,
                 contract),
             cancellationToken).ConfigureAwait(false);
 
         if (!updated)
             throw new NotFoundException(HrmErrorCodes.NotFound, $"Employee {command.EmployeeId} không tồn tại.");
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.EmployeeUpdated,
+                command.EmployeeId,
+                null,
+                command.ActorIdpSubject!,
+                null),
+            cancellationToken).ConfigureAwait(false);
 
         var refreshed = await employees.FindByIdAsync(command.EmployeeId, cancellationToken).ConfigureAwait(false);
         return new EmployeeUpdateResult(command.EmployeeId, refreshed!.Status.ToString());

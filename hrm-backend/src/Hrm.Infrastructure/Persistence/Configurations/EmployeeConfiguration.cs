@@ -27,6 +27,11 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             .WithMany()
             .HasForeignKey(x => x.OrgUnitCode)
             .OnDelete(DeleteBehavior.Restrict);
+        builder.Property(x => x.EducationLevelCode).HasMaxLength(32);
+        builder.HasOne(x => x.EducationLevel)
+            .WithMany()
+            .HasForeignKey(x => x.EducationLevelCode)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasData(new Employee
         {
