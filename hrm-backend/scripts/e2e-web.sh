@@ -48,6 +48,10 @@ curl -sf -H "$(auth_hdr "$HR_TOKEN")" "$BASE/v1/iam/accounts" | python3 -m json.
 
 echo "========== 4. Full API regression =========="
 bash "$(dirname "$0")/e2e-full.sh"
+bash "$(dirname "$0")/e2e-api-unhappy.sh"
+
+echo "========== 5. Playwright UI (hrm-web) =========="
+bash "$(dirname "$0")/e2e-web-playwright.sh"
 
 echo ""
 echo "OK — E2E WEB smoke passed"
