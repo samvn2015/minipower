@@ -4,7 +4,7 @@
 
 - [ ] {OQ-DLV-001} Issuer OIDC + JWKS URL (IT) · **IdP: Lark** (DEC-DLV-010 · `@lhqglobal.vn`) · cần: tenant Lark, region (CN/Global), App ID/secret, discovery URL · intent: viết code · hoãn 2026-08-26 · chặn: có
 - [ ] {OQ-DLV-002} Sản phẩm LBS / host · intent: triển khai · hoãn 2026-08-26 · chặn: không
-- [x] {OQ-DLV-003} DB engine · **PostgreSQL** (ADR-009 · DEC-ARC-014) · **local DEV 2026-08-27:** Postgres.app **16.8** · `localhost:5432` · DB `hrm` · user `admin` · User Secrets `ConnectionStrings:AppDbContext` · start: `hrm-backend/scripts/pg-local.sh start` · **còn:** connection **prod/IT** · intent: viết code · chặn: không *(local)* / có *(prod)*
+- [x] {OQ-DLV-003} DB engine · **PostgreSQL** (ADR-009 · DEC-ARC-014) · **local DEV 2026-08-27:** Postgres.app **16.8** · `localhost:5432` · DB `hrm` · user `admin` · User Secrets · **prod template 2026-08-29:** `appsettings.Production.json` + DOC-17 §2.1 · **còn:** host/user/password Prod do IT · intent: triển khai · chặn: có *(prod host)*
 - [ ] {OQ-DLV-004} RTO/RPO phút · intent: go-live · hoãn 2026-08-26 · chặn: có *(cutover)*
 - [x] {OQ-DLV-005} JarvisRoot · `/Users/Hung/Documents/Học AI/jarvis` · **đã gắn** ProjectReference IAM Host · 2026-08-26
 - [x] {OQ-DLV-006} SDK .NET 9 trên máy build · **có** 9.0.317 (`/usr/local/share/dotnet`) · kiểm tra 2026-08-26

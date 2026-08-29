@@ -10,19 +10,19 @@
 
 | TC ID | Mô tả | Expected | Layer | Path | Pri | St |
 |-------|-------|----------|-------|------|-----|-----|
-| EMP-TC-001 | HR tạo NV+org+HĐ | 201 | E2E | Happy | Must | |
-| EMP-TC-002 | Unique MNV/CCCD | 409 | API | Unhappy | Must | |
-| EMP-TC-003 | Unique email/MST khi có | 409 | API | Unhappy | Must | |
-| EMP-TC-004 | Org hiệu lực | Chặn org inactive | API | Unhappy | Must | |
-| EMP-TC-005 | HĐ; cảnh báo thiếu HĐ | Warning | E2E | Happy | Must | |
-| EMP-TC-006 | HR sửa; cấm đổi LM trên SCR-002 | Chặn | E2E | Unhappy | Must | |
-| EMP-TC-007 | Self-service web=mobile | Cùng IAM | E2E | Happy | Must | |
-| EMP-TC-008 | Đổi LM một bậc | OK luồng | E2E | Happy | Must | |
-| EMP-TC-009 | Đổi LM không mở phiếu lương | Không PAY | E2E | Happy | Must | |
-| EMP-TC-010 | Thâm niên master | Catalog | API | Happy | Must | |
-| EMP-TC-011 | 403 hồ sơ người khác | 403 | API | Unhappy | Must | |
-| EMP-TC-012 | Ẩn màn HR với NV | 403 | E2E | Unhappy | Must | |
-| EMP-TC-013 | Đủ EMP-SCR-001…006 | Có màn | E2E | Happy | Must | |
+| EMP-TC-001 | HR tạo NV+org+HĐ | 201 | E2E | Happy | Must | Pass |
+| EMP-TC-002 | Unique MNV/CCCD | 409 | API | Unhappy | Must | Open |
+| EMP-TC-003 | Unique email/MST khi có | 409 | API | Unhappy | Must | Open |
+| EMP-TC-004 | Org hiệu lực | Chặn org inactive | API | Unhappy | Must | Open |
+| EMP-TC-005 | HĐ; cảnh báo thiếu HĐ | Warning | E2E | Happy | Must | Pass |
+| EMP-TC-006 | HR sửa; cấm đổi LM trên SCR-002 | Chặn | E2E | Unhappy | Must | Pass |
+| EMP-TC-007 | Self-service web=mobile | Cùng IAM | E2E | Happy | Must | Pass |
+| EMP-TC-008 | Đổi LM một bậc | OK luồng | E2E | Happy | Must | Pass |
+| EMP-TC-009 | Đổi LM không mở phiếu lương | Không PAY | E2E | Happy | Must | Pass |
+| EMP-TC-010 | Thâm niên master | Catalog | API | Happy | Must | Open |
+| EMP-TC-011 | 403 hồ sơ người khác | 403 | API | Unhappy | Must | Pass |
+| EMP-TC-012 | Ẩn màn HR với NV | 403 | E2E | Unhappy | Must | Pass |
+| EMP-TC-013 | Đủ EMP-SCR-001…006 | Có màn | E2E | Happy | Must | Partial |
 | EMP-TC-014 | Field/HĐ master | Động quy chế | E2E | Happy | Must | |
 | EMP-TC-015 | LM 403 phiếu lương | 403 | API | Unhappy | Must | |
 | EMP-TC-016 | LM mới org inactive | Chặn | API | Unhappy | Must | |

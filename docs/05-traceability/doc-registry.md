@@ -1,7 +1,19 @@
 # DOC Registry — {Tên dự án}
 
-| Cập nhật | 2026-08-28 |
+| Cập nhật | 2026-08-29 |
 |----------|------------|
+
+## Execute artifacts (HRM — không baseline)
+
+| Artifact | Path | Ver | Status | Ghi chú |
+|----------|------|-----|--------|---------|
+| Backend API | `hrm-backend/` | slice | Active ◐ | IAM + EMP · EF migrate |
+| Frontend MVP | `hrm-web/` | 0.1 | Active ◐ | SCR-001…006 · IAM admin · NV profile |
+| E2E API | `hrm-backend/scripts/e2e-full.sh` | — | Active | 12 steps |
+| E2E web smoke | `hrm-backend/scripts/e2e-web.sh` | — | Active | web + NV + full |
+| TC run log | `memory/delivery/tc-run-2026-08-29.md` | 0.1 | Active | partial Pass |
+| Prod PG template | `hrm-backend/src/Hrm.Host/appsettings.Production.json` | — | Draft | OQ-DLV-003 host TBD IT |
+| Overview rollup | `docs/05-traceability/overview.md` | — | Active | M4g |
 
 Đăng ký DOC theo module. **REQ owner (sign-off → Baseline):** {Tên REQ owner} — phê duyệt **mọi** DOC active ([Luồng phê duyệt tài liệu](../01-project/DOC-02-stakeholder-analysis.md#23-luồng-phê-duyệt-tài-liệu)). Mọi DOC active phải có mục Approval với dòng sign-off REQ owner.
 

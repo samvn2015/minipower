@@ -50,12 +50,23 @@ export function AppLayout() {
         <div className="row">
           <h1>HRM — MVP</h1>
           <nav className="row">
-            <Link className="btn btn-ghost" to="/employees">
-              Nhân viên
+            <Link className="btn btn-ghost" to="/profile">
+              Hồ sơ tôi
             </Link>
-            <Link className="btn btn-ghost" to="/line-manager-changes">
-              Duyệt LM
-            </Link>
+            {(user.roles.includes("IAM-ROLE-HR") ||
+              user.roles.includes("IAM-ROLE-IT")) && (
+              <>
+                <Link className="btn btn-ghost" to="/employees">
+                  Nhân viên
+                </Link>
+                <Link className="btn btn-ghost" to="/line-manager-changes">
+                  Duyệt LM
+                </Link>
+                <Link className="btn btn-ghost" to="/iam/accounts">
+                  IAM
+                </Link>
+              </>
+            )}
           </nav>
         </div>
         <div className="app-header-meta">

@@ -72,3 +72,27 @@ export type LineManagerChangeResult = {
   requestId: string;
   status: string;
 };
+
+export type IdentityAccount = {
+  id: string;
+  idpSubject: string;
+  displayName: string | null;
+  emailCty: string | null;
+  employeeCode: string | null;
+  status: string;
+  roles: string[];
+};
+
+export type IdentityAccountAdminResult = {
+  accountId: string;
+  status: string;
+  roles: string[];
+};
+
+export const IAM_ASSIGNABLE_ROLES = [
+  "IAM-ROLE-NV",
+  "IAM-ROLE-LM",
+  "IAM-ROLE-HR",
+  "IAM-ROLE-IT",
+  "IAM-ROLE-PGD",
+] as const;

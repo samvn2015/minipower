@@ -3,6 +3,8 @@ import type {
   CurrentUser,
   EmployeeDetail,
   EmployeeListItem,
+  IdentityAccount,
+  IdentityAccountAdminResult,
   LineManagerChangeItem,
   LineManagerChangeResult,
 } from "./types";
@@ -124,8 +126,15 @@ export async function createEmployee(payload: CreateEmployeePayload): Promise<{ 
 export type UpdateEmployeePayload = {
   fullName?: string;
   emailCty?: string;
+  cccd?: string;
+  taxId?: string;
   orgUnitCode?: string;
 };
+
+export async function fetchMyEmployee(): Promise<EmployeeDetail> {
+  const body = await apiFetch<ApiEnvelope<EmployeeDetail>>("/v1/emp/employees/me");
+  return unwrap(body);
+}
 
 export async function updateEmployee(
   id: string,
@@ -178,4 +187,48 @@ export async function rejectLineManagerChange(
   });
   if ("requestId" in body && typeof body.requestId === "string") return body;
   return unwrap(body as ApiEnvelope<LineManagerChangeResult>);
+}
+
+export async function fetchIdentityAccounts(): Promise<IdentityAccount[]> {
+  const body = await apiFetch<ApiEnvelope<IdentityAccount[]>>("/v1/iam/accounts");
+  return unwrap(body);
+}
+
+export async function fetchIdentityAccount(id: string): Promise<IdentityAccount> {
+  const body = await apiFetch<ApiEnvelope<IdentityAccount>>(`/v1/iam/accounts/${id}`);
+  return unwrap(body);
+}
+
+export async function assignAccountRole(
+  accountId: string,
+  roleCode: string,
+): Promise<IdentityAccountAdminResult> {
+  const body = await apiFetch<
+    IdentityAccountAdminResult | ApiEnvelope<IdentityAccountAdminResult>
+  >(`/v1/iam/accounts/${accountId}/roles`, {
+    method: "POST",
+    body: JSON.stringify({ roleCode }),
+  });
+  return unwrap(body as ApiEnvelope<IdentityAccountAdminResult>);
+}
+
+export async function removeAccountRole(
+  accountId: string,
+  roleCode: string,
+): Promise<IdentityAccountAdminResult> {
+  const body = await apiFetch<
+    IdentityAccountAdminResult | ApiEnvelope<IdentityAccountAdminResult>
+  >(`/v1/iam/accounts/${accountId}/roles/${encodeURIComponent(roleCode)}`, {
+    method: "DELETE",
+  });
+  return unwrap(body as ApiEnvelope<IdentityAccountAdminResult>);
+}
+
+export async function disableIdentityAccount(
+  accountId: string,
+): Promise<IdentityAccountAdminResult> {
+  const body = await apiFetch<
+    IdentityAccountAdminResult | ApiEnvelope<IdentityAccountAdminResult>
+  >(`/v1/iam/accounts/${accountId}/disable`, { method: "POST" });
+  return unwrap(body as ApiEnvelope<IdentityAccountAdminResult>);
 }
