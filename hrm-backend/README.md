@@ -34,8 +34,10 @@ Hoặc env: `ConnectionStrings__AppDbContext=...`
 - `GET /v1/iam/accounts` — IAM-SCR-003 (HR/IT)
 - `POST /v1/iam/accounts/{id}/roles` · `DELETE .../roles/{code}` — gán/gỡ role
 - `POST /v1/iam/accounts/{id}/disable` — IAM-SCR-004 (IT)
-- `GET/PATCH /v1/emp/employees/{id}` — EMP skeleton
-- `GET /v1/emp/employees` · `POST /v1/emp/employees` — list/tạo NV (HR/IT)
+- `GET/PATCH /v1/emp/employees/{id}` — hồ sơ (PATCH cấm đổi LM trực tiếp)
+- `GET /v1/emp/employees` · `POST /v1/emp/employees` — list/tạo NV (HR/IT; org bắt buộc)
+- `POST /v1/emp/employees/{id}/line-manager-change-requests` — SCR-005 gửi đổi LM
+- `GET /v1/emp/line-manager-change-requests` · `POST .../{id}/approve|reject` — SCR-006 duyệt
 - `/dev/token?sub=local-dev&email=...` — JWT dev (Development only)
 - First login: `GET /v1/iam/me` auto-provision IAM từ email ↔ EMP (IAM-FR-017)
 - `./scripts/e2e-smoke.sh` — smoke E2E local

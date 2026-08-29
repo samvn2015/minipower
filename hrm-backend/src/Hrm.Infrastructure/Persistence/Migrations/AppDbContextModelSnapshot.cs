@@ -48,6 +48,10 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.Property<Guid?>("LineManagerEmployeeId")
                         .HasColumnType("uuid");
 
+                    b.Property<string>("OrgUnitCode")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
                     b.Property<string>("Status")
                         .IsRequired()
                         .HasMaxLength(32)
@@ -68,6 +72,8 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeCode")
                         .IsUnique();
 
+                    b.HasIndex("OrgUnitCode");
+
                     b.HasIndex("TaxId")
                         .IsUnique();
 
@@ -80,7 +86,117 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                             EmailCty = "dev@company.local",
                             EmployeeCode = "MNV-DEV",
                             FullName = "Dev IAM",
+                            OrgUnitCode = "ORG-HQ",
                             Status = "Active"
+                        });
+                });
+
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.EmployeeContract", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("ContractType")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateOnly?>("EndDate")
+                        .HasColumnType("date");
+
+                    b.Property<bool>("IsProbation")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateOnly>("StartDate")
+                        .HasColumnType("date");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId")
+                        .IsUnique();
+
+                    b.ToTable("emp_contract", (string)null);
+                });
+
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.LineManagerChangeRequest", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("EmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<Guid>("ProposedLineManagerEmployeeId")
+                        .HasColumnType("uuid");
+
+                    b.Property<DateTime>("RequestedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RequestedByIdpSubject")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("ReviewNote")
+                        .HasMaxLength(512)
+                        .HasColumnType("character varying(512)");
+
+                    b.Property<DateTime?>("ReviewedAtUtc")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("ReviewedByIdpSubject")
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("EmployeeId", "Status");
+
+                    b.ToTable("emp_line_manager_change", (string)null);
+                });
+
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.OrgUnit", b =>
+                {
+                    b.Property<string>("Code")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(256)
+                        .HasColumnType("character varying(256)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)");
+
+                    b.HasKey("Code");
+
+                    b.ToTable("emp_org_unit", (string)null);
+
+                    b.HasData(
+                        new
+                        {
+                            Code = "ORG-HQ",
+                            Name = "Trụ sở HN",
+                            Status = "Active"
+                        },
+                        new
+                        {
+                            Code = "ORG-INACTIVE",
+                            Name = "Đơn vị ngừng",
+                            Status = "Inactive"
                         });
                 });
 
@@ -215,6 +331,38 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.Employee", b =>
+                {
+                    b.HasOne("Hrm.Domain.Employees.Entities.OrgUnit", "OrgUnit")
+                        .WithMany()
+                        .HasForeignKey("OrgUnitCode")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("OrgUnit");
+                });
+
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.EmployeeContract", b =>
+                {
+                    b.HasOne("Hrm.Domain.Employees.Entities.Employee", "Employee")
+                        .WithOne("Contract")
+                        .HasForeignKey("Hrm.Domain.Employees.Entities.EmployeeContract", "EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.LineManagerChangeRequest", b =>
+                {
+                    b.HasOne("Hrm.Domain.Employees.Entities.Employee", "Employee")
+                        .WithMany("LineManagerChangeRequests")
+                        .HasForeignKey("EmployeeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Employee");
+                });
+
             modelBuilder.Entity("Hrm.Domain.Identity.Entities.AccountRole", b =>
                 {
                     b.HasOne("Hrm.Domain.Identity.Entities.IdentityAccount", "Account")
@@ -232,6 +380,13 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.Navigation("Account");
 
                     b.Navigation("Role");
+                });
+
+            modelBuilder.Entity("Hrm.Domain.Employees.Entities.Employee", b =>
+                {
+                    b.Navigation("Contract");
+
+                    b.Navigation("LineManagerChangeRequests");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Identity.Entities.IdentityAccount", b =>

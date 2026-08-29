@@ -1,4 +1,5 @@
 using Hrm.Application.Common;
+using Hrm.Application.Employees;
 using Hrm.Application.Employees.Dtos;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
@@ -23,7 +24,7 @@ public sealed class GetEmployeeQueryHandler(
         var actor = await accounts.FindByIdpSubjectAsync(query.ActorIdpSubject!, cancellationToken)
             .ConfigureAwait(false);
         if (actor is null || actor.Status != Domain.Identity.IdentityAccountStatus.Active)
-            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không hiệu lực.");
+            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không hiệu lựu.");
 
         var employee = await employees.FindByIdAsync(query.EmployeeId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"Employee {query.EmployeeId} không tồn tại.");
@@ -37,17 +38,6 @@ public sealed class GetEmployeeQueryHandler(
             }
         }
 
-        return Map(employee);
+        return EmployeeDtoMapper.Map(employee);
     }
-
-    internal static EmployeeDto Map(EmployeeSnapshot snapshot) =>
-        new(
-            snapshot.Id,
-            snapshot.EmployeeCode,
-            snapshot.FullName,
-            snapshot.Cccd,
-            snapshot.EmailCty,
-            snapshot.TaxId,
-            snapshot.LineManagerEmployeeId,
-            snapshot.Status.ToString());
 }

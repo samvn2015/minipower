@@ -1,12 +1,11 @@
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Entities;
 using Hrm.Domain.Identity.Repositories;
-using Hrm.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class IdentityAccountWriteRepository(AppDbContext db, IAppUnitOfWork unitOfWork)
+internal sealed class IdentityAccountWriteRepository(AppDbContext db)
     : IIdentityAccountWriteRepository
 {
     public async Task<IdentityAccountSnapshot> CreateAsync(
@@ -41,7 +40,7 @@ internal sealed class IdentityAccountWriteRepository(AppDbContext db, IAppUnitOf
 
         try
         {
-            await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+            await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         }
         catch (DbUpdateException)
         {

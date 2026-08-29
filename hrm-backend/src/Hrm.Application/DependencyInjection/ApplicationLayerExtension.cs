@@ -33,6 +33,10 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<DisableIdentityAccountCommand, IdentityAccountAdminResult>, DisableIdentityAccountCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CreateEmployeeCommand, EmployeeCreateResult>, CreateEmployeeCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<UpdateEmployeeCommand, EmployeeUpdateResult>, UpdateEmployeeCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<SubmitLineManagerChangeCommand, LineManagerChangeResult>, SubmitLineManagerChangeCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<ApproveLineManagerChangeCommand, LineManagerChangeResult>, ApproveLineManagerChangeCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<RejectLineManagerChangeCommand, LineManagerChangeResult>, RejectLineManagerChangeCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListPendingLineManagerChangesQuery, IReadOnlyList<LineManagerChangeDto>>, ListPendingLineManagerChangesQueryHandler>();
 
         return builder;
     }

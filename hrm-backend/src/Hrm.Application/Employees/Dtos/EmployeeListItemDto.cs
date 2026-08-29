@@ -5,4 +5,6 @@ public sealed record EmployeeListItemDto(
     string EmployeeCode,
     string? FullName,
     string? EmailCty,
+    string? OrgUnitCode,
+    bool HasContract,
     string Status);

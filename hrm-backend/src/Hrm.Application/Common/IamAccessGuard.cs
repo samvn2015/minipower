@@ -43,4 +43,16 @@ public static class IamAccessGuard
         && actor.RoleCodes.Any(static r =>
             string.Equals(r, IamRoleCodes.Hr, StringComparison.OrdinalIgnoreCase)
             || string.Equals(r, IamRoleCodes.It, StringComparison.OrdinalIgnoreCase));
+
+    public static bool IsHrOrPgd(IdentityAccountSnapshot? actor) =>
+        actor is { Status: Domain.Identity.IdentityAccountStatus.Active }
+        && actor.RoleCodes.Any(static r =>
+            string.Equals(r, IamRoleCodes.Hr, StringComparison.OrdinalIgnoreCase)
+            || string.Equals(r, IamRoleCodes.Pgd, StringComparison.OrdinalIgnoreCase));
+
+    public static void RequireHrOrPgd(IdentityAccountSnapshot? actor)
+    {
+        if (!IsHrOrPgd(actor))
+            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Chỉ HR/PGD duyệt đổi LM (EMP-SCR-006).");
+    }
 }

@@ -19,6 +19,8 @@ public sealed class IdentityAccountProvisionerTests
             null,
             "new@company.local",
             null,
+            "ORG-HQ",
+            null,
             null,
             EmployeeStatus.Active);
 
@@ -64,6 +66,8 @@ public sealed class IdentityAccountProvisionerTests
             "Linked",
             null,
             "linked@company.local",
+            null,
+            "ORG-HQ",
             null,
             null,
             EmployeeStatus.Active);

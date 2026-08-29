@@ -10,6 +10,7 @@ namespace Hrm.Application.Employees.Commands;
 
 public sealed class UpdateEmployeeCommandHandler(
     IIdentityAccountReadRepository accounts,
+    IOrgUnitReadRepository orgUnits,
     IEmployeeReadRepository employees,
     IEmployeeWriteRepository employeeWrites)
     : IAsyncCommandHandler<UpdateEmployeeCommand, EmployeeUpdateResult>
@@ -37,7 +38,20 @@ public sealed class UpdateEmployeeCommandHandler(
             {
                 throw new ForbiddenException(HrmErrorCodes.Forbidden, "Chỉ sửa hồ sơ của chính mình (EMP-FR-011).");
             }
+
+            if (command.OrgUnitCode is not null || command.Contract is not null)
+            {
+                throw new ForbiddenException(HrmErrorCodes.Forbidden, "NV không sửa org/HĐ (EMP-FR-007).");
+            }
         }
+
+        if (command.OrgUnitCode is not null)
+        {
+            await EmpOrgGuard.RequireActiveOrgAsync(orgUnits, command.OrgUnitCode, cancellationToken)
+                .ConfigureAwait(false);
+        }
+
+        var contract = EmpContractGuard.Normalize(command.Contract);
 
         var nextCccd = command.Cccd ?? employee.Cccd;
         var nextEmail = command.EmailCty ?? employee.EmailCty;
@@ -54,7 +68,13 @@ public sealed class UpdateEmployeeCommandHandler(
 
         var updated = await employeeWrites.UpdateAsync(
             command.EmployeeId,
-            new EmployeePatch(command.FullName, command.EmailCty, command.Cccd, command.TaxId),
+            new EmployeePatch(
+                command.FullName,
+                command.EmailCty,
+                command.Cccd,
+                command.TaxId,
+                command.OrgUnitCode,
+                contract),
             cancellationToken).ConfigureAwait(false);
 
         if (!updated)

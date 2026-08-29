@@ -1,5 +1,3 @@
-using Hrm.Domain.Employees;
-
 namespace Hrm.Application.Employees.Dtos;
 
 public sealed record EmployeeDto(
@@ -9,5 +7,7 @@ public sealed record EmployeeDto(
     string? Cccd,
     string? EmailCty,
     string? TaxId,
+    string? OrgUnitCode,
+    EmployeeContractDto? Contract,
     Guid? LineManagerEmployeeId,
     string Status);

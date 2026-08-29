@@ -1,0 +1,181 @@
+import type {
+  ApiEnvelope,
+  CurrentUser,
+  EmployeeDetail,
+  EmployeeListItem,
+  LineManagerChangeItem,
+  LineManagerChangeResult,
+} from "./types";
+
+const TOKEN_KEY = "hrm.accessToken";
+
+export function getStoredToken(): string | null {
+  return localStorage.getItem(TOKEN_KEY);
+}
+
+export function setStoredToken(token: string): void {
+  localStorage.setItem(TOKEN_KEY, token);
+}
+
+export function clearStoredToken(): void {
+  localStorage.removeItem(TOKEN_KEY);
+}
+
+async function parseJson<T>(response: Response): Promise<T> {
+  const text = await response.text();
+  if (!text) {
+    throw new Error(`HTTP ${response.status}: empty response`);
+  }
+
+  let body: unknown;
+  try {
+    body = JSON.parse(text);
+  } catch {
+    throw new Error(`HTTP ${response.status}: invalid JSON`);
+  }
+
+  if (!response.ok) {
+    const message =
+      typeof body === "object" &&
+      body !== null &&
+      "message" in body &&
+      typeof (body as { message: unknown }).message === "string"
+        ? (body as { message: string }).message
+        : text;
+    throw new Error(message);
+  }
+
+  return body as T;
+}
+
+async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> {
+  const token = getStoredToken();
+  const headers = new Headers(init?.headers);
+  headers.set("Accept", "application/json");
+  if (init?.body && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+  if (token) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+
+  const response = await fetch(path, { ...init, headers });
+  return parseJson<T>(response);
+}
+
+function unwrap<T>(body: T | ApiEnvelope<T>): T {
+  if (typeof body === "object" && body !== null && "data" in body) {
+    return (body as ApiEnvelope<T>).data;
+  }
+  return body as T;
+}
+
+export async function fetchDevToken(sub: string, email?: string): Promise<string> {
+  const params = new URLSearchParams({ sub });
+  if (email) params.set("email", email);
+  const body = await apiFetch<{ accessToken: string } | ApiEnvelope<{ accessToken: string }>>(
+    `/dev/token?${params}`,
+  );
+  const token =
+    "accessToken" in body && typeof body.accessToken === "string"
+      ? body.accessToken
+      : unwrap(body as ApiEnvelope<{ accessToken: string }>).accessToken;
+  setStoredToken(token);
+  return token;
+}
+
+export async function fetchCurrentUser(): Promise<CurrentUser> {
+  const body = await apiFetch<ApiEnvelope<CurrentUser>>("/v1/iam/me");
+  return unwrap(body);
+}
+
+export async function fetchEmployees(): Promise<EmployeeListItem[]> {
+  const body = await apiFetch<ApiEnvelope<EmployeeListItem[]>>("/v1/emp/employees");
+  return unwrap(body);
+}
+
+export async function fetchEmployee(id: string): Promise<EmployeeDetail> {
+  const body = await apiFetch<ApiEnvelope<EmployeeDetail>>(`/v1/emp/employees/${id}`);
+  return unwrap(body);
+}
+
+export type CreateEmployeePayload = {
+  employeeCode: string;
+  fullName?: string;
+  emailCty?: string;
+  orgUnitCode: string;
+  contract?: {
+    contractType: string;
+    startDate: string;
+    endDate?: string;
+    isProbation: boolean;
+  };
+};
+
+export async function createEmployee(payload: CreateEmployeePayload): Promise<{ id: string }> {
+  const body = await apiFetch<{ id: string } | ApiEnvelope<{ id: string }>>(
+    "/v1/emp/employees",
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  if ("id" in body && typeof body.id === "string") return { id: body.id };
+  return unwrap(body as ApiEnvelope<{ id: string }>);
+}
+
+export type UpdateEmployeePayload = {
+  fullName?: string;
+  emailCty?: string;
+  orgUnitCode?: string;
+};
+
+export async function updateEmployee(
+  id: string,
+  payload: UpdateEmployeePayload,
+): Promise<void> {
+  await apiFetch(`/v1/emp/employees/${id}`, {
+    method: "PATCH",
+    body: JSON.stringify(payload),
+  });
+}
+
+export async function submitLineManagerChange(
+  employeeId: string,
+  proposedLineManagerEmployeeId: string,
+): Promise<LineManagerChangeResult> {
+  const body = await apiFetch<
+    LineManagerChangeResult | ApiEnvelope<LineManagerChangeResult>
+  >(`/v1/emp/employees/${employeeId}/line-manager-change-requests`, {
+    method: "POST",
+    body: JSON.stringify({ proposedLineManagerEmployeeId }),
+  });
+  if ("requestId" in body && typeof body.requestId === "string") return body;
+  return unwrap(body as ApiEnvelope<LineManagerChangeResult>);
+}
+
+export async function fetchPendingLineManagerChanges(): Promise<LineManagerChangeItem[]> {
+  const body = await apiFetch<ApiEnvelope<LineManagerChangeItem[]>>(
+    "/v1/emp/line-manager-change-requests",
+  );
+  return unwrap(body);
+}
+
+export async function approveLineManagerChange(id: string): Promise<LineManagerChangeResult> {
+  const body = await apiFetch<
+    LineManagerChangeResult | ApiEnvelope<LineManagerChangeResult>
+  >(`/v1/emp/line-manager-change-requests/${id}/approve`, { method: "POST" });
+  if ("requestId" in body && typeof body.requestId === "string") return body;
+  return unwrap(body as ApiEnvelope<LineManagerChangeResult>);
+}
+
+export async function rejectLineManagerChange(
+  id: string,
+  reviewNote?: string,
+): Promise<LineManagerChangeResult> {
+  const body = await apiFetch<
+    LineManagerChangeResult | ApiEnvelope<LineManagerChangeResult>
+  >(`/v1/emp/line-manager-change-requests/${id}/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reviewNote: reviewNote ?? null }),
+  });
+  if ("requestId" in body && typeof body.requestId === "string") return body;
+  return unwrap(body as ApiEnvelope<LineManagerChangeResult>);
+}

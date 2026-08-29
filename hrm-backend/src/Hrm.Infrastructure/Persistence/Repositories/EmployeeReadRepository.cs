@@ -1,4 +1,5 @@
 using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Employees.Repositories;
 using Microsoft.EntityFrameworkCore;
 
@@ -12,15 +13,7 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
         return await db.Employees
             .AsNoTracking()
             .OrderBy(e => e.EmployeeCode)
-            .Select(e => new EmployeeSnapshot(
-                e.Id,
-                e.EmployeeCode,
-                e.FullName,
-                e.Cccd,
-                e.EmailCty,
-                e.TaxId,
-                e.LineManagerEmployeeId,
-                e.Status))
+            .SelectSnapshots()
             .ToListAsync(cancellationToken);
     }
 
@@ -31,15 +24,7 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
         return await db.Employees
             .AsNoTracking()
             .Where(e => e.Id == id)
-            .Select(e => new EmployeeSnapshot(
-                e.Id,
-                e.EmployeeCode,
-                e.FullName,
-                e.Cccd,
-                e.EmailCty,
-                e.TaxId,
-                e.LineManagerEmployeeId,
-                e.Status))
+            .SelectSnapshots()
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -53,15 +38,7 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
         return await db.Employees
             .AsNoTracking()
             .Where(e => e.EmployeeCode == employeeCode)
-            .Select(e => new EmployeeSnapshot(
-                e.Id,
-                e.EmployeeCode,
-                e.FullName,
-                e.Cccd,
-                e.EmailCty,
-                e.TaxId,
-                e.LineManagerEmployeeId,
-                e.Status))
+            .SelectSnapshots()
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -76,15 +53,7 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
         return await db.Employees
             .AsNoTracking()
             .Where(e => e.EmailCty != null && e.EmailCty.ToLower() == normalized)
-            .Select(e => new EmployeeSnapshot(
-                e.Id,
-                e.EmployeeCode,
-                e.FullName,
-                e.Cccd,
-                e.EmailCty,
-                e.TaxId,
-                e.LineManagerEmployeeId,
-                e.Status))
+            .SelectSnapshots()
             .FirstOrDefaultAsync(cancellationToken);
     }
 
@@ -124,7 +93,7 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
     }
 
     private async Task<bool> ExistsAsync(
-        System.Linq.Expressions.Expression<Func<Domain.Employees.Entities.Employee, bool>> predicate,
+        System.Linq.Expressions.Expression<Func<Employee, bool>> predicate,
         Guid? excludeEmployeeId,
         CancellationToken cancellationToken)
     {

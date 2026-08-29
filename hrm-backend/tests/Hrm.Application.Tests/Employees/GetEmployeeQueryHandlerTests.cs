@@ -40,10 +40,10 @@ public sealed class GetEmployeeQueryHandlerTests
         IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
 
     private static readonly EmployeeSnapshot DevEmployee = new(
-        EmployeeId, "MNV-DEV", "Dev IAM", null, "dev@company.local", null, null, EmployeeStatus.Active);
+        EmployeeId, "MNV-DEV", "Dev IAM", null, "dev@company.local", null, "ORG-HQ", null, null, EmployeeStatus.Active);
 
     private static readonly EmployeeSnapshot OtherEmployee = new(
-        EmployeeId, "MNV-OTHER", "Other", null, null, null, null, EmployeeStatus.Active);
+        EmployeeId, "MNV-OTHER", "Other", null, null, null, null, null, null, EmployeeStatus.Active);
 
     private sealed class FakeAccountRepo(IdentityAccountSnapshot snapshot) : IIdentityAccountReadRepository
     {

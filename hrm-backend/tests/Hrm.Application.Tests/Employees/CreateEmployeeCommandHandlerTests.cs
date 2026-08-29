@@ -14,11 +14,13 @@ public sealed class CreateEmployeeCommandHandlerTests
     {
         var handler = new CreateEmployeeCommandHandler(
             new FakeAccountRepo(NvActor),
+            new FakeOrgUnitRepo(),
             new FakeEmployeeRepo(),
             new FakeEmployeeWriteRepo());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
-            handler.HandleAsync(new CreateEmployeeCommand("local-dev", "MNV-NEW", "X", null, null, null)));
+            handler.HandleAsync(new CreateEmployeeCommand(
+                "local-dev", "MNV-NEW", "X", null, null, null, "ORG-HQ", null)));
     }
 
     [Fact]
@@ -27,27 +29,32 @@ public sealed class CreateEmployeeCommandHandlerTests
         var read = new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.EmployeeCode };
         var handler = new CreateEmployeeCommandHandler(
             new FakeAccountRepo(HrActor),
+            new FakeOrgUnitRepo(),
             read,
             new FakeEmployeeWriteRepo());
 
         await Assert.ThrowsAsync<ConflictException>(() =>
-            handler.HandleAsync(new CreateEmployeeCommand("local-dev", "MNV-DEV", "X", null, null, null)));
+            handler.HandleAsync(new CreateEmployeeCommand(
+                "local-dev", "MNV-DEV", "X", null, null, null, "ORG-HQ", null)));
     }
 
     [Fact]
-    public async Task HandleAsync_HrCreatesEmployee()
+    public async Task HandleAsync_HrCreatesEmployee_WithContractWarningWhenMissing()
     {
         var write = new FakeEmployeeWriteRepo();
         var handler = new CreateEmployeeCommandHandler(
             new FakeAccountRepo(HrActor),
+            new FakeOrgUnitRepo(),
             new FakeEmployeeRepo(),
             write);
 
         var result = await handler.HandleAsync(
-            new CreateEmployeeCommand("local-dev", "MNV-NEW", "New NV", null, "new@test.local", null));
+            new CreateEmployeeCommand(
+                "local-dev", "MNV-NEW", "New NV", null, "new@test.local", null, "ORG-HQ", null));
 
         Assert.Equal("MNV-NEW", result.EmployeeCode);
         Assert.NotEqual(Guid.Empty, write.LastCreatedId);
+        Assert.Contains(result.Warnings, w => w.Contains("HĐ", StringComparison.Ordinal));
     }
 
     private static readonly IdentityAccountSnapshot HrActor = new(
@@ -57,6 +64,12 @@ public sealed class CreateEmployeeCommandHandlerTests
     private static readonly IdentityAccountSnapshot NvActor = new(
         Guid.NewGuid(), "local-dev", "Dev", null, "MNV-DEV",
         IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
+
+    private sealed class FakeOrgUnitRepo : IOrgUnitReadRepository
+    {
+        public Task<bool> IsActiveAsync(string orgUnitCode, CancellationToken cancellationToken = default) =>
+            Task.FromResult(string.Equals(orgUnitCode, "ORG-HQ", StringComparison.OrdinalIgnoreCase));
+    }
 
     private sealed class FakeAccountRepo(IdentityAccountSnapshot snapshot) : IIdentityAccountReadRepository
     {
@@ -114,5 +127,11 @@ public sealed class CreateEmployeeCommandHandlerTests
 
         public Task<bool> UpdateAsync(Guid id, EmployeePatch patch, CancellationToken cancellationToken = default)
             => Task.FromResult(true);
+
+        public Task SetLineManagerAsync(
+            Guid employeeId,
+            Guid lineManagerEmployeeId,
+            CancellationToken cancellationToken = default)
+            => Task.CompletedTask;
     }
 }

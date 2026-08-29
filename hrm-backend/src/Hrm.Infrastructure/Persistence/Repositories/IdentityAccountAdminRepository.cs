@@ -1,12 +1,11 @@
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Entities;
 using Hrm.Domain.Identity.Repositories;
-using Hrm.Domain.Repositories;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class IdentityAccountAdminRepository(AppDbContext db, IAppUnitOfWork unitOfWork)
+internal sealed class IdentityAccountAdminRepository(AppDbContext db)
     : IIdentityAccountAdminRepository
 {
     public async Task<IReadOnlyList<IdentityAccountSnapshot>> ListAsync(
@@ -71,7 +70,7 @@ internal sealed class IdentityAccountAdminRepository(AppDbContext db, IAppUnitOf
             RoleCode = roleCode
         });
 
-        await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task RemoveRoleAsync(
@@ -87,7 +86,7 @@ internal sealed class IdentityAccountAdminRepository(AppDbContext db, IAppUnitOf
             return;
 
         db.AccountRoles.Remove(link);
-        await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
     public async Task SetStatusAsync(
@@ -101,6 +100,6 @@ internal sealed class IdentityAccountAdminRepository(AppDbContext db, IAppUnitOf
             return;
 
         account.Status = status;
-        await unitOfWork.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 }

@@ -34,6 +34,8 @@ public sealed class ListEmployeesQueryHandler(
             e.EmployeeCode,
             e.FullName,
             e.EmailCty,
+            e.OrgUnitCode,
+            e.Contract is not null,
             e.Status.ToString())).ToArray();
     }
 }

@@ -4,9 +4,9 @@
 
 | Meta | Giá trị |
 |------|---------|
-| **Cập nhật** | 2026-08-28 |
+| **Cập nhật** | 2026-08-29 |
 | **Người rollup** | Dư Hùng (PGD) · soạn trợ lý |
-| **Nguồn sync** | DOC-03 · memory · DOC-08–12 Chốt · DOC-14/15 **Chốt** · DOC-16/17 **Chốt** · `hrm-backend` IAM admin + EMP slice + dev JWT/E2E · **Lark IdP** (DEC-DLV-010) |
+| **Nguồn sync** | DOC-03 · memory · DOC-08–12 Chốt · DOC-14/15 **Chốt** · DOC-16/17 **Chốt** · `hrm-backend` IAM+EMP slice · `hrm-web` MVP · **Lark IdP** (DEC-DLV-010) |
 
 ---
 
@@ -22,7 +22,7 @@
 | **FR đã baseline** | 0 |
 | **FR đang phân tích** | 0 |
 | **Blocker / nợ mở** | 6 (xem dưới) |
-| **Code slice (execute)** | IAM ◐ + EMP ◐ — `hrm-backend` Jarvis 5-layer · IAM admin API + roles SoT DB · EMP list/create/get/patch + unique guard · dev JWT + `e2e-smoke.sh` · **Lark JWKS** nợ IT |
+| **Code slice (execute)** | IAM ◐ + EMP ◐ + **hrm-web** ◐ — backend: IAM admin · EMP CRUD + org/HĐ · SCR-005/006 LM workflow · SaveChanges fix · `e2e-full.sh` · frontend MVP (SCR-001/002/005/006) · **Lark JWKS** nợ IT |
 
 ---
 
@@ -35,7 +35,7 @@ Ký hiệu: `—` chưa · `◐` đang · `✓` xong (Chốt, chưa BL) · `BL` 
 | leave | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | OQ-010 Skip MVP; TC chưa chạy |
 | payroll | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | 85% = PAY; TC chưa chạy |
 | timekeeping | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | 1 mẫu Excel; TC chưa chạy |
-| employee-profile | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | code ◐ list/create/get/patch + unique guard; TC chưa chạy |
+| employee-profile | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | code ◐ org/HĐ/LM + `hrm-web` SCR-001/002/005/006; TC chưa chạy |
 | lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | Git/CRM N+3; job không DR |
 | identity | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | ADR-007 · IdP Lark (DEC-DLV-010); code ◐ admin API + dev JWT; Lark JWKS nợ IT |
 | probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | 85% không PRB; job không DR |
@@ -69,7 +69,9 @@ Arch slice = `✓` khung vì DOC-08/10/11/12 **Chốt**. Delivery 7 Must = `✓`
 | M4 | Planning | DOC-14/15 | 2026-08-26 | **done** Chốt (chưa BL) |
 | M4b | Delivery docs | DOC-16 (7 Must) + DOC-17 | 2026-08-26 | **done** Chốt (chưa execute / chưa BL) |
 | M4c | First code slice | IAM `hrm-backend` Host + Application + EF IAM | 2026-08-28 | **done** ◐ |
-| M4d | IAM admin + EMP + dev E2E | Admin API · EMP CRUD slice · dev JWT · smoke script | 2026-08-28 | **done** ◐ (local E2E OK; chưa push; chưa Lark prod) |
+| M4d | IAM admin + EMP + dev E2E | Admin API · EMP CRUD slice · dev JWT · smoke script | 2026-08-28 | **done** ◐ (pushed) |
+| M4e | EMP org/HĐ + LM workflow | OrgUnit · Contract · SCR-005/006 API · `e2e-full.sh` · SaveChanges fix | 2026-08-29 | **done** ◐ (local E2E OK) |
+| M4f | Frontend MVP (`hrm-web`) | SCR-001/002/005/006 · dev login · proxy HTTPS | 2026-08-29 | **done** ◐ (local) |
 | M5 | Go-live | Prod 24/7 | 2027 | planned |
 
 → Chi tiết: [`DOC-15`](../00-governance/DOC-15-project-plan.md) **Chốt** · WBS: [`DOC-14`](../04-platform/DOC-14-wbs-estimate.md) **Chốt**
@@ -85,8 +87,10 @@ Arch slice = `✓` khung vì DOC-08/10/11/12 **Chốt**. Delivery 7 Must = `✓`
 | Slice IAM `hrm-backend` (Jarvis + Application + EF) | DEV | identity | 2026-08-28 | **done** ◐ |
 | IAM admin API (SCR-003/004) | DEV | identity | 2026-08-28 | **done** ◐ (accounts · roles · disable) |
 | IAM persistence PostgreSQL (roles SoT) | DEV | identity | 2026-08-28 | **done** *(local)* · prod OQ-DLV-003 |
-| EMP list/create/get/patch + unique guard | DEV | employee-profile | 2026-08-28 | **done** ◐ (E2E smoke OK; chưa org/HĐ/LM) |
-| Dev JWT + E2E smoke (`/dev/token`, `e2e-smoke.sh`) | DEV | platform | 2026-08-28 | **done** *(local)* |
+| EMP list/create/get/patch + unique guard | DEV | employee-profile | 2026-08-28 | **done** ◐ |
+| EMP org/HĐ + SCR-005/006 LM workflow | DEV | employee-profile | 2026-08-29 | **done** ◐ (`e2e-full.sh` OK) |
+| Frontend MVP `hrm-web` (SCR-001/002/005/006) | DEV | employee-profile | 2026-08-29 | **done** ◐ *(local)* |
+| Dev JWT + E2E smoke/full | DEV | platform | 2026-08-29 | **done** *(local)* |
 | Lark OIDC Issuer + JWKS (JWT 200 thật) | IT / SA | identity | | **mở** — OQ-DLV-001 · DEC-DLV-010 |
 | **Không** `02-baseline/` / fan-out 6 MS | — | — | — | một slice |
 

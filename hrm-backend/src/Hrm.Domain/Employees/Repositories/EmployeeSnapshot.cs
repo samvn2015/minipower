@@ -9,5 +9,7 @@ public sealed record EmployeeSnapshot(
     string? Cccd,
     string? EmailCty,
     string? TaxId,
+    string? OrgUnitCode,
+    EmployeeContractSnapshot? Contract,
     Guid? LineManagerEmployeeId,
     EmployeeStatus Status);

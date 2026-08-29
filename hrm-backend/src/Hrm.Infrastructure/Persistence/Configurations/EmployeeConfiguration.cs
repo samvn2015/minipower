@@ -22,6 +22,11 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
         builder.Property(x => x.TaxId).HasMaxLength(32);
         builder.HasIndex(x => x.TaxId).IsUnique();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
+        builder.Property(x => x.OrgUnitCode).HasMaxLength(32);
+        builder.HasOne(x => x.OrgUnit)
+            .WithMany()
+            .HasForeignKey(x => x.OrgUnitCode)
+            .OnDelete(DeleteBehavior.Restrict);
 
         builder.HasData(new Employee
         {
@@ -29,6 +34,7 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             EmployeeCode = EmpSeed.DevEmployeeCode,
             FullName = "Dev IAM",
             EmailCty = "dev@company.local",
+            OrgUnitCode = EmpOrgSeed.HqCode,
             Status = EmployeeStatus.Active
         });
     }

@@ -1,16 +1,19 @@
 using Hrm.Application.Employees.Commands;
 using Hrm.Application.Employees.Dtos;
 using Hrm.Application.Employees.Queries;
+using Hrm.Domain.Employees.Repositories;
+using Hrm.Domain.Shared.Constants;
 using Hrm.Host.Extensions;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
+using Jarvis.Domain.Shared.ExceptionHandling;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
 
 /// <summary>
-/// EMP — DOC-12 · SCR-001 list · SCR-002 create/patch.
+/// EMP — DOC-12 · SCR-001 list · SCR-002 create/patch · SCR-005 submit LM.
 /// </summary>
 [ApiController]
 [Route("v1/emp/employees")]
@@ -40,7 +43,9 @@ public sealed class EmployeesController(
                 body.FullName,
                 body.Cccd,
                 body.EmailCty,
-                body.TaxId),
+                body.TaxId,
+                body.OrgUnitCode,
+                MapContract(body.Contract)),
             cancellationToken);
         return CreatedAtAction(nameof(Get), new { id = result.Id }, result);
     }
@@ -60,6 +65,13 @@ public sealed class EmployeesController(
         [FromBody] UpdateEmployeeRequest body,
         CancellationToken cancellationToken)
     {
+        if (body.LineManagerEmployeeId.HasValue)
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Cấm đổi LM trên SCR-002 — dùng SCR-005/006 (EMP-FR-006).");
+        }
+
         var result = await commands.DispatchAsync<UpdateEmployeeCommand, EmployeeUpdateResult>(
             new UpdateEmployeeCommand(
                 id,
@@ -67,21 +79,43 @@ public sealed class EmployeesController(
                 body.FullName,
                 body.EmailCty,
                 body.Cccd,
-                body.TaxId),
+                body.TaxId,
+                body.OrgUnitCode,
+                MapContract(body.Contract)),
             cancellationToken);
         return Ok(result);
     }
+
+    private static EmployeeContractUpsert? MapContract(EmployeeContractRequest? contract) =>
+        contract is null
+            ? null
+            : new EmployeeContractUpsert(
+                contract.ContractType,
+                contract.StartDate,
+                contract.EndDate,
+                contract.IsProbation);
 
     public sealed record CreateEmployeeRequest(
         string EmployeeCode,
         string? FullName,
         string? Cccd,
         string? EmailCty,
-        string? TaxId);
+        string? TaxId,
+        string OrgUnitCode,
+        EmployeeContractRequest? Contract);
 
     public sealed record UpdateEmployeeRequest(
         string? FullName,
         string? EmailCty,
         string? Cccd,
-        string? TaxId);
+        string? TaxId,
+        string? OrgUnitCode,
+        EmployeeContractRequest? Contract,
+        Guid? LineManagerEmployeeId);
+
+    public sealed record EmployeeContractRequest(
+        string ContractType,
+        DateOnly StartDate,
+        DateOnly? EndDate,
+        bool IsProbation);
 }

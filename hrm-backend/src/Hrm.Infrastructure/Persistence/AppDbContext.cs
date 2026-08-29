@@ -16,6 +16,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<Employee> Employees => Set<Employee>();
 
+    public DbSet<OrgUnit> OrgUnits => Set<OrgUnit>();
+
+    public DbSet<EmployeeContract> EmployeeContracts => Set<EmployeeContract>();
+
+    public DbSet<LineManagerChangeRequest> LineManagerChangeRequests => Set<LineManagerChangeRequest>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

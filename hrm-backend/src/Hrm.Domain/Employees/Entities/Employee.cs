@@ -17,7 +17,17 @@ public class Employee : BaseEntity<Guid>
     /// <summary>Mã số thuế (MST).</summary>
     public string? TaxId { get; set; }
 
+    /// <summary>Mã đơn vị org (catalog).</summary>
+    public string? OrgUnitCode { get; set; }
+
+    public OrgUnit? OrgUnit { get; set; }
+
     public Guid? LineManagerEmployeeId { get; set; }
+
+    public EmployeeContract? Contract { get; set; }
+
+    public ICollection<LineManagerChangeRequest> LineManagerChangeRequests { get; set; } =
+        new List<LineManagerChangeRequest>();
 
     public EmployeeStatus Status { get; set; } = EmployeeStatus.Active;
 }

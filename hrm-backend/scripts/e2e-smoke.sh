@@ -27,7 +27,7 @@ NEW_CODE="MNV-E2E-$(date +%s)"
 NEW_EMAIL="$NEW_CODE@test.local"
 echo "== POST /v1/emp/employees ($NEW_CODE) =="
 curl -sf "${AUTH[@]}" -H "Content-Type: application/json" \
-  -d "{\"employeeCode\":\"$NEW_CODE\",\"fullName\":\"E2E NV\",\"emailCty\":\"$NEW_EMAIL\"}" \
+  -d "{\"employeeCode\":\"$NEW_CODE\",\"fullName\":\"E2E NV\",\"emailCty\":\"$NEW_EMAIL\",\"orgUnitCode\":\"ORG-HQ\"}" \
   "$BASE/v1/emp/employees" | python3 -m json.tool
 
 PROVISION_SUB="provision-$(date +%s)"

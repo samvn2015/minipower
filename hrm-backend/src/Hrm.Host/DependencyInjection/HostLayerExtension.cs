@@ -72,7 +72,8 @@ public static class HostLayerExtension
     {
         app.EnsureMigrateDb<IAppUnitOfWork>();
         app.UseCoreSwagger();
-        app.UseHttpsRedirection();
+        if (!app.Environment.IsDevelopment())
+            app.UseHttpsRedirection();
         app.UseCoreCors();
         app.UseJarvisOpenTelemetry();
         app.UseAuthentication();

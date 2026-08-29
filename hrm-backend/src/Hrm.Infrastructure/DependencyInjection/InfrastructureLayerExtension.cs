@@ -29,6 +29,8 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IIdentityAccountAdminRepository, IdentityAccountAdminRepository>();
         builder.Services.AddScoped<IEmployeeReadRepository, EmployeeReadRepository>();
         builder.Services.AddScoped<IEmployeeWriteRepository, EmployeeWriteRepository>();
+        builder.Services.AddScoped<IOrgUnitReadRepository, OrgUnitReadRepository>();
+        builder.Services.AddScoped<ILineManagerChangeRepository, LineManagerChangeRepository>();
 
         // Credentials: User Secrets / env (ConnectionStrings__AppDbContext). Không hard-code password.
         // Placeholder chỉ để đăng ký DI khi chưa có secret — ping/swagger vẫn chạy; mở DB thật cần OQ-DLV-003.

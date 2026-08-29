@@ -10,6 +10,7 @@ namespace Hrm.Application.Employees.Commands;
 
 public sealed class CreateEmployeeCommandHandler(
     IIdentityAccountReadRepository accounts,
+    IOrgUnitReadRepository orgUnits,
     IEmployeeReadRepository employees,
     IEmployeeWriteRepository employeeWrites)
     : IAsyncCommandHandler<CreateEmployeeCommand, EmployeeCreateResult>
@@ -32,7 +33,12 @@ public sealed class CreateEmployeeCommandHandler(
         if (string.IsNullOrWhiteSpace(command.EmployeeCode))
             throw new BadRequestException(HrmErrorCodes.BadRequest, "MNV bắt buộc.");
 
+        await EmpOrgGuard.RequireActiveOrgAsync(orgUnits, command.OrgUnitCode, cancellationToken)
+            .ConfigureAwait(false);
+
+        var contract = EmpContractGuard.Normalize(command.Contract);
         var code = command.EmployeeCode.Trim();
+
         await EmployeeUniqueGuard.EnsureUniqueAsync(
             employees,
             code,
@@ -43,9 +49,25 @@ public sealed class CreateEmployeeCommandHandler(
             cancellationToken).ConfigureAwait(false);
 
         var id = await employeeWrites.CreateAsync(
-            new EmployeeCreateModel(code, command.FullName, command.Cccd, command.EmailCty, command.TaxId),
+            new EmployeeCreateModel(
+                code,
+                command.FullName,
+                command.Cccd,
+                command.EmailCty,
+                command.TaxId,
+                command.OrgUnitCode,
+                contract),
             cancellationToken).ConfigureAwait(false);
 
-        return new EmployeeCreateResult(id, code, nameof(Domain.Employees.EmployeeStatus.Active));
+        var warnings = new List<string>();
+        var missingContract = EmpContractGuard.MissingContractWarning(contract);
+        if (missingContract is not null)
+            warnings.Add(missingContract);
+
+        return new EmployeeCreateResult(
+            id,
+            code,
+            nameof(Domain.Employees.EmployeeStatus.Active),
+            warnings);
     }
 }
