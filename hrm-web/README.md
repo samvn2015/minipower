@@ -31,5 +31,18 @@ Mở trình duyệt: **http://localhost:5173**
 
 ## Ghi chú
 
-- Vite proxy `/v1` và `/dev` → `http://localhost:5167` (tránh CORS local).
+- Vite proxy `/v1` và `/dev` → backend local (`https://localhost:7006`, `secure: false`).
 - Production sẽ dùng Lark SSO — chưa tích hợp trong MVP này.
+
+## E2E (Playwright)
+
+Yêu cầu backend + `npm run dev` đang chạy. Dùng Chrome cài sẵn trên máy (`channel: chrome`).
+
+```bash
+cd HRM/hrm-web
+npm run test:e2e
+
+# Hoặc từ backend scripts (preflight + test)
+cd HRM/hrm-backend
+./scripts/e2e-web-playwright.sh
+```
