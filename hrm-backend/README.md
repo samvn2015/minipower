@@ -41,6 +41,7 @@ Hoặc env: `ConnectionStrings__AppDbContext=...`
 - `/dev/token?sub=local-dev&email=...` — JWT dev (Development only)
 - First login: `GET /v1/iam/me` auto-provision IAM từ email ↔ EMP (IAM-FR-017)
 - `./scripts/e2e-smoke.sh` — smoke E2E local
+- `./scripts/e2e-full.sh` · `./scripts/e2e-api-unhappy.sh` (EMP-TC-002/003/004) · `./scripts/e2e-web.sh`
 - `/health/live` — liveness (không cần DB)
 
 ## Ghi chú HRM

@@ -27,16 +27,68 @@ public sealed class CreateEmployeeCommandHandlerTests
     public async Task HandleAsync_DuplicateCode_ThrowsConflict()
     {
         var read = new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.EmployeeCode };
-        var handler = new CreateEmployeeCommandHandler(
-            new FakeAccountRepo(HrActor),
-            new FakeOrgUnitRepo(),
-            read,
-            new FakeEmployeeWriteRepo());
+        var handler = CreateHandler(read);
 
         await Assert.ThrowsAsync<ConflictException>(() =>
             handler.HandleAsync(new CreateEmployeeCommand(
                 "local-dev", "MNV-DEV", "X", null, null, null, "ORG-HQ", null)));
     }
+
+    [Fact]
+    public async Task HandleAsync_DuplicateCccd_ThrowsConflict()
+    {
+        var read = new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.Cccd };
+        var handler = CreateHandler(read);
+
+        var ex = await Assert.ThrowsAsync<ConflictException>(() =>
+            handler.HandleAsync(new CreateEmployeeCommand(
+                "local-dev", "MNV-NEW", "X", "012345678901", null, null, "ORG-HQ", null)));
+
+        Assert.Contains("CCCD", ex.SystemMessage ?? ex.Message, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public async Task HandleAsync_DuplicateEmail_ThrowsConflict()
+    {
+        var read = new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.EmailCty };
+        var handler = CreateHandler(read);
+
+        var ex = await Assert.ThrowsAsync<ConflictException>(() =>
+            handler.HandleAsync(new CreateEmployeeCommand(
+                "local-dev", "MNV-NEW", "X", null, "dup@test.local", null, "ORG-HQ", null)));
+
+        Assert.Contains("email", ex.SystemMessage ?? ex.Message, StringComparison.OrdinalIgnoreCase);
+    }
+
+    [Fact]
+    public async Task HandleAsync_DuplicateTaxId_ThrowsConflict()
+    {
+        var read = new FakeEmployeeRepo { Duplicate = EmployeeUniqueField.TaxId };
+        var handler = CreateHandler(read);
+
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            handler.HandleAsync(new CreateEmployeeCommand(
+                "local-dev", "MNV-NEW", "X", null, null, "MST-001", "ORG-HQ", null)));
+    }
+
+    [Fact]
+    public async Task HandleAsync_InactiveOrg_ThrowsBadRequest()
+    {
+        var handler = CreateHandler(new FakeEmployeeRepo());
+
+        var ex = await Assert.ThrowsAsync<BadRequestException>(() =>
+            handler.HandleAsync(new CreateEmployeeCommand(
+                "local-dev", "MNV-NEW", "X", null, null, null, "ORG-INACTIVE", null)));
+
+        Assert.Contains("Org không hiệu lực", ex.SystemMessage ?? ex.Message, StringComparison.Ordinal);
+    }
+
+    private static CreateEmployeeCommandHandler CreateHandler(FakeEmployeeRepo read) =>
+        new(
+            new FakeAccountRepo(HrActor),
+            new FakeOrgUnitRepo(),
+            read,
+            new FakeEmployeeWriteRepo());
 
     [Fact]
     public async Task HandleAsync_HrCreatesEmployee_WithContractWarningWhenMissing()
