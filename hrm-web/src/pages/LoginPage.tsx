@@ -13,7 +13,7 @@ export function LoginPage() {
     setError(null);
     try {
       await fetchDevToken(sub, email);
-      navigate("/employees", { replace: true });
+      navigate("/profile", { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
     } finally {

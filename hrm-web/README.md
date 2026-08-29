@@ -22,9 +22,12 @@ Mở trình duyệt: **http://localhost:5173**
 | Màn | Route | Mô tả |
 |-----|-------|-------|
 | Đăng nhập dev | `/login` | Chọn HR hoặc IT (JWT dev) |
-| Danh sách NV | `/employees` | EMP-SCR-001 |
+| Hồ sơ của tôi | `/profile` | EMP-SCR-003 (NV self-service) |
+| Danh sách NV | `/employees` | EMP-SCR-001 (HR/IT) |
 | Tạo / sửa hồ sơ | `/employees/new`, `/employees/{id}` | EMP-SCR-002 · gửi đổi LM (SCR-005) |
 | Duyệt đổi LM | `/line-manager-changes` | EMP-SCR-006 |
+| IAM accounts | `/iam/accounts` | IAM-SCR-003 (HR/IT) |
+| Quản lý account | `/iam/accounts/{id}` | Gán/gỡ role · IT disable (SCR-004) |
 
 ## Ghi chú
 

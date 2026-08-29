@@ -31,6 +31,15 @@ public sealed class EmployeesController(
         return Ok(items);
     }
 
+    [HttpGet("me")]
+    public async Task<IActionResult> GetMe(CancellationToken cancellationToken)
+    {
+        var dto = await queries.DispatchAsync<GetMyEmployeeQuery, EmployeeDto>(
+            new GetMyEmployeeQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(dto);
+    }
+
     [HttpPost]
     public async Task<IActionResult> Create(
         [FromBody] CreateEmployeeRequest body,

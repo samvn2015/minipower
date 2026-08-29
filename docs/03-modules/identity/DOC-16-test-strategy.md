@@ -10,24 +10,24 @@
 
 | TC ID | Mô tả | Expected | Layer | Path | Pri | St |
 |-------|-------|----------|-------|------|-----|-----|
-| IAM-TC-001 | Không JWT / hết hạn | 401 | API | Unhappy | Must | |
-| IAM-TC-002 | Web = mobile | Cùng 401/403 | E2E | Happy | Must | |
-| IAM-TC-003 | 5 role MVP | Đúng map | API | Happy | Must | |
-| IAM-TC-004 | LM 403 phiếu cấp dưới | 403 | API | Unhappy | Must | |
-| IAM-TC-005 | NV 403 dữ liệu người khác | 403 | API | Unhappy | Must | |
-| IAM-TC-006 | HR SoT màn Cty | HR vào được | E2E | Happy | Must | |
+| IAM-TC-001 | Không JWT / hết hạn | 401 | API | Unhappy | Must | Partial |
+| IAM-TC-002 | Web = mobile | Cùng 401/403 | E2E | Happy | Must | Open |
+| IAM-TC-003 | 5 role MVP | Đúng map | API | Happy | Must | Pass |
+| IAM-TC-004 | LM 403 phiếu cấp dưới | 403 | API | Unhappy | Must | Open |
+| IAM-TC-005 | NV 403 dữ liệu người khác | 403 | API | Unhappy | Must | Pass |
+| IAM-TC-006 | HR SoT màn Cty | HR vào được | E2E | Happy | Must | Pass |
 | IAM-TC-007 | IT 403 PAY | 403 | API | Unhappy | Must | |
 | IAM-TC-008 | NV/LM 403 màn HR | 403 | API | Unhappy | Must | |
 | IAM-TC-009 | Đổi LM không nới lương | 403 lương giữ | API | Happy | Must | |
-| IAM-TC-010 | Disable login; không nút Git | 401; không Git UI | E2E | Happy | Must | |
+| IAM-TC-010 | Disable login; không nút Git | 401; không Git UI | E2E | Happy | Must | Partial |
 | IAM-TC-011 | Audit xem phiếu | Log | API | Happy | Must | |
 | IAM-TC-012 | Cấm CRM sales | 0 call | E2E | Unhappy | Must | |
-| IAM-TC-013 | NV/LM không gán role | 403 | API | Unhappy | Must | |
+| IAM-TC-013 | NV/LM không gán role | 403 | API | Unhappy | Must | Pass |
 | IAM-TC-014 | Hợp quyền; thiếu perm lương | 403 lương | API | Unhappy | Must | |
 | IAM-TC-015 | LM C1 phép OK | 200 C1 | API | Happy | Must | |
 | IAM-TC-016 | LM 403 C2/đột xuất | 403 | API | Unhappy | Must | |
-| IAM-TC-017 | Map 1 MNV; disable ≠ xóa EMP | Hồ sơ còn | API | Happy | Must | |
-| IAM-TC-018 | Đủ IAM-SCR-001…004 | Có màn | E2E | Happy | Must | |
+| IAM-TC-017 | Map 1 MNV; disable ≠ xóa EMP | Hồ sơ còn | API | Happy | Must | Pass |
+| IAM-TC-018 | Đủ IAM-SCR-001…004 | Có màn | E2E | Happy | Must | Partial |
 | IAM-TC-019 | PGD 403 phiếu Cty | 403 trừ policy | API | Unhappy | Must | |
 | IAM-TC-NFR-001 | NFR-002…004 | Pass | E2E | Unhappy | Must | |
 | IAM-TC-NFR-002 | NFR-005 audit lương | Log | API | Happy | Must | |

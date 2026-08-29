@@ -27,6 +27,19 @@
 | PROD | TBD | 24/7 | DC-Prod Active + DC-DR Standby |
 | DR | TBD | Standby | Jobs **OFF** đến promote |
 
+### 2.1 PostgreSQL — Prod (OQ-DLV-003)
+
+| Mục | Giá trị |
+|-----|---------|
+| **Engine** | PostgreSQL **16+** (ADR-009) |
+| **Connection** | `ConnectionStrings:AppDbContext` — User Secrets / vault Prod · **không** commit password |
+| **Template** | `hrm-backend/src/Hrm.Host/appsettings.Production.json` |
+| **Format** | `Host={host};Port=5432;Database=hrm;Username={user};Password={secret};Pooling=true;SSL Mode=Require` |
+| **Owner cung cấp** | IT/DBA: host, user, password, SSL policy |
+| **Migrate** | `AutoMigrate` chỉ DEV — Prod: pipeline migrate riêng (TBD CI) |
+
+Local DEV: Postgres.app · `hrm-backend/scripts/pg-local.sh` · User Secrets (xem `hrm-backend/README.md`).
+
 ## 3. Điều kiện tiên quyết
 
 | # | Item | Owner | Status |
