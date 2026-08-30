@@ -85,6 +85,20 @@ public sealed class CreateLeaveRequestCommandHandler(
             }
         }
 
+        if (await requests
+                .HasOpenOverlapAsync(
+                    employee.Id,
+                    command.FromDate,
+                    command.ToDate,
+                    command.DayPart,
+                    cancellationToken)
+                .ConfigureAwait(false))
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Trùng ngày/buổi với đơn đang mở (LEV-FR-003).");
+        }
+
         var id = await requests.CreateAsync(
             new LeaveRequestCreateModel(
                 employee.Id,

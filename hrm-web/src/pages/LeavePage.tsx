@@ -1,6 +1,7 @@
 import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import {
+  cancelLeaveRequest,
   createLeaveRequest,
   fetchLeaveTypes,
   fetchMyEmployee,
@@ -22,6 +23,7 @@ export function LeavePage() {
   const [handoverEmployeeId, setHandoverEmployeeId] = useState("");
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
+  const [actingId, setActingId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
 
@@ -78,6 +80,20 @@ export function LeavePage() {
       setError(err instanceof Error ? err.message : "Gửi đơn thất bại");
     } finally {
       setSubmitting(false);
+    }
+  }
+
+  async function cancelRequest(id: string) {
+    setActingId(id);
+    setError(null);
+    try {
+      await cancelLeaveRequest(id);
+      setMessage("Đã hủy đơn.");
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Hủy đơn thất bại");
+    } finally {
+      setActingId(null);
     }
   }
 
@@ -171,6 +187,7 @@ export function LeavePage() {
                       <th>Từ — Đến</th>
                       <th>Ngày</th>
                       <th>Trạng thái</th>
+                      <th />
                     </tr>
                   </thead>
                   <tbody>
@@ -182,6 +199,18 @@ export function LeavePage() {
                         </td>
                         <td>{item.totalDays}</td>
                         <td>{item.status}</td>
+                        <td>
+                          {(item.status === "PendingC1" || item.status === "PendingC2") && (
+                            <button
+                              type="button"
+                              className="btn btn-secondary"
+                              disabled={actingId !== null}
+                              onClick={() => cancelRequest(item.id)}
+                            >
+                              {actingId === item.id ? "…" : "Hủy"}
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))}
                   </tbody>

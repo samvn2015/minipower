@@ -81,4 +81,16 @@ public interface ILeaveRequestRepository
         string reviewedByIdpSubject,
         string? reviewNote,
         CancellationToken cancellationToken = default);
+
+    Task<bool> HasOpenOverlapAsync(
+        Guid employeeId,
+        DateOnly fromDate,
+        DateOnly toDate,
+        LeaveDayPart dayPart,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> CancelByEmployeeAsync(
+        Guid id,
+        Guid employeeId,
+        CancellationToken cancellationToken = default);
 }
