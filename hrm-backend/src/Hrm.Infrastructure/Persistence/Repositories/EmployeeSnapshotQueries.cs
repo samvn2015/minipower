@@ -6,7 +6,8 @@ namespace Hrm.Infrastructure.Persistence.Repositories;
 
 internal static class EmployeeSnapshotQueries
 {
-    public static IQueryable<EmployeeSnapshot> SelectSnapshots(this IQueryable<Domain.Employees.Entities.Employee> query) =>
+    public static IQueryable<EmployeeSnapshot> SelectSnapshots(
+        this IQueryable<Domain.Employees.Entities.Employee> query) =>
         query.Select(e => new EmployeeSnapshot(
             e.Id,
             e.EmployeeCode,
@@ -15,6 +16,9 @@ internal static class EmployeeSnapshotQueries
             e.EmailCty,
             e.TaxId,
             e.OrgUnitCode,
+            e.EducationLevelCode,
+            e.EducationLevel != null ? e.EducationLevel.Name : null,
+            e.SeniorityStartDate,
             e.Contract == null
                 ? null
                 : new EmployeeContractSnapshot(

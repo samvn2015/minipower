@@ -18,6 +18,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<OrgUnit> OrgUnits => Set<OrgUnit>();
 
+    public DbSet<EducationLevel> EducationLevels => Set<EducationLevel>();
+
+    public DbSet<SeniorityRule> SeniorityRules => Set<SeniorityRule>();
+
+    public DbSet<EmpAuditLog> EmpAuditLogs => Set<EmpAuditLog>();
+
     public DbSet<EmployeeContract> EmployeeContracts => Set<EmployeeContract>();
 
     public DbSet<LineManagerChangeRequest> LineManagerChangeRequests => Set<LineManagerChangeRequest>();

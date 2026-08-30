@@ -21,6 +21,8 @@ internal sealed class EmployeeWriteRepository(AppDbContext db)
             EmailCty = model.EmailCty?.Trim(),
             TaxId = model.TaxId?.Trim(),
             OrgUnitCode = model.OrgUnitCode?.Trim(),
+            EducationLevelCode = model.EducationLevelCode?.Trim(),
+            SeniorityStartDate = model.SeniorityStartDate,
             Status = EmployeeStatus.Active
         };
 
@@ -56,6 +58,10 @@ internal sealed class EmployeeWriteRepository(AppDbContext db)
             employee.TaxId = patch.TaxId.Trim();
         if (patch.OrgUnitCode is not null)
             employee.OrgUnitCode = patch.OrgUnitCode.Trim();
+        if (patch.EducationLevelCode is not null)
+            employee.EducationLevelCode = patch.EducationLevelCode.Trim();
+        if (patch.SeniorityStartDate is not null)
+            employee.SeniorityStartDate = patch.SeniorityStartDate;
 
         if (patch.Contract is not null)
         {

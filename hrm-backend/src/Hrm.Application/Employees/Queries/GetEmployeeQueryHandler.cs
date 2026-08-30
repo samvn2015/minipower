@@ -11,7 +11,8 @@ namespace Hrm.Application.Employees.Queries;
 
 public sealed class GetEmployeeQueryHandler(
     IIdentityAccountReadRepository accounts,
-    IEmployeeReadRepository employees)
+    IEmployeeReadRepository employees,
+    EmployeeDtoFactory dtoFactory)
     : IAsyncQueryHandler<GetEmployeeQuery, EmployeeDto>
 {
     public async Task<EmployeeDto> HandleAsync(
@@ -38,6 +39,6 @@ public sealed class GetEmployeeQueryHandler(
             }
         }
 
-        return EmployeeDtoMapper.Map(employee);
+        return await dtoFactory.MapAsync(employee, cancellationToken).ConfigureAwait(false);
     }
 }

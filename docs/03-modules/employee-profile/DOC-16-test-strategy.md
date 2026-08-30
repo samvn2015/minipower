@@ -19,16 +19,16 @@
 | EMP-TC-007 | Self-service web=mobile | Cùng IAM | E2E | Happy | Must | Pass |
 | EMP-TC-008 | Đổi LM một bậc | OK luồng | E2E | Happy | Must | Pass |
 | EMP-TC-009 | Đổi LM không mở phiếu lương | Không PAY | E2E | Happy | Must | Pass |
-| EMP-TC-010 | Thâm niên master | Catalog | API | Happy | Must | Open |
+| EMP-TC-010 | Thâm niên master | Catalog | API | Happy | Must | Pass |
 | EMP-TC-011 | 403 hồ sơ người khác | 403 | API | Unhappy | Must | Pass |
 | EMP-TC-012 | Ẩn màn HR với NV | 403 | E2E | Unhappy | Must | Pass |
-| EMP-TC-013 | Đủ EMP-SCR-001…006 | Có màn | E2E | Happy | Must | Partial |
+| EMP-TC-013 | Đủ EMP-SCR-001…006 | Có màn | E2E | Happy | Must | Pass |
 | EMP-TC-014 | Field/HĐ master | Động quy chế | E2E | Happy | Must | |
 | EMP-TC-015 | LM 403 phiếu lương | 403 | API | Unhappy | Must | |
 | EMP-TC-016 | LM mới org inactive | Chặn | API | Unhappy | Must | |
-| EMP-TC-017 | Trình độ học vấn FR-017 | Lưu catalog | API | Happy | Must | |
+| EMP-TC-017 | Trình độ học vấn FR-017 | Lưu catalog | API | Happy | Must | Pass |
 | EMP-TC-NFR-001 | 403 hồ sơ khác | Pass | API | Unhappy | Must | |
-| EMP-TC-NFR-002 | Audit tạo/sửa/duyệt LM | Log | API | Happy | Must | |
+| EMP-TC-NFR-002 | Audit tạo/sửa/duyệt LM | Log | API | Happy | Must | Pass |
 
 ## 3. Chi tiết test case
 

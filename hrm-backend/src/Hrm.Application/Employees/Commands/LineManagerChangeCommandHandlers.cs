@@ -13,7 +13,8 @@ public sealed class SubmitLineManagerChangeCommandHandler(
     IIdentityAccountReadRepository accounts,
     IOrgUnitReadRepository orgUnits,
     IEmployeeReadRepository employees,
-    ILineManagerChangeRepository changes)
+    ILineManagerChangeRepository changes,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<SubmitLineManagerChangeCommand, LineManagerChangeResult>
 {
     public async Task<LineManagerChangeResult> HandleAsync(
@@ -65,6 +66,15 @@ public sealed class SubmitLineManagerChangeCommandHandler(
                 command.ActorIdpSubject!),
             cancellationToken).ConfigureAwait(false);
 
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LmChangeSubmitted,
+                command.EmployeeId,
+                requestId,
+                command.ActorIdpSubject!,
+                $"proposedLm={command.ProposedLineManagerEmployeeId}"),
+            cancellationToken).ConfigureAwait(false);
+
         return new LineManagerChangeResult(requestId, LineManagerChangeStatus.Pending.ToString());
     }
 }
@@ -73,7 +83,8 @@ public sealed record ApproveLineManagerChangeCommand(string? ActorIdpSubject, Gu
 
 public sealed class ApproveLineManagerChangeCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ILineManagerChangeRepository changes)
+    ILineManagerChangeRepository changes,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ApproveLineManagerChangeCommand, LineManagerChangeResult>
 {
     public async Task<LineManagerChangeResult> HandleAsync(
@@ -103,6 +114,15 @@ public sealed class ApproveLineManagerChangeCommandHandler(
         if (!approved)
             throw new NotFoundException(HrmErrorCodes.NotFound, "Không duyệt được đề xuất.");
 
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LmChangeApproved,
+                request.EmployeeId,
+                command.RequestId,
+                command.ActorIdpSubject!,
+                null),
+            cancellationToken).ConfigureAwait(false);
+
         return new LineManagerChangeResult(command.RequestId, LineManagerChangeStatus.Approved.ToString());
     }
 }
@@ -114,7 +134,8 @@ public sealed record RejectLineManagerChangeCommand(
 
 public sealed class RejectLineManagerChangeCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ILineManagerChangeRepository changes)
+    ILineManagerChangeRepository changes,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RejectLineManagerChangeCommand, LineManagerChangeResult>
 {
     public async Task<LineManagerChangeResult> HandleAsync(
@@ -142,6 +163,15 @@ public sealed class RejectLineManagerChangeCommandHandler(
 
         if (!rejected)
             throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối được đề xuất.");
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LmChangeRejected,
+                request.EmployeeId,
+                command.RequestId,
+                command.ActorIdpSubject!,
+                command.ReviewNote),
+            cancellationToken).ConfigureAwait(false);
 
         return new LineManagerChangeResult(command.RequestId, LineManagerChangeStatus.Rejected.ToString());
     }

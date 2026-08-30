@@ -1,6 +1,7 @@
 import type {
   ApiEnvelope,
   CurrentUser,
+  EducationLevel,
   EmployeeDetail,
   EmployeeListItem,
   IdentityAccount,
@@ -106,6 +107,7 @@ export type CreateEmployeePayload = {
   fullName?: string;
   emailCty?: string;
   orgUnitCode: string;
+  educationLevelCode?: string;
   contract?: {
     contractType: string;
     startDate: string;
@@ -129,7 +131,13 @@ export type UpdateEmployeePayload = {
   cccd?: string;
   taxId?: string;
   orgUnitCode?: string;
+  educationLevelCode?: string;
 };
+
+export async function fetchEducationLevels(): Promise<EducationLevel[]> {
+  const body = await apiFetch<ApiEnvelope<EducationLevel[]>>("/v1/emp/education-levels");
+  return unwrap(body);
+}
 
 export async function fetchMyEmployee(): Promise<EmployeeDetail> {
   const body = await apiFetch<ApiEnvelope<EmployeeDetail>>("/v1/emp/employees/me");

@@ -18,7 +18,8 @@ public sealed class SubmitLineManagerChangeCommandHandlerTests
             new FakeAccountRepo(),
             new FakeOrgUnitRepo(),
             new FakeEmployeeRepo(employeeId, lmId),
-            changes);
+            changes,
+            new FakeAuditLogRepo());
 
         var result = await handler.HandleAsync(
             new SubmitLineManagerChangeCommand("local-dev", employeeId, lmId));
@@ -57,14 +58,14 @@ public sealed class SubmitLineManagerChangeCommandHandlerTests
         {
             if (id == employeeId)
             {
-                return Task.FromResult<EmployeeSnapshot?>(new EmployeeSnapshot(
-                    employeeId, "MNV-DEV", "Dev", null, null, null, "ORG-HQ", null, null, EmployeeStatus.Active));
+                return Task.FromResult<EmployeeSnapshot?>(EmpTestSnapshots.DevEmployee(
+                    employeeId, "MNV-DEV", "Dev"));
             }
 
             if (id == lmId)
             {
-                return Task.FromResult<EmployeeSnapshot?>(new EmployeeSnapshot(
-                    lmId, "MNV-LM", "LM", null, null, null, "ORG-HQ", null, null, EmployeeStatus.Active));
+                return Task.FromResult<EmployeeSnapshot?>(EmpTestSnapshots.DevEmployee(
+                    lmId, "MNV-LM", "LM"));
             }
 
             return Task.FromResult<EmployeeSnapshot?>(null);

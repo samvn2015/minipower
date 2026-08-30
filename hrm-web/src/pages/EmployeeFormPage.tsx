@@ -2,12 +2,13 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   createEmployee,
+  fetchEducationLevels,
   fetchEmployee,
   fetchEmployees,
   submitLineManagerChange,
   updateEmployee,
 } from "../api/client";
-import type { EmployeeListItem } from "../api/types";
+import type { EducationLevel, EmployeeListItem } from "../api/types";
 
 const ORG_UNITS = [{ code: "ORG-HQ", label: "Trụ sở chính (ORG-HQ)" }];
 
@@ -20,6 +21,9 @@ export function EmployeeFormPage() {
   const [fullName, setFullName] = useState("");
   const [emailCty, setEmailCty] = useState("");
   const [orgUnitCode, setOrgUnitCode] = useState("ORG-HQ");
+  const [educationLevelCode, setEducationLevelCode] = useState("");
+  const [educationLevels, setEducationLevels] = useState<EducationLevel[]>([]);
+  const [seniorityText, setSeniorityText] = useState<string | null>(null);
   const [withContract, setWithContract] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
   const [lineManagerId, setLineManagerId] = useState<string | null>(null);
@@ -32,6 +36,20 @@ export function EmployeeFormPage() {
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
+    let active = true;
+    fetchEducationLevels()
+      .then((rows) => {
+        if (active) setEducationLevels(rows);
+      })
+      .catch(() => {
+        if (active) setEducationLevels([]);
+      });
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
     if (isNew || !id) return;
 
     let active = true;
@@ -42,6 +60,8 @@ export function EmployeeFormPage() {
         setFullName(employee.fullName ?? "");
         setEmailCty(employee.emailCty ?? "");
         setOrgUnitCode(employee.orgUnitCode ?? "ORG-HQ");
+        setEducationLevelCode(employee.educationLevelCode ?? "");
+        setSeniorityText(employee.seniority?.displayText ?? null);
         setWithContract(employee.contract !== null);
         setStatus(employee.status);
         setLineManagerId(employee.lineManagerEmployeeId);
@@ -85,6 +105,7 @@ export function EmployeeFormPage() {
           fullName: fullName.trim() || undefined,
           emailCty: emailCty.trim() || undefined,
           orgUnitCode,
+          educationLevelCode: educationLevelCode || undefined,
           contract: withContract
             ? {
                 contractType: "PROBATION",
@@ -103,6 +124,7 @@ export function EmployeeFormPage() {
         fullName: fullName.trim() || undefined,
         emailCty: emailCty.trim() || undefined,
         orgUnitCode,
+        educationLevelCode: educationLevelCode || undefined,
       });
       navigate("/employees");
     } catch (err) {
@@ -191,6 +213,27 @@ export function EmployeeFormPage() {
             ))}
           </select>
         </label>
+
+        <label>
+          Trình độ học vấn
+          <select
+            value={educationLevelCode}
+            onChange={(e) => setEducationLevelCode(e.target.value)}
+          >
+            <option value="">— Chọn bậc —</option>
+            {educationLevels.map((level) => (
+              <option key={level.code} value={level.code}>
+                {level.name}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        {!isNew && seniorityText && (
+          <p className="muted">
+            <strong>Thâm niên:</strong> {seniorityText} (master)
+          </p>
+        )}
 
         {isNew && (
           <label className="row">

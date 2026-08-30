@@ -1,3 +1,4 @@
+using Hrm.Application.Employees;
 using Hrm.Application.Employees.Queries;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
@@ -16,7 +17,8 @@ public sealed class GetEmployeeQueryHandlerTests
     {
         var handler = new GetEmployeeQueryHandler(
             new FakeAccountRepo(NvActor),
-            new FakeEmployeeRepo(DevEmployee));
+            new FakeEmployeeRepo(DevEmployee),
+            new EmployeeDtoFactory(new FakeSeniorityRuleRepo()));
 
         var result = await handler.HandleAsync(
             new GetEmployeeQuery(EmployeeId, "local-dev"));
@@ -29,7 +31,8 @@ public sealed class GetEmployeeQueryHandlerTests
     {
         var handler = new GetEmployeeQueryHandler(
             new FakeAccountRepo(NvActor),
-            new FakeEmployeeRepo(OtherEmployee));
+            new FakeEmployeeRepo(OtherEmployee),
+            new EmployeeDtoFactory(new FakeSeniorityRuleRepo()));
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new GetEmployeeQuery(EmployeeId, "local-dev")));
@@ -39,11 +42,11 @@ public sealed class GetEmployeeQueryHandlerTests
         Guid.NewGuid(), "local-dev", "Dev", null, "MNV-DEV",
         IdentityAccountStatus.Active, ["IAM-ROLE-NV"]);
 
-    private static readonly EmployeeSnapshot DevEmployee = new(
-        EmployeeId, "MNV-DEV", "Dev IAM", null, "dev@company.local", null, "ORG-HQ", null, null, EmployeeStatus.Active);
+    private static readonly EmployeeSnapshot DevEmployee =
+        EmpTestSnapshots.DevEmployee(EmployeeId);
 
-    private static readonly EmployeeSnapshot OtherEmployee = new(
-        EmployeeId, "MNV-OTHER", "Other", null, null, null, null, null, null, EmployeeStatus.Active);
+    private static readonly EmployeeSnapshot OtherEmployee =
+        EmpTestSnapshots.DevEmployee(EmployeeId, "MNV-OTHER", "Other", null, null);
 
     private sealed class FakeAccountRepo(IdentityAccountSnapshot snapshot) : IIdentityAccountReadRepository
     {
