@@ -40,6 +40,7 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             FullName = "Dev IAM",
             EmailCty = "dev@company.local",
             OrgUnitCode = EmpOrgSeed.HqCode,
+            LineManagerEmployeeId = EmpSeed.HandoverEmployeeId,
             Status = EmployeeStatus.Active
         },
         new Employee

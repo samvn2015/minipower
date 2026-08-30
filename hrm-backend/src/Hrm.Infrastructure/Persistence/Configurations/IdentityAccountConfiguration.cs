@@ -1,5 +1,6 @@
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Entities;
+using Hrm.Infrastructure.Persistence.Emp;
 using Hrm.Infrastructure.Persistence.Iam;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -36,6 +37,15 @@ internal sealed class IdentityAccountConfiguration : IEntityTypeConfiguration<Id
                 EmailCty = "it@company.local",
                 DisplayName = "IT Dev",
                 EmployeeCode = null,
+                Status = IdentityAccountStatus.Active
+            },
+            new IdentityAccount
+            {
+                Id = IamSeed.LmDevAccountId,
+                IdpSubject = IamSeed.LmDevIdpSubject,
+                EmailCty = "handover@company.local",
+                DisplayName = "Handover NV (LM)",
+                EmployeeCode = EmpSeed.HandoverEmployeeCode,
                 Status = IdentityAccountStatus.Active
             });
     }

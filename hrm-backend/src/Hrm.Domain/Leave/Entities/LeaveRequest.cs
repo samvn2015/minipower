@@ -28,4 +28,10 @@ public class LeaveRequest : BaseEntity<Guid>
     public bool IsEmergency { get; set; }
 
     public DateTime SubmittedAtUtc { get; set; }
+
+    public string? C1ReviewedByIdpSubject { get; set; }
+
+    public DateTime? C1ReviewedAtUtc { get; set; }
+
+    public string? C1ReviewNote { get; set; }
 }
