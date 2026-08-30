@@ -6,6 +6,11 @@ import type {
   EmployeeListItem,
   IdentityAccount,
   IdentityAccountAdminResult,
+  LeaveBalance,
+  LeaveRequestActionResult,
+  LeaveRequestItem,
+  LeaveRequestPendingC1Item,
+  LeaveType,
   LineManagerChangeItem,
   LineManagerChangeResult,
 } from "./types";
@@ -239,4 +244,69 @@ export async function disableIdentityAccount(
     IdentityAccountAdminResult | ApiEnvelope<IdentityAccountAdminResult>
   >(`/v1/iam/accounts/${accountId}/disable`, { method: "POST" });
   return unwrap(body as ApiEnvelope<IdentityAccountAdminResult>);
+}
+
+export async function fetchLeaveTypes(): Promise<LeaveType[]> {
+  const body = await apiFetch<ApiEnvelope<LeaveType[]>>("/v1/lev/leave-types");
+  return unwrap(body);
+}
+
+export async function fetchMyLeaveBalance(year?: number): Promise<LeaveBalance> {
+  const query = year ? `?year=${year}` : "";
+  const body = await apiFetch<ApiEnvelope<LeaveBalance>>(`/v1/lev/leave-balances/me${query}`);
+  return unwrap(body);
+}
+
+export async function fetchMyLeaveRequests(): Promise<LeaveRequestItem[]> {
+  const body = await apiFetch<ApiEnvelope<LeaveRequestItem[]>>("/v1/lev/leave-requests/me");
+  return unwrap(body);
+}
+
+export type CreateLeaveRequestPayload = {
+  leaveTypeCode: string;
+  fromDate: string;
+  toDate: string;
+  dayPart: string;
+  reason: string;
+  handoverEmployeeId: string;
+  isEmergency?: boolean;
+};
+
+export async function createLeaveRequest(
+  payload: CreateLeaveRequestPayload,
+): Promise<{ id: string; status: string; totalDays: number }> {
+  const body = await apiFetch<
+    { id: string; status: string; totalDays: number } | ApiEnvelope<{ id: string; status: string; totalDays: number }>
+  >("/v1/lev/leave-requests", { method: "POST", body: JSON.stringify(payload) });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<{ id: string; status: string; totalDays: number }>);
+}
+
+export async function fetchPendingLeaveRequestsC1(): Promise<LeaveRequestPendingC1Item[]> {
+  const body = await apiFetch<ApiEnvelope<LeaveRequestPendingC1Item[]>>(
+    "/v1/lev/leave-requests/pending-c1",
+  );
+  return unwrap(body);
+}
+
+export async function approveLeaveRequestC1(id: string): Promise<LeaveRequestActionResult> {
+  const body = await apiFetch<
+    LeaveRequestActionResult | ApiEnvelope<LeaveRequestActionResult>
+  >(`/v1/lev/leave-requests/${id}/c1/approve`, { method: "POST" });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
+}
+
+export async function rejectLeaveRequestC1(
+  id: string,
+  reviewNote?: string,
+): Promise<LeaveRequestActionResult> {
+  const body = await apiFetch<
+    LeaveRequestActionResult | ApiEnvelope<LeaveRequestActionResult>
+  >(`/v1/lev/leave-requests/${id}/c1/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reviewNote: reviewNote ?? null }),
+  });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
 }

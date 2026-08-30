@@ -6,6 +6,8 @@ import { IamAccountDetailPage } from "./pages/IamAccountDetailPage";
 import { IamAccountListPage } from "./pages/IamAccountListPage";
 import { MyProfilePage } from "./pages/MyProfilePage";
 import { LineManagerQueuePage } from "./pages/LineManagerQueuePage";
+import { LeaveC1QueuePage } from "./pages/LeaveC1QueuePage";
+import { LeavePage } from "./pages/LeavePage";
 import { LoginPage } from "./pages/LoginPage";
 
 export default function App() {
@@ -22,6 +24,8 @@ export default function App() {
         >
           <Route path="/" element={<Navigate to="/profile" replace />} />
           <Route path="/profile" element={<MyProfilePage />} />
+          <Route path="/leave" element={<LeavePage />} />
+          <Route path="/leave/c1" element={<LeaveC1QueuePage />} />
           <Route path="/employees" element={<EmployeeListPage />} />
           <Route path="/employees/new" element={<EmployeeFormPage />} />
           <Route path="/employees/:id" element={<EmployeeFormPage />} />

@@ -12,6 +12,10 @@ internal static class IamSeed
 
     public const string ItDevIdpSubject = "it-dev";
 
+    public const string LmDevIdpSubject = "local-lm";
+
+    public static readonly Guid LmDevAccountId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+
     public static class Roles
     {
         public const string Nv = "IAM-ROLE-NV";

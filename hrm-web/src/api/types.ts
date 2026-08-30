@@ -64,6 +64,7 @@ export type DevPersona = {
 
 export const DEV_PERSONAS: DevPersona[] = [
   { id: "hr", label: "HR / C&B (local-dev)", sub: "local-dev", email: "dev@company.local" },
+  { id: "lm", label: "Line Manager (local-lm)", sub: "local-lm", email: "handover@company.local" },
   { id: "it", label: "IT (it-dev)", sub: "it-dev", email: "it@company.local" },
 ];
 
@@ -111,3 +112,51 @@ export const IAM_ASSIGNABLE_ROLES = [
   "IAM-ROLE-IT",
   "IAM-ROLE-PGD",
 ] as const;
+
+export type LeaveType = {
+  code: string;
+  name: string;
+  deductsAnnualBalance: boolean;
+};
+
+export type LeaveBalance = {
+  year: number;
+  entitledDays: number;
+  usedDays: number;
+  remainingDays: number;
+};
+
+export type LeaveRequestItem = {
+  id: string;
+  leaveTypeCode: string;
+  leaveTypeName: string | null;
+  fromDate: string;
+  toDate: string;
+  dayPart: string;
+  totalDays: number;
+  reason: string;
+  handoverEmployeeId: string;
+  status: string;
+  isEmergency: boolean;
+};
+
+export type LeaveRequestPendingC1Item = {
+  id: string;
+  employeeCode: string;
+  employeeFullName: string | null;
+  leaveTypeCode: string;
+  leaveTypeName: string | null;
+  fromDate: string;
+  toDate: string;
+  dayPart: string;
+  totalDays: number;
+  reason: string;
+  handoverEmployeeId: string;
+  isEmergency: boolean;
+  submittedAtUtc: string;
+};
+
+export type LeaveRequestActionResult = {
+  id: string;
+  status: string;
+};

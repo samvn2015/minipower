@@ -26,11 +26,44 @@ public sealed record LeaveRequestSnapshot(
     bool IsEmergency,
     DateTime SubmittedAtUtc);
 
+public sealed record LeaveRequestPendingC1Snapshot(
+    Guid Id,
+    Guid EmployeeId,
+    string EmployeeCode,
+    string? EmployeeFullName,
+    string LeaveTypeCode,
+    string? LeaveTypeName,
+    DateOnly FromDate,
+    DateOnly ToDate,
+    LeaveDayPart DayPart,
+    decimal TotalDays,
+    string Reason,
+    Guid HandoverEmployeeId,
+    bool IsEmergency,
+    DateTime SubmittedAtUtc);
+
 public interface ILeaveRequestRepository
 {
     Task<Guid> CreateAsync(LeaveRequestCreateModel model, CancellationToken cancellationToken = default);
 
+    Task<LeaveRequestSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
+
     Task<IReadOnlyList<LeaveRequestSnapshot>> ListByEmployeeIdAsync(
         Guid employeeId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<LeaveRequestPendingC1Snapshot>> ListPendingC1ByLineManagerIdAsync(
+        Guid lineManagerEmployeeId,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> ApproveC1Async(
+        Guid id,
+        string reviewedByIdpSubject,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> RejectC1Async(
+        Guid id,
+        string reviewedByIdpSubject,
+        string? reviewNote,
         CancellationToken cancellationToken = default);
 }
