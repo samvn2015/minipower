@@ -64,6 +64,12 @@ export function AppLayout() {
               </Link>
             )}
             {(user.roles.includes("IAM-ROLE-HR") ||
+              user.roles.includes("IAM-ROLE-PGD")) && (
+              <Link className="btn btn-ghost" to="/leave/c2">
+                Duyệt phép C2
+              </Link>
+            )}
+            {(user.roles.includes("IAM-ROLE-HR") ||
               user.roles.includes("IAM-ROLE-IT")) && (
               <>
                 <Link className="btn btn-ghost" to="/employees">

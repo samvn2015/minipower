@@ -34,4 +34,10 @@ public class LeaveRequest : BaseEntity<Guid>
     public DateTime? C1ReviewedAtUtc { get; set; }
 
     public string? C1ReviewNote { get; set; }
+
+    public string? C2ReviewedByIdpSubject { get; set; }
+
+    public DateTime? C2ReviewedAtUtc { get; set; }
+
+    public string? C2ReviewNote { get; set; }
 }

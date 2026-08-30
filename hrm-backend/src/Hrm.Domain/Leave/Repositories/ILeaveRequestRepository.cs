@@ -66,4 +66,19 @@ public interface ILeaveRequestRepository
         string reviewedByIdpSubject,
         string? reviewNote,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<LeaveRequestPendingC1Snapshot>> ListPendingC2Async(
+        CancellationToken cancellationToken = default);
+
+    Task<bool> ApproveC2Async(
+        Guid id,
+        string reviewedByIdpSubject,
+        bool deductsAnnualBalance,
+        CancellationToken cancellationToken = default);
+
+    Task<bool> RejectC2Async(
+        Guid id,
+        string reviewedByIdpSubject,
+        string? reviewNote,
+        CancellationToken cancellationToken = default);
 }
