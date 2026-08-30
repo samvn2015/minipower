@@ -133,6 +133,15 @@ public sealed class LeaveController(
         return Ok(result);
     }
 
+    [HttpPost("leave-requests/{id:guid}/cancel")]
+    public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<CancelLeaveRequestCommand, LeaveRequestActionResult>(
+            new CancelLeaveRequestCommand(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(result);
+    }
+
     public sealed record RejectLeaveRequestC2Request(string? ReviewNote);
 
     public sealed record RejectLeaveRequestC1Request(string? ReviewNote);

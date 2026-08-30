@@ -311,6 +311,14 @@ export async function rejectLeaveRequestC1(
   return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
 }
 
+export async function cancelLeaveRequest(id: string): Promise<LeaveRequestActionResult> {
+  const body = await apiFetch<
+    LeaveRequestActionResult | ApiEnvelope<LeaveRequestActionResult>
+  >(`/v1/lev/leave-requests/${id}/cancel`, { method: "POST" });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
+}
+
 export async function fetchPendingLeaveRequestsC2(): Promise<LeaveRequestPendingC1Item[]> {
   const body = await apiFetch<ApiEnvelope<LeaveRequestPendingC1Item[]>>(
     "/v1/lev/leave-requests/pending-c2",

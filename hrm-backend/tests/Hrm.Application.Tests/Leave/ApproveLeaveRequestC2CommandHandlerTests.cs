@@ -130,5 +130,19 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
             string? reviewNote,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(true);
+
+        public Task<bool> HasOpenOverlapAsync(
+            Guid employeeId,
+            DateOnly fromDate,
+            DateOnly toDate,
+            LeaveDayPart dayPart,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+
+        public Task<bool> CancelByEmployeeAsync(
+            Guid id,
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 }

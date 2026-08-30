@@ -1,5 +1,6 @@
 using Hrm.Domain.Leave.Entities;
 using Hrm.Domain.Leave.Repositories;
+using Hrm.Domain.Leave;
 using Hrm.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -197,6 +198,54 @@ internal sealed class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRep
         entity.C2ReviewedByIdpSubject = reviewedByIdpSubject;
         entity.C2ReviewedAtUtc = DateTime.UtcNow;
         entity.C2ReviewNote = reviewNote;
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    public async Task<bool> HasOpenOverlapAsync(
+        Guid employeeId,
+        DateOnly fromDate,
+        DateOnly toDate,
+        LeaveDayPart dayPart,
+        CancellationToken cancellationToken = default)
+    {
+        var open = await db.LeaveRequests.AsNoTracking()
+            .Where(x => x.EmployeeId == employeeId)
+            .Where(x => x.Status == Domain.Leave.LeaveRequestStatus.PendingC1
+                        || x.Status == Domain.Leave.LeaveRequestStatus.PendingC2
+                        || x.Status == Domain.Leave.LeaveRequestStatus.Approved)
+            .Select(x => new { x.FromDate, x.ToDate, x.DayPart })
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return open.Any(x => LeaveOverlapChecker.Overlaps(
+            fromDate,
+            toDate,
+            dayPart,
+            x.FromDate,
+            x.ToDate,
+            x.DayPart));
+    }
+
+    public async Task<bool> CancelByEmployeeAsync(
+        Guid id,
+        Guid employeeId,
+        CancellationToken cancellationToken = default)
+    {
+        var entity = await db.LeaveRequests
+            .FirstOrDefaultAsync(x => x.Id == id && x.EmployeeId == employeeId, cancellationToken)
+            .ConfigureAwait(false);
+        if (entity is null)
+            return false;
+
+        if (entity.Status is not (
+            Domain.Leave.LeaveRequestStatus.PendingC1
+            or Domain.Leave.LeaveRequestStatus.PendingC2))
+        {
+            return false;
+        }
+
+        entity.Status = Domain.Leave.LeaveRequestStatus.Cancelled;
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }
