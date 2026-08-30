@@ -154,5 +154,23 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
             string? reviewNote,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(true);
+
+        public Task<IReadOnlyList<LeaveRequestPendingC1Snapshot>> ListPendingC2Async(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LeaveRequestPendingC1Snapshot>>([]);
+
+        public Task<bool> ApproveC2Async(
+            Guid id,
+            string reviewedByIdpSubject,
+            bool deductsAnnualBalance,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
+
+        public Task<bool> RejectC2Async(
+            Guid id,
+            string reviewedByIdpSubject,
+            string? reviewNote,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
     }
 }

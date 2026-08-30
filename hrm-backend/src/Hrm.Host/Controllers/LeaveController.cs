@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
 
-/// <summary>LEV — DOC-12 · LEV-FR-015 balance · LEV-FR-001 submit · LEV-FR-010 C1.</summary>
+/// <summary>LEV — DOC-12 · balance · submit · C1 · C2 (FR-012).</summary>
 [ApiController]
 [Route("v1/lev")]
 [Authorize]
@@ -100,6 +100,40 @@ public sealed class LeaveController(
             cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet("leave-requests/pending-c2")]
+    public async Task<IActionResult> ListPendingC2(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<
+            ListPendingLeaveRequestsC2Query,
+            IReadOnlyList<LeaveRequestPendingC1Dto>>(
+            new ListPendingLeaveRequestsC2Query(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpPost("leave-requests/{id:guid}/c2/approve")]
+    public async Task<IActionResult> ApproveC2(Guid id, CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<ApproveLeaveRequestC2Command, LeaveRequestActionResult>(
+            new ApproveLeaveRequestC2Command(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(result);
+    }
+
+    [HttpPost("leave-requests/{id:guid}/c2/reject")]
+    public async Task<IActionResult> RejectC2(
+        Guid id,
+        [FromBody] RejectLeaveRequestC2Request? body,
+        CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<RejectLeaveRequestC2Command, LeaveRequestActionResult>(
+            new RejectLeaveRequestC2Command(User.GetIdpSubject(), id, body?.ReviewNote),
+            cancellationToken);
+        return Ok(result);
+    }
+
+    public sealed record RejectLeaveRequestC2Request(string? ReviewNote);
 
     public sealed record RejectLeaveRequestC1Request(string? ReviewNote);
 

@@ -117,6 +117,90 @@ internal sealed class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRep
         return true;
     }
 
+    public async Task<IReadOnlyList<LeaveRequestPendingC1Snapshot>> ListPendingC2Async(
+        CancellationToken cancellationToken = default) =>
+        await (
+            from request in db.LeaveRequests.AsNoTracking()
+            join employee in db.Employees.AsNoTracking() on request.EmployeeId equals employee.Id
+            where request.Status == Domain.Leave.LeaveRequestStatus.PendingC2
+            orderby request.SubmittedAtUtc
+            select new LeaveRequestPendingC1Snapshot(
+                request.Id,
+                request.EmployeeId,
+                employee.EmployeeCode,
+                employee.FullName,
+                request.LeaveTypeCode,
+                request.LeaveType != null ? request.LeaveType.Name : null,
+                request.FromDate,
+                request.ToDate,
+                request.DayPart,
+                request.TotalDays,
+                request.Reason,
+                request.HandoverEmployeeId,
+                request.IsEmergency,
+                request.SubmittedAtUtc))
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+    public async Task<bool> ApproveC2Async(
+        Guid id,
+        string reviewedByIdpSubject,
+        bool deductsAnnualBalance,
+        CancellationToken cancellationToken = default)
+    {
+        await using var transaction = await db.Database
+            .BeginTransactionAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        var entity = await db.LeaveRequests
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            .ConfigureAwait(false);
+        if (entity is null || entity.Status != Domain.Leave.LeaveRequestStatus.PendingC2)
+            return false;
+
+        if (deductsAnnualBalance)
+        {
+            var balance = await db.LeaveBalances
+                .FirstOrDefaultAsync(
+                    x => x.EmployeeId == entity.EmployeeId && x.Year == entity.FromDate.Year,
+                    cancellationToken)
+                .ConfigureAwait(false);
+            if (balance is null || balance.EntitledDays - balance.UsedDays < entity.TotalDays)
+                return false;
+
+            balance.UsedDays += entity.TotalDays;
+        }
+
+        entity.Status = Domain.Leave.LeaveRequestStatus.Approved;
+        entity.C2ReviewedByIdpSubject = reviewedByIdpSubject;
+        entity.C2ReviewedAtUtc = DateTime.UtcNow;
+        entity.C2ReviewNote = null;
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
+    public async Task<bool> RejectC2Async(
+        Guid id,
+        string reviewedByIdpSubject,
+        string? reviewNote,
+        CancellationToken cancellationToken = default)
+    {
+        var entity = await db.LeaveRequests
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            .ConfigureAwait(false);
+        if (entity is null || entity.Status != Domain.Leave.LeaveRequestStatus.PendingC2)
+            return false;
+
+        entity.Status = Domain.Leave.LeaveRequestStatus.Rejected;
+        entity.C2ReviewedByIdpSubject = reviewedByIdpSubject;
+        entity.C2ReviewedAtUtc = DateTime.UtcNow;
+        entity.C2ReviewNote = reviewNote;
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
+    }
+
     private static readonly System.Linq.Expressions.Expression<
         Func<LeaveRequest, LeaveRequestSnapshot>> MapSnapshot = x => new LeaveRequestSnapshot(
         x.Id,

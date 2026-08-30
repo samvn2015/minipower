@@ -310,3 +310,32 @@ export async function rejectLeaveRequestC1(
   if ("id" in body && typeof body.id === "string") return body;
   return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
 }
+
+export async function fetchPendingLeaveRequestsC2(): Promise<LeaveRequestPendingC1Item[]> {
+  const body = await apiFetch<ApiEnvelope<LeaveRequestPendingC1Item[]>>(
+    "/v1/lev/leave-requests/pending-c2",
+  );
+  return unwrap(body);
+}
+
+export async function approveLeaveRequestC2(id: string): Promise<LeaveRequestActionResult> {
+  const body = await apiFetch<
+    LeaveRequestActionResult | ApiEnvelope<LeaveRequestActionResult>
+  >(`/v1/lev/leave-requests/${id}/c2/approve`, { method: "POST" });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
+}
+
+export async function rejectLeaveRequestC2(
+  id: string,
+  reviewNote?: string,
+): Promise<LeaveRequestActionResult> {
+  const body = await apiFetch<
+    LeaveRequestActionResult | ApiEnvelope<LeaveRequestActionResult>
+  >(`/v1/lev/leave-requests/${id}/c2/reject`, {
+    method: "POST",
+    body: JSON.stringify({ reviewNote: reviewNote ?? null }),
+  });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
+}

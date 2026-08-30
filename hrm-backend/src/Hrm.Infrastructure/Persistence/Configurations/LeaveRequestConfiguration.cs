@@ -19,6 +19,8 @@ internal sealed class LeaveRequestConfiguration : IEntityTypeConfiguration<Leave
         builder.Property(x => x.SubmittedAtUtc).IsRequired();
         builder.Property(x => x.C1ReviewedByIdpSubject).HasMaxLength(256);
         builder.Property(x => x.C1ReviewNote).HasMaxLength(2000);
+        builder.Property(x => x.C2ReviewedByIdpSubject).HasMaxLength(256);
+        builder.Property(x => x.C2ReviewNote).HasMaxLength(2000);
         builder.HasIndex(x => x.EmployeeId);
         builder.HasOne(x => x.LeaveType)
             .WithMany()

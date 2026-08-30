@@ -53,6 +53,9 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<CreateLeaveRequestCommand, LeaveRequestCreateResult>, CreateLeaveRequestCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<ApproveLeaveRequestC1Command, LeaveRequestActionResult>, ApproveLeaveRequestC1CommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RejectLeaveRequestC1Command, LeaveRequestActionResult>, RejectLeaveRequestC1CommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListPendingLeaveRequestsC2Query, IReadOnlyList<LeaveRequestPendingC1Dto>>, ListPendingLeaveRequestsC2QueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<ApproveLeaveRequestC2Command, LeaveRequestActionResult>, ApproveLeaveRequestC2CommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<RejectLeaveRequestC2Command, LeaveRequestActionResult>, RejectLeaveRequestC2CommandHandler>();
 
         return builder;
     }
