@@ -41,6 +41,15 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
             EmailCty = "dev@company.local",
             OrgUnitCode = EmpOrgSeed.HqCode,
             Status = EmployeeStatus.Active
+        },
+        new Employee
+        {
+            Id = EmpSeed.HandoverEmployeeId,
+            EmployeeCode = EmpSeed.HandoverEmployeeCode,
+            FullName = "Handover NV",
+            EmailCty = "handover@company.local",
+            OrgUnitCode = EmpOrgSeed.HqCode,
+            Status = EmployeeStatus.Active
         });
     }
 }

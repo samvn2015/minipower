@@ -1,5 +1,6 @@
 using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Identity.Entities;
+using Hrm.Domain.Leave.Entities;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 
@@ -27,6 +28,12 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<EmployeeContract> EmployeeContracts => Set<EmployeeContract>();
 
     public DbSet<LineManagerChangeRequest> LineManagerChangeRequests => Set<LineManagerChangeRequest>();
+
+    public DbSet<LeaveType> LeaveTypes => Set<LeaveType>();
+
+    public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
+
+    public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
