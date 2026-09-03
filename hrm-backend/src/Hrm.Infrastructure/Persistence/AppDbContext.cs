@@ -1,6 +1,7 @@
 using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Identity.Entities;
 using Hrm.Domain.Leave.Entities;
+using Hrm.Domain.Timekeeping.Entities;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
 
@@ -34,6 +35,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<LeaveBalance> LeaveBalances => Set<LeaveBalance>();
 
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
+
+    public DbSet<TimesheetTemplateVersion> TimesheetTemplateVersions => Set<TimesheetTemplateVersion>();
+
+    public DbSet<TimesheetTemplateColumn> TimesheetTemplateColumns => Set<TimesheetTemplateColumn>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

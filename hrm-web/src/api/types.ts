@@ -160,3 +160,21 @@ export type LeaveRequestActionResult = {
   id: string;
   status: string;
 };
+
+export type TimesheetTemplateColumn = {
+  columnKey: string;
+  displayName: string;
+  sortOrder: number;
+  isRequired: boolean;
+  mapsTo: string;
+};
+
+export type TimesheetTemplate = {
+  id: string;
+  versionCode: string;
+  name: string;
+  status: string;
+  publishedAtUtc: string | null;
+  publishedByIdpSubject: string | null;
+  columns: TimesheetTemplateColumn[];
+};

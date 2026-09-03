@@ -36,7 +36,7 @@ public sealed class UpdateEmployeeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_NvCannotPatchOrg()
     {
-        var handler = CreateHandler(new FakeEmployeeRepo());
+        var handler = CreateHandler(new FakeEmployeeRepo(), NvActor);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new UpdateEmployeeCommand(
@@ -46,16 +46,18 @@ public sealed class UpdateEmployeeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_NvCannotPatchEducation()
     {
-        var handler = CreateHandler(new FakeEmployeeRepo());
+        var handler = CreateHandler(new FakeEmployeeRepo(), NvActor);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new UpdateEmployeeCommand(
                 EmployeeId, "local-dev", null, null, null, null, null, "EDU-DH", null, null)));
     }
 
-    private static UpdateEmployeeCommandHandler CreateHandler(FakeEmployeeRepo read) =>
+    private static UpdateEmployeeCommandHandler CreateHandler(
+        FakeEmployeeRepo read,
+        IdentityAccountSnapshot? actor = null) =>
         new(
-            new FakeAccountRepo(HrActor),
+            new FakeAccountRepo(actor ?? HrActor),
             new FakeOrgUnitRepo(),
             new FakeEducationLevelRepo(),
             read,

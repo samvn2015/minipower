@@ -11,6 +11,9 @@ using Hrm.Application.Identity.Queries;
 using Hrm.Application.Leave.Commands;
 using Hrm.Application.Leave.Dtos;
 using Hrm.Application.Leave.Queries;
+using Hrm.Application.Timekeeping.Commands;
+using Hrm.Application.Timekeeping.Dtos;
+using Hrm.Application.Timekeeping.Queries;
 using Jarvis.Application;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
@@ -57,6 +60,11 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<ApproveLeaveRequestC2Command, LeaveRequestActionResult>, ApproveLeaveRequestC2CommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RejectLeaveRequestC2Command, LeaveRequestActionResult>, RejectLeaveRequestC2CommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CancelLeaveRequestCommand, LeaveRequestActionResult>, CancelLeaveRequestCommandHandler>();
+
+        builder.Services.AddScoped<IAsyncQueryHandler<GetActiveTimesheetTemplateQuery, TimesheetTemplateDto?>, GetActiveTimesheetTemplateQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListTimesheetTemplatesQuery, IReadOnlyList<TimesheetTemplateDto>>, ListTimesheetTemplatesQueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CreateTimesheetTemplateCommand, TimesheetTemplateCreateResult>, CreateTimesheetTemplateCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<PublishTimesheetTemplateCommand, TimesheetTemplatePublishResult>, PublishTimesheetTemplateCommandHandler>();
 
         return builder;
     }

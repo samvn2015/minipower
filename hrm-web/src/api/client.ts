@@ -13,6 +13,7 @@ import type {
   LeaveType,
   LineManagerChangeItem,
   LineManagerChangeResult,
+  TimesheetTemplate,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -346,4 +347,44 @@ export async function rejectLeaveRequestC2(
   });
   if ("id" in body && typeof body.id === "string") return body;
   return unwrap(body as ApiEnvelope<LeaveRequestActionResult>);
+}
+
+export async function fetchActiveTimesheetTemplate(): Promise<TimesheetTemplate> {
+  const body = await apiFetch<ApiEnvelope<TimesheetTemplate>>("/v1/tim/templates/active");
+  return unwrap(body);
+}
+
+export async function fetchTimesheetTemplates(): Promise<TimesheetTemplate[]> {
+  const body = await apiFetch<ApiEnvelope<TimesheetTemplate[]>>("/v1/tim/templates");
+  return unwrap(body);
+}
+
+export async function createTimesheetTemplate(payload: {
+  versionCode: string;
+  name: string;
+  columns: {
+    columnKey: string;
+    displayName: string;
+    sortOrder: number;
+    isRequired: boolean;
+    mapsTo: string;
+  }[];
+}): Promise<{ id: string; versionCode: string; status: string }> {
+  const body = await apiFetch<
+    | { id: string; versionCode: string; status: string }
+    | ApiEnvelope<{ id: string; versionCode: string; status: string }>
+  >("/v1/tim/templates", { method: "POST", body: JSON.stringify(payload) });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<{ id: string; versionCode: string; status: string }>);
+}
+
+export async function publishTimesheetTemplate(
+  id: string,
+): Promise<{ id: string; versionCode: string; status: string }> {
+  const body = await apiFetch<
+    | { id: string; versionCode: string; status: string }
+    | ApiEnvelope<{ id: string; versionCode: string; status: string }>
+  >(`/v1/tim/templates/${id}/publish`, { method: "POST" });
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<{ id: string; versionCode: string; status: string }>);
 }
