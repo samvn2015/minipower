@@ -11,7 +11,9 @@ public sealed record PayLineDto(
     decimal TimeWageFactor,
     decimal Ot15,
     decimal Ot20,
-    decimal Ot30);
+    decimal Ot30,
+    decimal ContractAllowance,
+    decimal MonthlyAllowance);
 
 public sealed record PayPeriodDto(
     Guid Id,
@@ -30,3 +32,19 @@ public sealed record PayRunResult(
     int LineCount);
 
 public sealed record PayWorkdayCalendarResult(string PeriodYm, decimal StandardWorkDays);
+
+public sealed record PayAllowanceCatalogDto(string Code, string Name, bool IsActive);
+
+public sealed record PayMonthlyAllowanceDto(
+    Guid Id,
+    string PeriodYm,
+    Guid EmployeeId,
+    string EmployeeCode,
+    string Code,
+    decimal Amount);
+
+public sealed record PayMonthlyAllowanceResult(
+    string PeriodYm,
+    string EmployeeCode,
+    string Code,
+    decimal Amount);

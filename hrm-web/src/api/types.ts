@@ -262,6 +262,8 @@ export type PayLine = {
   ot15: number;
   ot20: number;
   ot30: number;
+  contractAllowance: number;
+  monthlyAllowance: number;
 };
 
 export type PayPeriod = {
@@ -280,4 +282,26 @@ export type PayRunResult = {
   periodYm: string;
   status: string;
   lineCount: number;
+};
+
+export type PayAllowanceCatalogItem = {
+  code: string;
+  name: string;
+  isActive: boolean;
+};
+
+export type PayMonthlyAllowance = {
+  id: string;
+  periodYm: string;
+  employeeId: string;
+  employeeCode: string;
+  code: string;
+  amount: number;
+};
+
+export type PayMonthlyAllowanceResult = {
+  periodYm: string;
+  employeeCode: string;
+  code: string;
+  amount: number;
 };
