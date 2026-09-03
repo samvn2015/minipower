@@ -14,6 +14,7 @@ using Hrm.Application.Leave.Queries;
 using Hrm.Application.Payroll.Commands;
 using Hrm.Application.Payroll.Dtos;
 using Hrm.Application.Payroll.Queries;
+using Hrm.Application.Probation.Commands;
 using Hrm.Application.Probation.Dtos;
 using Hrm.Application.Probation.Queries;
 using Hrm.Application.Timekeeping;
@@ -94,6 +95,8 @@ public static class ApplicationLayerExtension
 
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationCasesQuery, IReadOnlyList<ProbationCaseDto>>, ListProbationCasesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetMyProbationMilestonesQuery, ProbationMilestoneDto>, GetMyProbationMilestonesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>, ListProbationRemindersQueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<RunProbationRemindersCommand, ProbationReminderRunResult>, RunProbationRemindersCommandHandler>();
 
         return builder;
     }

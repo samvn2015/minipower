@@ -28,6 +28,8 @@ import type {
   PayPayslip,
   ProbationCase,
   ProbationMilestone,
+  ProbationReminder,
+  ProbationReminderRunResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -548,4 +550,22 @@ export async function fetchMyProbationMilestones(): Promise<ProbationMilestone> 
   );
   if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
   return unwrap(body as ApiEnvelope<ProbationMilestone>);
+}
+
+export async function runProbationReminders(asOfDate?: string): Promise<ProbationReminderRunResult> {
+  const body = await apiFetch<ProbationReminderRunResult | ApiEnvelope<ProbationReminderRunResult>>(
+    "/v1/prb/jobs/reminders/run",
+    { method: "POST", body: JSON.stringify({ asOfDate: asOfDate ?? null }) },
+  );
+  if ("asOfDate" in body && typeof body.asOfDate === "string") return body;
+  return unwrap(body as ApiEnvelope<ProbationReminderRunResult>);
+}
+
+export async function fetchProbationReminders(kind?: string): Promise<ProbationReminder[]> {
+  const q = kind ? `?kind=${encodeURIComponent(kind)}` : "";
+  const body = await apiFetch<ProbationReminder[] | ApiEnvelope<ProbationReminder[]>>(
+    `/v1/prb/reminders${q}`,
+  );
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<ProbationReminder[]>);
 }

@@ -2,6 +2,7 @@ using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Identity.Entities;
 using Hrm.Domain.Leave.Entities;
 using Hrm.Domain.Payroll.Entities;
+using Hrm.Domain.Probation.Entities;
 using Hrm.Domain.Timekeeping.Entities;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
@@ -66,6 +67,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<PayContractSalary> PayContractSalaries => Set<PayContractSalary>();
 
     public DbSet<PayExportOutbox> PayExportOutboxes => Set<PayExportOutbox>();
+
+    public DbSet<ProbationReminder> ProbationReminders => Set<ProbationReminder>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

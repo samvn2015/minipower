@@ -376,3 +376,27 @@ export type ProbationMilestone = {
   t7DueDate?: string | null;
   source: string;
 };
+
+export type ProbationReminder = {
+  id: string;
+  kind: string;
+  employeeId: string;
+  employeeCode: string;
+  probationEndDate: string;
+  dueDate: string;
+  asOfDate: string;
+  assigneeEmployeeId?: string | null;
+  assigneeEmployeeCode?: string | null;
+  inAppMessage: string;
+  emailTo: string;
+  channel: string;
+  createdAtUtc: string;
+};
+
+export type ProbationReminderRunResult = {
+  asOfDate: string;
+  t15Created: number;
+  t7Created: number;
+  skippedIncompleteMilestone: number;
+  skippedAlreadyExists: number;
+};
