@@ -2,6 +2,7 @@ using Hrm.Domain.DependencyInjection;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave.Repositories;
+using Hrm.Domain.Lifecycle.Repositories;
 using Hrm.Domain.Payroll.Repositories;
 using Hrm.Domain.Probation.Repositories;
 using Hrm.Domain.Timekeeping.Repositories;
@@ -53,6 +54,7 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IProbationReminderRepository, ProbationReminderRepository>();
         builder.Services.AddScoped<IProbationMasterReadRepository, ProbationMasterReadRepository>();
         builder.Services.AddScoped<IProbationEvaluationRepository, ProbationEvaluationRepository>();
+        builder.Services.AddScoped<ILifOffboardingRepository, LifOffboardingRepository>();
 
         // Credentials: User Secrets / env (ConnectionStrings__AppDbContext). Không hard-code password.
         // Placeholder chỉ để đăng ký DI khi chưa có secret — ping/swagger vẫn chạy; mở DB thật cần OQ-DLV-003.

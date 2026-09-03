@@ -1,9 +1,10 @@
 using System.Text.Json;
 using Hrm.Application.Probation.Dtos;
+using Hrm.Domain.Employees.Constants;
 using Hrm.Domain.Employees.Repositories;
-using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Constants;
 using Hrm.Domain.Identity.Repositories;
+using Hrm.Domain.Lifecycle.Repositories;
 using Hrm.Domain.Probation;
 using Hrm.Domain.Probation.Repositories;
 using Hrm.Domain.Shared.Constants;
@@ -128,17 +129,21 @@ public sealed class ProposeProbationEvaluationCommandHandler(
 public sealed class DecideProbationEvaluationCommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
+    IEmployeeWriteRepository employeeWrites,
     IProbationMasterReadRepository masters,
-    IProbationEvaluationRepository evaluations)
+    IProbationEvaluationRepository evaluations,
+    ILifOffboardingRepository offboardings)
     : IAsyncCommandHandler<DecideProbationEvaluationCommand, ProbationEvaluationDto>
 {
+    public const string LifSourcePrbFail = "PRB-FAIL";
+
     public async Task<ProbationEvaluationDto> HandleAsync(
         DecideProbationEvaluationCommand request,
         CancellationToken cancellationToken = default)
     {
         var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
-        PrbAccessGuard.RequireHrOrPgd(actor); // FR-009 · FR-017 audit = HR
+        PrbAccessGuard.RequireHrOrPgd(actor);
 
         var emp = await ProposeProbationEvaluationCommandHandler.LoadActiveProbationAsync(
             employees, request.EmployeeId, cancellationToken);
@@ -147,6 +152,7 @@ public sealed class DecideProbationEvaluationCommandHandler(
             masters, request.OutcomeCode, request.Scores, cancellationToken);
 
         string? extendCode = null;
+        int? extendMonths = null;
         if (string.Equals(request.OutcomeCode, ProbationOutcomeCodes.Extend, StringComparison.OrdinalIgnoreCase))
         {
             if (string.IsNullOrWhiteSpace(request.ExtendDurationCode))
@@ -158,6 +164,7 @@ public sealed class DecideProbationEvaluationCommandHandler(
                     HrmErrorCodes.BadRequest,
                     "Mã thời lượng gia hạn không thuộc master (PRB-FR-006).");
             extendCode = dur.Code;
+            extendMonths = dur.Months;
         }
         else if (!string.IsNullOrWhiteSpace(request.ExtendDurationCode))
         {
@@ -170,25 +177,79 @@ public sealed class DecideProbationEvaluationCommandHandler(
         if (!complete || end is null)
             throw new BadRequestException(HrmErrorCodes.BadRequest, "HĐ thiếu KT_TV — sửa trên EMP (PRB-FR-001).");
 
+        var outcome = request.OutcomeCode.Trim().ToUpperInvariant();
         var json = ProposeProbationEvaluationCommandHandler.SerializeScores(request.Scores);
         var snap = await evaluations.DecideAsync(
             emp.Id,
             emp.EmployeeCode,
             end.Value,
-            request.OutcomeCode.Trim().ToUpperInvariant(),
+            outcome,
             request.ActorIdpSubject,
             request.Note,
             extendCode,
             json,
             cancellationToken);
 
-        return ProbationEvaluationMapper.ToDto(snap);
+        var converted = false;
+        DateOnly? newEnd = null;
+        Guid? lifId = null;
+
+        if (outcome == ProbationOutcomeCodes.Pass)
+        {
+            var ok = await employeeWrites.UpdateAsync(
+                emp.Id,
+                new EmployeePatch(
+                    null, null, null, null, null, null, null,
+                    new EmployeeContractUpsert(
+                        EmpContractTypes.Official,
+                        emp.Contract!.StartDate,
+                        null,
+                        IsProbation: false)),
+                cancellationToken);
+            if (!ok)
+                throw new ConflictException(HrmErrorCodes.Conflict, "Không cập nhật được HĐ EMP sau chốt Đạt.");
+            converted = true;
+        }
+        else if (outcome == ProbationOutcomeCodes.Extend)
+        {
+            newEnd = end.Value.AddMonths(extendMonths!.Value);
+            var ok = await employeeWrites.UpdateAsync(
+                emp.Id,
+                new EmployeePatch(
+                    null, null, null, null, null, null, null,
+                    new EmployeeContractUpsert(
+                        EmpContractTypes.Probation,
+                        emp.Contract!.StartDate,
+                        newEnd,
+                        IsProbation: true)),
+                cancellationToken);
+            if (!ok)
+                throw new ConflictException(HrmErrorCodes.Conflict, "Không cập nhật KT_TV sau gia hạn.");
+        }
+        else if (outcome == ProbationOutcomeCodes.Fail)
+        {
+            var lif = await offboardings.CreateAsync(
+                new LifOffboardingCreateModel(
+                    emp.Id,
+                    emp.EmployeeCode,
+                    LifSourcePrbFail,
+                    request.ActorIdpSubject,
+                    request.Note ?? "Mở từ PRB Không đạt"),
+                cancellationToken);
+            lifId = lif.Id;
+        }
+
+        return ProbationEvaluationMapper.ToDto(snap, converted, newEnd, lifId);
     }
 }
 
 internal static class ProbationEvaluationMapper
 {
-    public static ProbationEvaluationDto ToDto(ProbationEvaluationSnapshot s) =>
+    public static ProbationEvaluationDto ToDto(
+        ProbationEvaluationSnapshot s,
+        bool contractConverted = false,
+        DateOnly? newProbationEnd = null,
+        Guid? lifCaseId = null) =>
         new(
             s.Id,
             s.EmployeeId,
@@ -204,5 +265,8 @@ internal static class ProbationEvaluationMapper
             s.DecidedByIdpSubject,
             s.DecidedAtUtc,
             s.DecisionNote,
-            s.ExtendDurationCode);
+            s.ExtendDurationCode,
+            contractConverted,
+            newProbationEnd,
+            lifCaseId);
 }
