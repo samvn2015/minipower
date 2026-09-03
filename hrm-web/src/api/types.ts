@@ -280,6 +280,7 @@ export type PayPeriod = {
   hasNTinhOverCap: boolean;
   overCapEmployeeCodes: string[];
   lines: PayLine[];
+  warnings: string[];
 };
 
 export type PayRunResult = {
@@ -287,6 +288,7 @@ export type PayRunResult = {
   periodYm: string;
   status: string;
   lineCount: number;
+  warnings: string[];
 };
 
 export type PayAllowanceCatalogItem = {

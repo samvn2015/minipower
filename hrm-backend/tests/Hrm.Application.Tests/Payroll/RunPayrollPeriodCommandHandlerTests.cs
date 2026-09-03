@@ -34,11 +34,29 @@ public sealed class RunPayrollPeriodCommandHandlerTests
         Assert.Equal("Draft", result.Status);
         Assert.Equal(1, result.LineCount);
         Assert.NotNull(pay.LastLines);
-        Assert.Equal(20m, pay.LastLines![0].NTinh);
+        Assert.Equal(20m, pay.LastLines![0].NTinh); // 22 − 2; không + phép hưởng 2
         Assert.Equal(1.00m, pay.LastLines[0].TimeWageFactor);
         Assert.Equal(1m, pay.LastLines[0].Ot15); // OT từ TIM (FR-004)
         Assert.Equal(0m, pay.LastLines[0].ContractAllowance);
         Assert.Equal(0m, pay.LastLines[0].MonthlyAllowance);
+        Assert.Contains(result.Warnings, w => w.Contains("A-001", StringComparison.Ordinal));
+        Assert.Contains(result.Warnings, w => w.Contains("PAY-FR-013", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task HandleAsync_NoPaidLeave_NoA001Warning()
+    {
+        var handler = new RunPayrollPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            new FakePayRepo(),
+            new FakeEmployeeRepo(false),
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
+
+        var result = await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2029-03"));
+        Assert.Empty(result.Warnings);
     }
 
     [Fact]

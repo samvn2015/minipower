@@ -60,6 +60,8 @@ public sealed class GetPayrollPeriodQueryHandler(
             .Where(l => PayrollWorkdayCap.ExceedsCap(l.NTinh, standardWorkDays))
             .Select(l => l.EmployeeCode)
             .ToList();
+        var warnings = PayrollA001Guard.CollectWarnings(
+            period.Lines.Select(l => (l.EmployeeCode, l.LeaveDaysPaid)));
         return new PayPeriodDto(
             period.Id,
             period.PeriodYm,
@@ -86,7 +88,8 @@ public sealed class GetPayrollPeriodQueryHandler(
                 l.TncnRate,
                 l.BhAmount,
                 l.TncnAmount,
-                l.NetPay)).ToList());
+                l.NetPay)).ToList(),
+            warnings);
     }
 }
 
