@@ -18,6 +18,9 @@ public sealed record PayPeriodDto(
     string PeriodYm,
     string Status,
     int LineCount,
+    decimal StandardWorkDays,
+    bool HasNTinhOverCap,
+    IReadOnlyList<string> OverCapEmployeeCodes,
     IReadOnlyList<PayLineDto> Lines);
 
 public sealed record PayRunResult(
@@ -25,3 +28,5 @@ public sealed record PayRunResult(
     string PeriodYm,
     string Status,
     int LineCount);
+
+public sealed record PayWorkdayCalendarResult(string PeriodYm, decimal StandardWorkDays);

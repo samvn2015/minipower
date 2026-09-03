@@ -45,7 +45,7 @@ public sealed class PayrollController(
         return Ok(result);
     }
 
-    /// <summary>Chốt kỳ PAY — chặn bỏ chốt TIM.</summary>
+    /// <summary>Chốt kỳ PAY — chặn N_tính > chuẩn (FR-007) + gate TIM-FR-012.</summary>
     [HttpPost("periods/{ym}/close")]
     public async Task<IActionResult> Close(string ym, CancellationToken cancellationToken)
     {
@@ -54,4 +54,19 @@ public sealed class PayrollController(
             cancellationToken);
         return Ok(result);
     }
+
+    /// <summary>Ghi ngày công chuẩn tháng (lịch Cty D-004).</summary>
+    [HttpPut("calendar/{ym}")]
+    public async Task<IActionResult> UpsertCalendar(
+        string ym,
+        [FromBody] UpsertCalendarRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<UpsertPayWorkdayCalendarCommand, PayWorkdayCalendarResult>(
+            new UpsertPayWorkdayCalendarCommand(User.GetIdpSubject(), ym, body.StandardWorkDays),
+            cancellationToken);
+        return Ok(result);
+    }
+
+    public sealed record UpsertCalendarRequest(decimal StandardWorkDays);
 }

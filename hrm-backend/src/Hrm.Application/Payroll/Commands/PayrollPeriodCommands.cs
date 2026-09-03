@@ -101,7 +101,9 @@ public sealed record ClosePayrollPeriodCommand(string? ActorIdpSubject, string P
 
 public sealed class ClosePayrollPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
-    IPayPeriodRepository payPeriods)
+    IPayPeriodRepository payPeriods,
+    IPayRegulationReadRepository regulations,
+    IPayWorkdayCalendarRepository calendar)
     : IAsyncCommandHandler<ClosePayrollPeriodCommand, PayRunResult>
 {
     public async Task<PayRunResult> HandleAsync(
@@ -122,6 +124,28 @@ public sealed class ClosePayrollPeriodCommandHandler(
         }
 
         var ym = command.PeriodYm.Trim();
+        var existing = await payPeriods.FindByYmAsync(ym, cancellationToken).ConfigureAwait(false);
+        if (existing is { LineCount: > 0 })
+        {
+            var fallback = await regulations
+                .FindByCodeAsync(PayRegulationCodes.StandardWorkDaysDefault, cancellationToken)
+                .ConfigureAwait(false);
+            var standard = await calendar
+                .ResolveStandardWorkDaysAsync(ym, fallback?.DecimalValue ?? 22m, cancellationToken)
+                .ConfigureAwait(false);
+
+            var over = existing.Lines
+                .Where(l => PayrollWorkdayCap.ExceedsCap(l.NTinh, standard))
+                .Select(l => l.EmployeeCode)
+                .ToList();
+            if (over.Count > 0)
+            {
+                throw new BadRequestException(
+                    HrmErrorCodes.BadRequest,
+                    $"N_tính > ngày công chuẩn {standard} (PAY-FR-007): {string.Join(", ", over)}.");
+            }
+        }
+
         await payPeriods.MarkClosedAsync(ym, command.ActorIdpSubject!, cancellationToken)
             .ConfigureAwait(false);
 
@@ -129,5 +153,41 @@ public sealed class ClosePayrollPeriodCommandHandler(
             ?? throw new InvalidOperationException("Pay period missing after close.");
 
         return new PayRunResult(period.Id, period.PeriodYm, period.Status.ToString(), period.LineCount);
+    }
+}
+
+public sealed record UpsertPayWorkdayCalendarCommand(
+    string? ActorIdpSubject,
+    string PeriodYm,
+    decimal StandardWorkDays) : ICommand;
+
+public sealed class UpsertPayWorkdayCalendarCommandHandler(
+    IIdentityAccountReadRepository accounts,
+    IPayWorkdayCalendarRepository calendar)
+    : IAsyncCommandHandler<UpsertPayWorkdayCalendarCommand, PayWorkdayCalendarResult>
+{
+    public async Task<PayWorkdayCalendarResult> HandleAsync(
+        UpsertPayWorkdayCalendarCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        IamAccessGuard.RequireAuthenticated(command.ActorIdpSubject);
+        var actor = await accounts.FindByIdpSubjectAsync(command.ActorIdpSubject!, cancellationToken)
+            .ConfigureAwait(false);
+        PayHrGuard.RequireHr(actor);
+
+        if (string.IsNullOrWhiteSpace(command.PeriodYm)
+            || command.PeriodYm.Length != 7
+            || command.PeriodYm[4] != '-')
+        {
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "PeriodYm phải dạng YYYY-MM.");
+        }
+
+        if (command.StandardWorkDays <= 0 || command.StandardWorkDays > 31)
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "StandardWorkDays phải trong (0, 31].");
+
+        var ym = command.PeriodYm.Trim();
+        await calendar.UpsertAsync(ym, command.StandardWorkDays, cancellationToken).ConfigureAwait(false);
+        return new PayWorkdayCalendarResult(ym, command.StandardWorkDays);
     }
 }

@@ -1,5 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
-import { fetchPayrollPeriod, runPayrollPeriod } from "../api/client";
+import { fetchPayrollPeriod, runPayrollPeriod, closePayrollPeriod } from "../api/client";
 import type { PayPeriod } from "../api/types";
 
 export function PayPeriodPage() {
@@ -38,12 +38,27 @@ export function PayPeriodPage() {
     }
   }
 
+  async function onClose() {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await closePayrollPeriod(periodYm);
+      setMessage(`Đã chốt kỳ lương ${result.periodYm}.`);
+      await load(periodYm);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Chốt kỳ thất bại");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="card stack">
       <div>
         <h2>Tính kỳ lương</h2>
         <p className="muted">
-          PAY-SCR-002 — TIM đã chốt; N_tính = N_thực − N_KHL; hệ số TV từ master; OT chỉ từ công.
+          PAY-SCR-002/003 — TIM đã chốt; N_tính ≤ ngày công chuẩn mới được chốt kỳ.
         </p>
       </div>
 
@@ -58,13 +73,30 @@ export function PayPeriodPage() {
         <button type="submit" className="btn" disabled={busy}>
           Tính kỳ
         </button>
+        {period && period.status === "Draft" && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            disabled={busy || period.hasNTinhOverCap}
+            title={period.hasNTinhOverCap ? "N_tính vượt chuẩn — cấm chốt" : "Chốt kỳ lương"}
+            onClick={() => onClose()}
+          >
+            Chốt kỳ
+          </button>
+        )}
       </form>
 
       {period && (
         <div className="stack">
           <p>
-            Kỳ <strong>{period.periodYm}</strong> · {period.status} · {period.lineCount} dòng
+            Kỳ <strong>{period.periodYm}</strong> · {period.status} · {period.lineCount} dòng · chuẩn{" "}
+            {period.standardWorkDays} ngày
           </p>
+          {period.hasNTinhOverCap && (
+            <div className="error-box">
+              N_tính vượt chuẩn: {period.overCapEmployeeCodes.join(", ")} — cấm chốt (PAY-FR-007).
+            </div>
+          )}
           <div className="table-wrap">
             <table>
               <thead>
