@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import { closeTimesheetPeriod, fetchTimesheetPeriods } from "../api/client";
+import { closeTimesheetPeriod, fetchTimesheetPeriods, unlockTimesheetPeriod } from "../api/client";
 import type { TimesheetPeriod } from "../api/types";
 
 export function TimPeriodPage() {
@@ -35,13 +35,28 @@ export function TimPeriodPage() {
     }
   }
 
+  async function onUnlock(ym: string) {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await unlockTimesheetPeriod(ym);
+      setMessage(`Đã bỏ chốt kỳ ${result.periodYm} → Draft (TIM-SCR-006). Có thể import lại.`);
+      await load();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Bỏ chốt thất bại");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="card stack">
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
-          <h2>Chốt tháng công</h2>
+          <h2>Chốt / bỏ chốt tháng công</h2>
           <p className="muted">
-            TIM-SCR-005 — chốt Draft; merge phép Đã duyệt vào N_thực (TIM-FR-006…009); cấm nếu còn OT chưa loại.
+            TIM-SCR-005/006 — chốt Draft; bỏ chốt khi PAY chưa chốt; merge phép Đã duyệt (TIM-FR-006…012).
           </p>
         </div>
         <Link className="btn btn-secondary" to="/tim/imports">
@@ -82,7 +97,7 @@ export function TimPeriodPage() {
                   <td>{p.lineCount}</td>
                   <td>{unclassified}</td>
                   <td>{leavePaid}</td>
-                  <td>
+                  <td className="row" style={{ gap: 8 }}>
                     {p.status === "Draft" && (
                       <button
                         type="button"
@@ -92,6 +107,17 @@ export function TimPeriodPage() {
                         onClick={() => onClose(p.periodYm)}
                       >
                         Chốt
+                      </button>
+                    )}
+                    {p.status === "Closed" && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary"
+                        disabled={busy}
+                        title="Bỏ chốt — cấm nếu PAY đã chốt"
+                        onClick={() => onUnlock(p.periodYm)}
+                      >
+                        Bỏ chốt
                       </button>
                     )}
                   </td>

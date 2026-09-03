@@ -28,7 +28,7 @@ public static class TimHrGuard
         {
             throw new ForbiddenException(
                 HrmErrorCodes.Forbidden,
-                "Chỉ HR import/commit/chốt bảng công (TIM-FR-011 / TIM-BR-010).");
+                "Chỉ HR import/commit/chốt/bỏ chốt bảng công (TIM-FR-011 / TIM-BR-010).");
         }
     }
 }

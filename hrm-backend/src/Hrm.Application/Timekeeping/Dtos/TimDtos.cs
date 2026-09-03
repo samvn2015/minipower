@@ -79,3 +79,9 @@ public sealed record TimesheetCloseResult(
     int LineCount,
     decimal TotalLeaveDaysPaid,
     decimal TotalLeaveDaysUnpaid);
+
+public sealed record TimesheetUnlockResult(
+    Guid PeriodId,
+    string PeriodYm,
+    string Status,
+    int LineCount);

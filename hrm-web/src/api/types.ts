@@ -242,3 +242,10 @@ export type TimesheetCloseResult = {
   totalLeaveDaysPaid: number;
   totalLeaveDaysUnpaid: number;
 };
+
+export type TimesheetUnlockResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+};

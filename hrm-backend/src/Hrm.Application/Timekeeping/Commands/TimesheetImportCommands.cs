@@ -3,6 +3,7 @@ using Hrm.Application.Timekeeping.Dtos;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave.Repositories;
+using Hrm.Domain.Payroll.Repositories;
 using Hrm.Domain.Shared.Constants;
 using Hrm.Domain.Timekeeping;
 using Hrm.Domain.Timekeeping.Repositories;
@@ -192,6 +193,62 @@ public sealed class CloseTimesheetPeriodCommandHandler(
             closed.LineCount,
             closed.Lines.Sum(l => l.LeaveDaysPaid),
             closed.Lines.Sum(l => l.LeaveDaysUnpaid));
+    }
+}
+
+public sealed record UnlockTimesheetPeriodCommand(string? ActorIdpSubject, string PeriodYm) : ICommand;
+
+public sealed class UnlockTimesheetPeriodCommandHandler(
+    IIdentityAccountReadRepository accounts,
+    ITimesheetImportRepository imports,
+    IPayPeriodGate payPeriods)
+    : IAsyncCommandHandler<UnlockTimesheetPeriodCommand, TimesheetUnlockResult>
+{
+    public async Task<TimesheetUnlockResult> HandleAsync(
+        UnlockTimesheetPeriodCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        IamAccessGuard.RequireAuthenticated(command.ActorIdpSubject);
+        var actor = await accounts.FindByIdpSubjectAsync(command.ActorIdpSubject!, cancellationToken)
+            .ConfigureAwait(false);
+        TimHrGuard.RequireHrForImport(actor);
+
+        if (string.IsNullOrWhiteSpace(command.PeriodYm)
+            || command.PeriodYm.Length != 7
+            || command.PeriodYm[4] != '-')
+        {
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "PeriodYm phải dạng YYYY-MM.");
+        }
+
+        var ym = command.PeriodYm.Trim();
+        var period = await imports.FindPeriodByYmAsync(ym, cancellationToken).ConfigureAwait(false)
+            ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"Kỳ công {ym} không tồn tại.");
+
+        if (period.Status != TimesheetPeriodStatus.Closed)
+        {
+            throw new ConflictException(
+                HrmErrorCodes.Conflict,
+                $"Kỳ {ym} không ở trạng thái Closed (hiện: {period.Status}).");
+        }
+
+        if (await payPeriods.IsClosedAsync(ym, cancellationToken).ConfigureAwait(false))
+        {
+            throw new ConflictException(
+                HrmErrorCodes.Conflict,
+                $"Kỳ PAY {ym} đã chốt — cấm bỏ chốt TIM (TIM-FR-012 / TIM-BR-011).");
+        }
+
+        var unlocked = await imports
+            .UnlockPeriodAsync(ym, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new ConflictException(HrmErrorCodes.Conflict, $"Không bỏ chốt được kỳ {ym}.");
+
+        return new TimesheetUnlockResult(
+            unlocked.Id,
+            unlocked.PeriodYm,
+            unlocked.Status.ToString(),
+            unlocked.LineCount);
     }
 }
 

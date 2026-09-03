@@ -275,5 +275,10 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
             };
             return Task.FromResult<TimesheetPeriodSnapshot?>(LastClosed);
         }
+
+        public Task<TimesheetPeriodSnapshot?> UnlockPeriodAsync(
+            string periodYm,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<TimesheetPeriodSnapshot?>(null);
     }
 }

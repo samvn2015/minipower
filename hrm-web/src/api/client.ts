@@ -18,6 +18,7 @@ import type {
   TimesheetCommitResult,
   TimesheetPeriod,
   TimesheetCloseResult,
+  TimesheetUnlockResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -437,4 +438,13 @@ export async function closeTimesheetPeriod(ym: string): Promise<TimesheetCloseRe
   );
   if ("periodId" in body && typeof body.periodId === "string") return body;
   return unwrap(body as ApiEnvelope<TimesheetCloseResult>);
+}
+
+export async function unlockTimesheetPeriod(ym: string): Promise<TimesheetUnlockResult> {
+  const body = await apiFetch<TimesheetUnlockResult | ApiEnvelope<TimesheetUnlockResult>>(
+    `/v1/tim/periods/${ym}/unlock`,
+    { method: "POST" },
+  );
+  if ("periodId" in body && typeof body.periodId === "string") return body;
+  return unwrap(body as ApiEnvelope<TimesheetUnlockResult>);
 }
