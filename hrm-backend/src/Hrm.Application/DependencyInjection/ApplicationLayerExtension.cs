@@ -14,6 +14,8 @@ using Hrm.Application.Leave.Queries;
 using Hrm.Application.Payroll.Commands;
 using Hrm.Application.Payroll.Dtos;
 using Hrm.Application.Payroll.Queries;
+using Hrm.Application.Probation.Dtos;
+using Hrm.Application.Probation.Queries;
 using Hrm.Application.Timekeeping;
 using Hrm.Application.Timekeeping.Commands;
 using Hrm.Application.Timekeeping.Dtos;
@@ -89,6 +91,9 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<ListPayMonthlyAllowancesQuery, IReadOnlyList<PayMonthlyAllowanceDto>>, ListPayMonthlyAllowancesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListMyPayslipsQuery, IReadOnlyList<PayPayslipDto>>, ListMyPayslipsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetPayslipQuery, PayPayslipDto>, GetPayslipQueryHandler>();
+
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationCasesQuery, IReadOnlyList<ProbationCaseDto>>, ListProbationCasesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetMyProbationMilestonesQuery, ProbationMilestoneDto>, GetMyProbationMilestonesQueryHandler>();
 
         return builder;
     }
