@@ -44,6 +44,7 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<ITimesheetImportRepository, TimesheetImportRepository>();
         builder.Services.AddScoped<IPayPeriodRepository, PayPeriodRepository>();
         builder.Services.AddScoped<IPayPeriodGate, PayPeriodRepository>();
+        builder.Services.AddScoped<IPayRegulationReadRepository, PayRegulationReadRepository>();
 
         // Credentials: User Secrets / env (ConnectionStrings__AppDbContext). Không hard-code password.
         // Placeholder chỉ để đăng ký DI khi chưa có secret — ping/swagger vẫn chạy; mở DB thật cần OQ-DLV-003.

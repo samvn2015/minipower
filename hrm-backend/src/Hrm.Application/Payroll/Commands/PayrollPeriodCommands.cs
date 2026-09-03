@@ -1,5 +1,6 @@
 using Hrm.Application.Common;
 using Hrm.Application.Payroll.Dtos;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Payroll;
 using Hrm.Domain.Payroll.Repositories;
@@ -17,7 +18,9 @@ public sealed record RunPayrollPeriodCommand(string? ActorIdpSubject, string Per
 public sealed class RunPayrollPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetImportRepository timesheets,
-    IPayPeriodRepository payPeriods)
+    IPayPeriodRepository payPeriods,
+    IEmployeeReadRepository employees,
+    IPayRegulationReadRepository regulations)
     : IAsyncCommandHandler<RunPayrollPeriodCommand, PayRunResult>
 {
     public async Task<PayRunResult> HandleAsync(
@@ -50,9 +53,26 @@ public sealed class RunPayrollPeriodCommandHandler(
                 $"TIM {ym} chưa chốt (hiện: {tim.Status}) — cấm tính lương (PAY-FR-001).");
         }
 
+        var probationReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.ProbationTimeWageFactor, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Thiếu master {PayRegulationCodes.ProbationTimeWageFactor}.");
+
+        var employeeIds = tim.Lines.Select(l => l.EmployeeId).Distinct().ToList();
+        var contracts = new Dictionary<Guid, EmployeeContractSnapshot?>();
+        foreach (var id in employeeIds)
+        {
+            var emp = await employees.FindByIdAsync(id, cancellationToken).ConfigureAwait(false);
+            contracts[id] = emp?.Contract;
+        }
+
         var lines = tim.Lines.Select(l =>
         {
+            contracts.TryGetValue(l.EmployeeId, out var contract);
+            var factor = PayrollTimeWageFactor.Resolve(contract, ym, probationReg.DecimalValue);
             var nTinh = PayrollDayCalculator.ComputeNTinh(l.WorkDays, l.LeaveDaysUnpaid);
+            // OT chỉ từ TIM Closed — PAY-FR-004 (không nhập tay).
             return new PayLineCreateModel(
                 l.EmployeeId,
                 l.EmployeeCode,
@@ -60,6 +80,7 @@ public sealed class RunPayrollPeriodCommandHandler(
                 l.LeaveDaysUnpaid,
                 l.LeaveDaysPaid,
                 nTinh,
+                factor,
                 l.Ot15,
                 l.Ot20,
                 l.Ot30);

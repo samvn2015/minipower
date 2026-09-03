@@ -51,9 +51,10 @@ python3 - <<'PY' "$PERIOD"
 import json, sys
 data = json.loads(sys.argv[1]).get("data", json.loads(sys.argv[1]))
 line = data["lines"][0]
-# N_tính = N_thực − N_KHL (no paid leave added again)
 assert float(line["nTinh"]) == float(line["workDays"]) - float(line["leaveDaysUnpaid"]), line
-print("N_tính OK:", line)
+assert "timeWageFactor" in line, line
+assert float(line["ot15"]) == 1, line  # OT from TIM (PAY-FR-004)
+print("N_tính + factor + OT OK:", line)
 PY
 
 echo "========== LM cannot run =========="

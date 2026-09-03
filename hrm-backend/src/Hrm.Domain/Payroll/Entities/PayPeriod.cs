@@ -43,6 +43,9 @@ public class PayLine : BaseEntity<Guid>
     /// <summary>N_tính = WorkDays − LeaveDaysUnpaid.</summary>
     public decimal NTinh { get; set; }
 
+    /// <summary>Hệ số lương thời gian (0.85 TV / 1.00 chính thức) — PAY-FR-003.</summary>
+    public decimal TimeWageFactor { get; set; } = 1.00m;
+
     public decimal Ot15 { get; set; }
 
     public decimal Ot20 { get; set; }
