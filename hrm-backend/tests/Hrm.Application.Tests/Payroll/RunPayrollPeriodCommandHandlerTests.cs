@@ -134,6 +134,44 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             handler.HandleAsync(new RunPayrollPeriodCommand("local-lm", "2027-07")));
     }
 
+    [Fact]
+    public async Task HandleAsync_ClosedPeriod_ThrowsConflict()
+    {
+        var pay = new FakePayRepo(closed: true);
+        var handler = new RunPayrollPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            pay,
+            new FakeEmployeeRepo(false),
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
+
+        var ex = await Assert.ThrowsAsync<ConflictException>(() =>
+            handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-05")));
+        Assert.Contains("PAY-FR-016", ex.SystemMessage ?? ex.Message, StringComparison.Ordinal);
+        Assert.Equal(1, pay.RunCount);
+    }
+
+    [Fact]
+    public async Task HandleAsync_DraftPeriod_Overwrites()
+    {
+        var pay = new FakePayRepo();
+        var handler = new RunPayrollPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            pay,
+            new FakeEmployeeRepo(false),
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
+
+        await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-05"));
+        await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-05"));
+        Assert.Equal(2, pay.RunCount);
+        Assert.Equal("Draft", pay.LastStatus);
+    }
+
     private sealed class FakeAccountRepo(string[] roles) : IIdentityAccountReadRepository
     {
         public Task<IdentityAccountSnapshot?> FindByIdpSubjectAsync(
@@ -258,12 +296,15 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Task.FromResult<TimesheetPeriodSnapshot?>(null);
     }
 
-    private sealed class FakePayRepo : IPayPeriodRepository
+    private sealed class FakePayRepo(bool closed = false) : IPayPeriodRepository
     {
         public IReadOnlyList<PayLineCreateModel>? LastLines { get; private set; }
+        public int RunCount { get; private set; }
+        public Guid? LastPeriodId { get; private set; }
+        public string? LastStatus { get; private set; }
 
         public Task<bool> IsClosedAsync(string periodYm, CancellationToken cancellationToken = default) =>
-            Task.FromResult(false);
+            Task.FromResult(closed);
 
         public Task<PayPeriodSnapshot?> FindByYmAsync(
             string periodYm,
@@ -279,9 +320,16 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             IReadOnlyList<PayLineCreateModel> lines,
             CancellationToken cancellationToken = default)
         {
+            RunCount++;
             LastLines = lines;
+            if (closed)
+                return Task.FromResult<PayPeriodSnapshot?>(null);
+
+            var id = Guid.NewGuid();
+            LastPeriodId = id;
+            LastStatus = nameof(PayPeriodStatus.Draft);
             return Task.FromResult<PayPeriodSnapshot?>(new PayPeriodSnapshot(
-                Guid.NewGuid(),
+                id,
                 periodYm,
                 PayPeriodStatus.Draft,
                 lines.Count,

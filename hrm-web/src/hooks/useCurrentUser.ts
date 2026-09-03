@@ -5,6 +5,10 @@ export function useCurrentUser(): CurrentUser {
   return useOutletContext<CurrentUser>();
 }
 
+export function isHr(user: CurrentUser): boolean {
+  return user.roles.some((role) => role === "IAM-ROLE-HR");
+}
+
 export function isHrOrIt(user: CurrentUser): boolean {
   return user.roles.some(
     (role) => role === "IAM-ROLE-HR" || role === "IAM-ROLE-IT",

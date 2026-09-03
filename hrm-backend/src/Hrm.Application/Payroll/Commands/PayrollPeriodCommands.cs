@@ -127,7 +127,7 @@ public sealed class RunPayrollPeriodCommandHandler(
             .ConfigureAwait(false)
             ?? throw new ConflictException(
                 HrmErrorCodes.Conflict,
-                $"Kỳ PAY {ym} đã chốt — không chạy lại Draft.");
+                $"Kỳ PAY {ym} đã chốt — không chạy lại Draft (PAY-FR-016).");
 
         return new PayRunResult(period.Id, period.PeriodYm, period.Status.ToString(), period.LineCount);
     }

@@ -46,8 +46,8 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
         IReadOnlyList<PayLineCreateModel> lines,
         CancellationToken cancellationToken = default)
     {
+        // Không Include Lines — ghi đè bằng ExecuteDelete + insert (PAY-FR-016).
         var entity = await db.PayPeriods
-            .Include(x => x.Lines)
             .FirstOrDefaultAsync(x => x.PeriodYm == periodYm, cancellationToken)
             .ConfigureAwait(false);
 
@@ -66,13 +66,15 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
         }
         else
         {
-            db.PayLines.RemoveRange(entity.Lines);
-            entity.Lines.Clear();
+            await db.PayLines
+                .Where(l => l.PeriodId == entity.Id)
+                .ExecuteDeleteAsync(cancellationToken)
+                .ConfigureAwait(false);
         }
 
         foreach (var line in lines)
         {
-            entity.Lines.Add(new PayLine
+            db.PayLines.Add(new PayLine
             {
                 Id = Guid.NewGuid(),
                 PeriodId = entity.Id,
@@ -103,7 +105,7 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
         entity.ClosedByIdpSubject = null;
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        return Map(entity);
+        return await FindByYmAsync(periodYm, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task MarkClosedAsync(

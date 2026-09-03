@@ -109,7 +109,7 @@ export function PayPeriodPage() {
           Kỳ (YYYY-MM)
           <input required value={periodYm} onChange={(e) => setPeriodYm(e.target.value)} />
         </label>
-        <button type="submit" className="btn" disabled={busy}>
+        <button type="submit" className="btn" disabled={busy || period?.status === "Closed"}>
           Tính kỳ
         </button>
         {period && period.status === "Draft" && (
@@ -153,6 +153,9 @@ export function PayPeriodPage() {
           </p>
           <div className="muted" style={{ fontSize: 13 }}>
             PAY-FR-008: không sửa N_thực / OT / phép trên màn này — chỉnh TIM rồi tính/chốt lại.
+            {period.status === "Closed" && (
+              <> Kỳ đã chốt — không tính lại, không hủy chốt (PAY-FR-016).</>
+            )}
           </div>
           {period.hasNTinhOverCap && (
             <div className="error-box">
