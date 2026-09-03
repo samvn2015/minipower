@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
 
-/// <summary>PRB — mốc EMP (FR-001) · T-15/T-7 (FR-002/003/011).</summary>
+/// <summary>PRB — mốc EMP · T-15/T-7 · đề xuất/chốt SoT.</summary>
 [ApiController]
 [Route("v1/prb")]
 [Authorize]
@@ -17,7 +17,6 @@ public sealed class ProbationController(
     IAsyncQueryDispatcher queries,
     IAsyncCommandDispatcher commands) : ControllerBase
 {
-    /// <summary>PRB-SCR-001 — HR/PGD: mọi NV đang TV (không bịa KT).</summary>
     [HttpGet("cases")]
     public async Task<IActionResult> ListCases(CancellationToken cancellationToken)
     {
@@ -27,7 +26,6 @@ public sealed class ProbationController(
         return Ok(items);
     }
 
-    /// <summary>PRB-SCR-004 — NV: mốc BĐ/KT chỉ từ HĐ EMP; không date picker ảo.</summary>
     [HttpGet("milestones/me")]
     public async Task<IActionResult> GetMyMilestones(CancellationToken cancellationToken)
     {
@@ -37,7 +35,6 @@ public sealed class ProbationController(
         return Ok(dto);
     }
 
-    /// <summary>Chạy job nhắc T-15/T-7 theo ngày lịch (FR-002/003/008/011). Không CRM sales.</summary>
     [HttpPost("jobs/reminders/run")]
     public async Task<IActionResult> RunReminders(
         [FromBody] RunProbationRemindersRequest? body,
@@ -67,6 +64,94 @@ public sealed class ProbationController(
             cancellationToken);
         return Ok(items);
     }
+
+    [HttpGet("masters/outcomes")]
+    public async Task<IActionResult> ListOutcomes(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListProbationOutcomesQuery, IReadOnlyList<ProbationMasterItemDto>>(
+            new ListProbationOutcomesQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet("masters/criteria")]
+    public async Task<IActionResult> ListCriteria(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListProbationCriteriaQuery, IReadOnlyList<ProbationMasterItemDto>>(
+            new ListProbationCriteriaQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet("masters/extend-durations")]
+    public async Task<IActionResult> ListExtendDurations(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<
+            ListProbationExtendDurationsQuery,
+            IReadOnlyList<ProbationExtendDurationDto>>(
+            new ListProbationExtendDurationsQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet("evaluations")]
+    public async Task<IActionResult> ListEvaluations(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>(
+            new ListProbationEvaluationsQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpPost("evaluations/{employeeId:guid}/propose")]
+    public async Task<IActionResult> Propose(
+        Guid employeeId,
+        [FromBody] ProposeProbationEvaluationRequest body,
+        CancellationToken cancellationToken)
+    {
+        var scores = body.Scores?.Select(s => new ProbationCriterionScoreInput(s.CriterionCode, s.Comment)).ToList();
+        var dto = await commands.DispatchAsync<ProposeProbationEvaluationCommand, ProbationEvaluationDto>(
+            new ProposeProbationEvaluationCommand(
+                User.GetIdpSubject(),
+                employeeId,
+                body.OutcomeCode,
+                body.Note,
+                scores),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("evaluations/{employeeId:guid}/decide")]
+    public async Task<IActionResult> Decide(
+        Guid employeeId,
+        [FromBody] DecideProbationEvaluationRequest body,
+        CancellationToken cancellationToken)
+    {
+        var scores = body.Scores?.Select(s => new ProbationCriterionScoreInput(s.CriterionCode, s.Comment)).ToList();
+        var dto = await commands.DispatchAsync<DecideProbationEvaluationCommand, ProbationEvaluationDto>(
+            new DecideProbationEvaluationCommand(
+                User.GetIdpSubject(),
+                employeeId,
+                body.OutcomeCode,
+                body.Note,
+                body.ExtendDurationCode,
+                scores),
+            cancellationToken);
+        return Ok(dto);
+    }
 }
 
 public sealed record RunProbationRemindersRequest(string? AsOfDate);
+
+public sealed record ProbationCriterionScoreRequest(string CriterionCode, string? Comment);
+
+public sealed record ProposeProbationEvaluationRequest(
+    string OutcomeCode,
+    string? Note,
+    IReadOnlyList<ProbationCriterionScoreRequest>? Scores);
+
+public sealed record DecideProbationEvaluationRequest(
+    string OutcomeCode,
+    string? Note,
+    string? ExtendDurationCode,
+    IReadOnlyList<ProbationCriterionScoreRequest>? Scores);

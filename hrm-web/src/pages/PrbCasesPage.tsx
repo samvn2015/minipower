@@ -1,29 +1,41 @@
 import { useEffect, useState } from "react";
 import {
+  decideProbationEvaluation,
   fetchProbationCases,
+  fetchProbationOutcomes,
   fetchProbationReminders,
   runProbationReminders,
 } from "../api/client";
-import type { ProbationCase, ProbationReminder } from "../api/types";
+import type { ProbationCase, ProbationMasterItem, ProbationReminder } from "../api/types";
 
 export function PrbCasesPage() {
   const [items, setItems] = useState<ProbationCase[]>([]);
   const [reminders, setReminders] = useState<ProbationReminder[]>([]);
+  const [outcomes, setOutcomes] = useState<ProbationMasterItem[]>([]);
   const [asOf, setAsOf] = useState("");
+  const [decideEmpId, setDecideEmpId] = useState("");
+  const [decideCode, setDecideCode] = useState("PASS");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function reload() {
-    const [cases, rem] = await Promise.all([fetchProbationCases(), fetchProbationReminders()]);
+    const [cases, rem, outs] = await Promise.all([
+      fetchProbationCases(),
+      fetchProbationReminders(),
+      fetchProbationOutcomes(),
+    ]);
     setItems(cases);
     setReminders(rem);
+    setOutcomes(outs);
+    if (!decideEmpId && cases[0]) setDecideEmpId(cases[0].employeeId);
   }
 
   useEffect(() => {
     reload()
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onRunJob() {
@@ -41,13 +53,28 @@ export function PrbCasesPage() {
     }
   }
 
+  async function onDecide() {
+    setError(null);
+    setMessage(null);
+    try {
+      const dto = await decideProbationEvaluation(decideEmpId, {
+        outcomeCode: decideCode,
+        note: "Chốt từ SCR-001",
+        extendDurationCode: decideCode === "EXTEND" ? "EXT-1M" : undefined,
+      });
+      setMessage(`Đã chốt ${dto.employeeCode}: ${dto.decidedOutcomeCode} (SoT HR).`);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Chốt thất bại");
+    }
+  }
+
   return (
     <div className="card stack">
       <div>
         <h2>Hàng thử việc</h2>
         <p className="muted">
-          PRB-SCR-001 — BĐ/KT từ HĐ EMP (FR-001). Job T-15/T-7 ngày lịch (FR-002/003); kênh in-app+email
-          (FR-011); không CRM sales.
+          PRB-SCR-001/003 — mốc EMP · job T-15/T-7 · HR chốt 3 mã master (FR-004/009).
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
@@ -55,11 +82,37 @@ export function PrbCasesPage() {
 
       <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <label className="muted">
-          AsOf (yyyy-MM-dd){" "}
-          <input value={asOf} onChange={(e) => setAsOf(e.target.value)} placeholder="hôm nay UTC" />
+          AsOf{" "}
+          <input value={asOf} onChange={(e) => setAsOf(e.target.value)} placeholder="yyyy-MM-dd" />
         </label>
         <button type="button" className="btn" onClick={onRunJob}>
           Chạy job T-15/T-7
+        </button>
+      </div>
+
+      <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <label className="muted">
+          NV{" "}
+          <select value={decideEmpId} onChange={(e) => setDecideEmpId(e.target.value)}>
+            {items.map((c) => (
+              <option key={c.employeeId} value={c.employeeId}>
+                {c.employeeCode}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="muted">
+          Kết quả{" "}
+          <select value={decideCode} onChange={(e) => setDecideCode(e.target.value)}>
+            {outcomes.map((o) => (
+              <option key={o.code} value={o.code}>
+                {o.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <button type="button" className="btn" onClick={onDecide} disabled={!decideEmpId}>
+          HR Chốt SoT
         </button>
       </div>
 
@@ -107,7 +160,6 @@ export function PrbCasesPage() {
                   <th>NV</th>
                   <th>Due</th>
                   <th>Assignee</th>
-                  <th>Email</th>
                   <th>Channel</th>
                 </tr>
               </thead>
@@ -118,7 +170,6 @@ export function PrbCasesPage() {
                     <td>{r.employeeCode}</td>
                     <td>{r.dueDate}</td>
                     <td>{r.assigneeEmployeeCode ?? "HR"}</td>
-                    <td>{r.emailTo}</td>
                     <td>{r.channel}</td>
                   </tr>
                 ))}

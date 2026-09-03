@@ -70,6 +70,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<ProbationReminder> ProbationReminders => Set<ProbationReminder>();
 
+    public DbSet<ProbationOutcome> ProbationOutcomes => Set<ProbationOutcome>();
+
+    public DbSet<ProbationCriterion> ProbationCriteria => Set<ProbationCriterion>();
+
+    public DbSet<ProbationExtendDuration> ProbationExtendDurations => Set<ProbationExtendDuration>();
+
+    public DbSet<ProbationEvaluation> ProbationEvaluations => Set<ProbationEvaluation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
