@@ -12,7 +12,7 @@ public sealed class CreateEmployeeCommandHandlerTests
     [Fact]
     public async Task HandleAsync_NvCannotCreate()
     {
-        var handler = CreateHandler(new FakeEmployeeRepo());
+        var handler = CreateHandler(new FakeEmployeeRepo(), NvActor);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new CreateEmployeeCommand(
@@ -123,9 +123,11 @@ public sealed class CreateEmployeeCommandHandlerTests
         Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.EmployeeCreated);
     }
 
-    private static CreateEmployeeCommandHandler CreateHandler(FakeEmployeeRepo read) =>
+    private static CreateEmployeeCommandHandler CreateHandler(
+        FakeEmployeeRepo read,
+        IdentityAccountSnapshot? actor = null) =>
         new(
-            new FakeAccountRepo(HrActor),
+            new FakeAccountRepo(actor ?? HrActor),
             new FakeOrgUnitRepo(),
             new FakeEducationLevelRepo(),
             read,
