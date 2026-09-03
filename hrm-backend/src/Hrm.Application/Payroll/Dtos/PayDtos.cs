@@ -76,3 +76,18 @@ public sealed record PayPayslipDto(
     decimal BhAmount,
     decimal TncnAmount,
     decimal NetPay);
+
+/// <summary>Kết quả từ chối sửa dòng — PAY-FR-008 (không bao giờ thành công).</summary>
+public sealed record PayLineEditRejectedResult(string PeriodYm, Guid LineId, string Message);
+
+public sealed record PayExportItemDto(
+    string EmployeeCode,
+    string? ToAddress,
+    string? PdfFileName,
+    string? PdfBase64);
+
+public sealed record PayExportResult(
+    string PeriodYm,
+    int PdfCount,
+    int EmailCount,
+    IReadOnlyList<PayExportItemDto> Items);

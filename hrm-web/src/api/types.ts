@@ -334,3 +334,17 @@ export type PayPayslip = {
   tncnAmount: number;
   netPay: number;
 };
+
+export type PayExportItem = {
+  employeeCode: string;
+  toAddress?: string | null;
+  pdfFileName?: string | null;
+  pdfBase64?: string | null;
+};
+
+export type PayExportResult = {
+  periodYm: string;
+  pdfCount: number;
+  emailCount: number;
+  items: PayExportItem[];
+};
