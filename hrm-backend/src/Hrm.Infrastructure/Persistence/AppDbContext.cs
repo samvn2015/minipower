@@ -53,6 +53,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<PayLine> PayLines => Set<PayLine>();
 
+    public DbSet<PayRegulation> PayRegulations => Set<PayRegulation>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

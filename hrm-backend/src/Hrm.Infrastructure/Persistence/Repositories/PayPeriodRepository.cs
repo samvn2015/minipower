@@ -82,6 +82,7 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
                 LeaveDaysUnpaid = line.LeaveDaysUnpaid,
                 LeaveDaysPaid = line.LeaveDaysPaid,
                 NTinh = line.NTinh,
+                TimeWageFactor = line.TimeWageFactor,
                 Ot15 = line.Ot15,
                 Ot20 = line.Ot20,
                 Ot30 = line.Ot30
@@ -143,6 +144,7 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
                 l.LeaveDaysUnpaid,
                 l.LeaveDaysPaid,
                 l.NTinh,
+                l.TimeWageFactor,
                 l.Ot15,
                 l.Ot20,
                 l.Ot30)).ToList());

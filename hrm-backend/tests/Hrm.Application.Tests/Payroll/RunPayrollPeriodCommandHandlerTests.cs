@@ -1,4 +1,6 @@
 using Hrm.Application.Payroll.Commands;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Payroll;
@@ -17,20 +19,38 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     [Fact]
     public async Task HandleAsync_TimClosed_CreatesDraftWithNTinh()
     {
-        var tim = new FakeTimRepo(TimesheetPeriodStatus.Closed, workDays: 22, unpaid: 2, paid: 2);
         var pay = new FakePayRepo();
         var handler = new RunPayrollPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
-            tim,
-            pay);
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, workDays: 22, unpaid: 2, paid: 2, ot15: 1),
+            pay,
+            new FakeEmployeeRepo(probation: false),
+            new FakeRegRepo(0.85m));
 
         var result = await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
         Assert.Equal("Draft", result.Status);
         Assert.Equal(1, result.LineCount);
         Assert.NotNull(pay.LastLines);
-        Assert.Equal(20m, pay.LastLines![0].NTinh); // 22 - 2
-        Assert.Equal(2m, pay.LastLines[0].LeaveDaysPaid); // audit only — not added to N_tính
+        Assert.Equal(20m, pay.LastLines![0].NTinh);
+        Assert.Equal(1.00m, pay.LastLines[0].TimeWageFactor);
+        Assert.Equal(1m, pay.LastLines[0].Ot15); // OT từ TIM (FR-004)
+    }
+
+    [Fact]
+    public async Task HandleAsync_ProbationContract_AppliesMasterFactor()
+    {
+        var pay = new FakePayRepo();
+        var handler = new RunPayrollPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            pay,
+            new FakeEmployeeRepo(probation: true),
+            new FakeRegRepo(0.85m));
+
+        await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
+
+        Assert.Equal(0.85m, pay.LastLines![0].TimeWageFactor);
     }
 
     [Fact]
@@ -38,8 +58,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     {
         var handler = new RunPayrollPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Draft, 20, 0, 0),
-            new FakePayRepo());
+            new FakeTimRepo(TimesheetPeriodStatus.Draft, 20, 0, 0, 0),
+            new FakePayRepo(),
+            new FakeEmployeeRepo(false),
+            new FakeRegRepo(0.85m));
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07")));
@@ -50,8 +72,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     {
         var handler = new RunPayrollPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-LM"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0),
-            new FakePayRepo());
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            new FakePayRepo(),
+            new FakeEmployeeRepo(false),
+            new FakeRegRepo(0.85m));
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-lm", "2027-07")));
@@ -71,11 +95,56 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Task.FromResult<IdentityAccountSnapshot?>(null);
     }
 
+    private sealed class FakeRegRepo(decimal factor) : IPayRegulationReadRepository
+    {
+        public Task<PayRegulationSnapshot?> FindByCodeAsync(
+            string code,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<PayRegulationSnapshot?>(
+                new PayRegulationSnapshot(code, "TV", factor));
+    }
+
+    private sealed class FakeEmployeeRepo(bool probation) : IEmployeeReadRepository
+    {
+        public Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(CancellationToken cancellationToken = default)
+            => Task.FromResult<IReadOnlyList<EmployeeSnapshot>>([]);
+
+        public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
+        {
+            EmployeeContractSnapshot? contract = probation
+                ? new EmployeeContractSnapshot("PROBATION", new DateOnly(2027, 1, 1), null, true)
+                : new EmployeeContractSnapshot("OFFICIAL", new DateOnly(2026, 1, 1), null, false);
+            return Task.FromResult<EmployeeSnapshot?>(new EmployeeSnapshot(
+                EmpId, "MNV-DEV", "Dev", null, null, null, null, null, null, null,
+                contract, null, EmployeeStatus.Active));
+        }
+
+        public Task<EmployeeSnapshot?> FindByEmployeeCodeAsync(
+            string employeeCode,
+            CancellationToken cancellationToken = default) =>
+            FindByIdAsync(EmpId, cancellationToken);
+
+        public Task<EmployeeSnapshot?> FindByEmailCtyAsync(
+            string emailCty,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<EmployeeSnapshot?>(null);
+
+        public Task<EmployeeUniqueField?> FindDuplicateAsync(
+            string employeeCode,
+            string? cccd,
+            string? emailCty,
+            string? taxId,
+            Guid? excludeEmployeeId = null,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<EmployeeUniqueField?>(null);
+    }
+
     private sealed class FakeTimRepo(
         TimesheetPeriodStatus status,
         decimal workDays,
         decimal unpaid,
-        decimal paid) : ITimesheetImportRepository
+        decimal paid,
+        decimal ot15) : ITimesheetImportRepository
     {
         public Task<Guid> CreatePreviewAsync(
             TimesheetImportBatchCreateModel model,
@@ -98,7 +167,7 @@ public sealed class RunPayrollPeriodCommandHandlerTests
                 1,
                 [
                     new TimesheetLineSnapshot(
-                        Guid.NewGuid(), EmpId, "MNV-DEV", workDays, 1, 0, 0, 0, paid, unpaid, 0)
+                        Guid.NewGuid(), EmpId, "MNV-DEV", workDays, ot15, 0, 0, 0, paid, unpaid, 0)
                 ]));
 
         public Task<IReadOnlyList<TimesheetPeriodSnapshot>> ListPeriodsAsync(
@@ -159,6 +228,7 @@ public sealed class RunPayrollPeriodCommandHandlerTests
                     l.LeaveDaysUnpaid,
                     l.LeaveDaysPaid,
                     l.NTinh,
+                    l.TimeWageFactor,
                     l.Ot15,
                     l.Ot20,
                     l.Ot30)).ToList()));

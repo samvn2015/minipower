@@ -43,7 +43,7 @@ export function PayPeriodPage() {
       <div>
         <h2>Tính kỳ lương</h2>
         <p className="muted">
-          PAY-SCR-002 — chỉ khi TIM đã chốt; N_tính = N_thực − N_KHL (không cộng phép hưởng).
+          PAY-SCR-002 — TIM đã chốt; N_tính = N_thực − N_KHL; hệ số TV từ master; OT chỉ từ công.
         </p>
       </div>
 
@@ -74,6 +74,7 @@ export function PayPeriodPage() {
                   <th>N_KHL</th>
                   <th>Phép hưởng</th>
                   <th>N_tính</th>
+                  <th>Hệ số TV</th>
                   <th>OT 1.5</th>
                   <th>OT 2.0</th>
                   <th>OT 3.0</th>
@@ -87,6 +88,7 @@ export function PayPeriodPage() {
                     <td>{l.leaveDaysUnpaid}</td>
                     <td>{l.leaveDaysPaid}</td>
                     <td>{l.nTinh}</td>
+                    <td>{l.timeWageFactor}</td>
                     <td>{l.ot15}</td>
                     <td>{l.ot20}</td>
                     <td>{l.ot30}</td>

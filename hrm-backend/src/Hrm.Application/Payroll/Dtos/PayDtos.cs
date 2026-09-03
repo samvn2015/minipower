@@ -8,6 +8,7 @@ public sealed record PayLineDto(
     decimal LeaveDaysUnpaid,
     decimal LeaveDaysPaid,
     decimal NTinh,
+    decimal TimeWageFactor,
     decimal Ot15,
     decimal Ot20,
     decimal Ot30);

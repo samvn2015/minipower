@@ -8,6 +8,7 @@ public sealed record PayLineSnapshot(
     decimal LeaveDaysUnpaid,
     decimal LeaveDaysPaid,
     decimal NTinh,
+    decimal TimeWageFactor,
     decimal Ot15,
     decimal Ot20,
     decimal Ot30);
@@ -26,6 +27,7 @@ public sealed record PayLineCreateModel(
     decimal LeaveDaysUnpaid,
     decimal LeaveDaysPaid,
     decimal NTinh,
+    decimal TimeWageFactor,
     decimal Ot15,
     decimal Ot20,
     decimal Ot30);

@@ -30,6 +30,7 @@ internal sealed class PayLineConfiguration : IEntityTypeConfiguration<PayLine>
         builder.Property(x => x.LeaveDaysUnpaid).HasPrecision(5, 2);
         builder.Property(x => x.LeaveDaysPaid).HasPrecision(5, 2);
         builder.Property(x => x.NTinh).HasPrecision(5, 2);
+        builder.Property(x => x.TimeWageFactor).HasPrecision(5, 4);
         builder.Property(x => x.Ot15).HasPrecision(5, 2);
         builder.Property(x => x.Ot20).HasPrecision(5, 2);
         builder.Property(x => x.Ot30).HasPrecision(5, 2);

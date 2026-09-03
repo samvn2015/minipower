@@ -47,6 +47,7 @@ public sealed class GetPayrollPeriodQueryHandler(
                 l.LeaveDaysUnpaid,
                 l.LeaveDaysPaid,
                 l.NTinh,
+                l.TimeWageFactor,
                 l.Ot15,
                 l.Ot20,
                 l.Ot30)).ToList());

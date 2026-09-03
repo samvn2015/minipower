@@ -258,6 +258,7 @@ export type PayLine = {
   leaveDaysUnpaid: number;
   leaveDaysPaid: number;
   nTinh: number;
+  timeWageFactor: number;
   ot15: number;
   ot20: number;
   ot30: number;
