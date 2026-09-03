@@ -109,4 +109,12 @@ public interface ITimesheetImportRepository
         string closedByIdpSubject,
         IReadOnlyList<TimesheetLeaveMergeLine> leaveMerge,
         CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Bỏ chốt Closed → Draft (TIM-FR-012). Returns null if missing / not Closed.
+    /// Unwinds leave merge so N_thực trở về trước chốt.
+    /// </summary>
+    Task<TimesheetPeriodSnapshot?> UnlockPeriodAsync(
+        string periodYm,
+        CancellationToken cancellationToken = default);
 }

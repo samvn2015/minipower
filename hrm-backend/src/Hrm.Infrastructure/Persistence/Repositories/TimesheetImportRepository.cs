@@ -197,6 +197,34 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
         return MapPeriod(period);
     }
 
+    public async Task<TimesheetPeriodSnapshot?> UnlockPeriodAsync(
+        string periodYm,
+        CancellationToken cancellationToken = default)
+    {
+        var period = await db.TimesheetPeriods
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.PeriodYm == periodYm, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (period is null || period.Status != TimesheetPeriodStatus.Closed)
+            return null;
+
+        foreach (var line in period.Lines)
+        {
+            line.WorkDays -= line.LeaveDaysPaid;
+            line.LeaveDaysPaid = 0;
+            line.LeaveDaysUnpaid = 0;
+            line.LeaveDaysOther = 0;
+        }
+
+        period.Status = TimesheetPeriodStatus.Draft;
+        period.ClosedAtUtc = null;
+        period.ClosedByIdpSubject = null;
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return MapPeriod(period);
+    }
+
     private static TimesheetPeriodSnapshot MapPeriod(TimesheetPeriod entity) =>
         new(
             entity.Id,

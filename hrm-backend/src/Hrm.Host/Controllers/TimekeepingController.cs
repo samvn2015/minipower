@@ -137,6 +137,15 @@ public sealed class TimekeepingController(
         return Ok(result);
     }
 
+    [HttpPost("periods/{ym}/unlock")]
+    public async Task<IActionResult> UnlockPeriod(string ym, CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<UnlockTimesheetPeriodCommand, TimesheetUnlockResult>(
+            new UnlockTimesheetPeriodCommand(User.GetIdpSubject(), ym),
+            cancellationToken);
+        return Ok(result);
+    }
+
     public sealed record CreateTimesheetTemplateRequest(
         string VersionCode,
         string Name,

@@ -1,6 +1,7 @@
 using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Identity.Entities;
 using Hrm.Domain.Leave.Entities;
+using Hrm.Domain.Payroll.Entities;
 using Hrm.Domain.Timekeeping.Entities;
 using Jarvis.EntityFramework.DataStorages;
 using Microsoft.EntityFrameworkCore;
@@ -47,6 +48,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<TimesheetPeriod> TimesheetPeriods => Set<TimesheetPeriod>();
 
     public DbSet<TimesheetLine> TimesheetLines => Set<TimesheetLine>();
+
+    public DbSet<PayPeriod> PayPeriods => Set<PayPeriod>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
