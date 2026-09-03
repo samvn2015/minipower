@@ -269,6 +269,9 @@ export type PayPeriod = {
   periodYm: string;
   status: string;
   lineCount: number;
+  standardWorkDays: number;
+  hasNTinhOverCap: boolean;
+  overCapEmployeeCodes: string[];
   lines: PayLine[];
 };
 

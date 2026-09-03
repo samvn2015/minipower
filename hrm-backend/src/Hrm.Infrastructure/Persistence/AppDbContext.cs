@@ -55,6 +55,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<PayRegulation> PayRegulations => Set<PayRegulation>();
 
+    public DbSet<PayWorkdayCalendar> PayWorkdayCalendars => Set<PayWorkdayCalendar>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

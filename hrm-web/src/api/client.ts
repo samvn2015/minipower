@@ -465,3 +465,12 @@ export async function runPayrollPeriod(ym: string): Promise<PayRunResult> {
   if ("periodId" in body && typeof body.periodId === "string") return body;
   return unwrap(body as ApiEnvelope<PayRunResult>);
 }
+
+export async function closePayrollPeriod(ym: string): Promise<PayRunResult> {
+  const body = await apiFetch<PayRunResult | ApiEnvelope<PayRunResult>>(
+    `/v1/pay/periods/${ym}/close`,
+    { method: "POST" },
+  );
+  if ("periodId" in body && typeof body.periodId === "string") return body;
+  return unwrap(body as ApiEnvelope<PayRunResult>);
+}
