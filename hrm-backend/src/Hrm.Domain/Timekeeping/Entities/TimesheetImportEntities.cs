@@ -49,6 +49,9 @@ public class TimesheetImportRow : BaseEntity<Guid>
 
     public decimal? Ot30 { get; set; }
 
+    /// <summary>Giờ OT chưa phân loại 1.5/2.0/3.0 — TIM-FR-007.</summary>
+    public decimal? OtUnclassified { get; set; }
+
     public bool IsOk { get; set; }
 
     public string? ErrorCode { get; set; }
@@ -68,6 +71,10 @@ public class TimesheetPeriod : BaseEntity<Guid>
     public DateTime? CommittedAtUtc { get; set; }
 
     public string? CommittedByIdpSubject { get; set; }
+
+    public DateTime? ClosedAtUtc { get; set; }
+
+    public string? ClosedByIdpSubject { get; set; }
 
     public ICollection<TimesheetLine> Lines { get; set; } = [];
 }
@@ -90,4 +97,7 @@ public class TimesheetLine : BaseEntity<Guid>
     public decimal Ot20 { get; set; }
 
     public decimal Ot30 { get; set; }
+
+    /// <summary>Giờ OT chưa phân loại — phải = 0 trước khi chốt (TIM-FR-007).</summary>
+    public decimal OtUnclassified { get; set; }
 }

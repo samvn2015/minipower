@@ -13,7 +13,8 @@ public static class TimesheetImportRowValidator
         decimal? WorkDays,
         decimal? Ot15,
         decimal? Ot20,
-        decimal? Ot30);
+        decimal? Ot30,
+        decimal? OtUnclassified);
 
     public static async Task<IReadOnlyList<TimesheetImportRowCreateModel>> ValidateAsync(
         IReadOnlyList<RawImportRow> rows,
@@ -57,6 +58,7 @@ public static class TimesheetImportRowValidator
                 row.Ot15,
                 row.Ot20,
                 row.Ot30,
+                row.OtUnclassified,
                 IsOk: true,
                 ErrorCode: null,
                 ErrorMessage: null));
@@ -74,6 +76,7 @@ public static class TimesheetImportRowValidator
             row.Ot15,
             row.Ot20,
             row.Ot30,
+            row.OtUnclassified,
             IsOk: false,
             ErrorCode: code,
             ErrorMessage: message);

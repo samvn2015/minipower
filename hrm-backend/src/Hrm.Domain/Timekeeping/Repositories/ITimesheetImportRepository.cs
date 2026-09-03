@@ -9,6 +9,7 @@ public sealed record TimesheetImportRowSnapshot(
     decimal? Ot15,
     decimal? Ot20,
     decimal? Ot30,
+    decimal? OtUnclassified,
     bool IsOk,
     string? ErrorCode,
     string? ErrorMessage);
@@ -35,6 +36,7 @@ public sealed record TimesheetImportRowCreateModel(
     decimal? Ot15,
     decimal? Ot20,
     decimal? Ot30,
+    decimal? OtUnclassified,
     bool IsOk,
     string? ErrorCode,
     string? ErrorMessage);
@@ -47,12 +49,23 @@ public sealed record TimesheetImportBatchCreateModel(
     string? FileName,
     IReadOnlyList<TimesheetImportRowCreateModel> Rows);
 
+public sealed record TimesheetLineSnapshot(
+    Guid Id,
+    Guid EmployeeId,
+    string EmployeeCode,
+    decimal WorkDays,
+    decimal Ot15,
+    decimal Ot20,
+    decimal Ot30,
+    decimal OtUnclassified);
+
 public sealed record TimesheetPeriodSnapshot(
     Guid Id,
     string PeriodYm,
     TimesheetPeriodStatus Status,
     Guid? SourceImportBatchId,
-    int LineCount);
+    int LineCount,
+    IReadOnlyList<TimesheetLineSnapshot> Lines);
 
 public interface ITimesheetImportRepository
 {
@@ -68,11 +81,23 @@ public interface ITimesheetImportRepository
         string periodYm,
         CancellationToken cancellationToken = default);
 
+    Task<IReadOnlyList<TimesheetPeriodSnapshot>> ListPeriodsAsync(
+        CancellationToken cancellationToken = default);
+
     /// <summary>
     /// Commit preview → Period Draft + lines. Returns null if batch missing / already committed / has Must errors / period Closed.
     /// </summary>
     Task<TimesheetPeriodSnapshot?> CommitAsync(
         Guid batchId,
         string committedByIdpSubject,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Close Draft period. Returns null if missing / not Draft.
+    /// Caller must validate OT unclassified before calling.
+    /// </summary>
+    Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
+        string periodYm,
+        string closedByIdpSubject,
         CancellationToken cancellationToken = default);
 }

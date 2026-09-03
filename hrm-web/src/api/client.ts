@@ -16,6 +16,8 @@ import type {
   TimesheetTemplate,
   TimesheetImportBatch,
   TimesheetCommitResult,
+  TimesheetPeriod,
+  TimesheetCloseResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -402,6 +404,7 @@ export async function previewTimesheetImport(payload: {
     ot15?: number;
     ot20?: number;
     ot30?: number;
+    otUnclassified?: number;
   }[];
 }): Promise<TimesheetImportBatch> {
   const body = await apiFetch<TimesheetImportBatch | ApiEnvelope<TimesheetImportBatch>>(
@@ -419,4 +422,19 @@ export async function commitTimesheetImport(id: string): Promise<TimesheetCommit
   );
   if ("periodId" in body && typeof body.periodId === "string") return body;
   return unwrap(body as ApiEnvelope<TimesheetCommitResult>);
+}
+
+export async function fetchTimesheetPeriods(): Promise<TimesheetPeriod[]> {
+  const body = await apiFetch<TimesheetPeriod[] | ApiEnvelope<TimesheetPeriod[]>>("/v1/tim/periods");
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<TimesheetPeriod[]>);
+}
+
+export async function closeTimesheetPeriod(ym: string): Promise<TimesheetCloseResult> {
+  const body = await apiFetch<TimesheetCloseResult | ApiEnvelope<TimesheetCloseResult>>(
+    `/v1/tim/periods/${ym}/close`,
+    { method: "POST" },
+  );
+  if ("periodId" in body && typeof body.periodId === "string") return body;
+  return unwrap(body as ApiEnvelope<TimesheetCloseResult>);
 }

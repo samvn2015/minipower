@@ -68,7 +68,10 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<PublishTimesheetTemplateCommand, TimesheetTemplatePublishResult>, PublishTimesheetTemplateCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<PreviewTimesheetImportCommand, TimesheetImportBatchDto>, PreviewTimesheetImportCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CommitTimesheetImportCommand, TimesheetCommitResult>, CommitTimesheetImportCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CloseTimesheetPeriodCommand, TimesheetCloseResult>, CloseTimesheetPeriodCommandHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetTimesheetImportBatchQuery, TimesheetImportBatchDto>, GetTimesheetImportBatchQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListTimesheetPeriodsQuery, IReadOnlyList<TimesheetPeriodDto>>, ListTimesheetPeriodsQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetTimesheetPeriodQuery, TimesheetPeriodDto>, GetTimesheetPeriodQueryHandler>();
 
         return builder;
     }

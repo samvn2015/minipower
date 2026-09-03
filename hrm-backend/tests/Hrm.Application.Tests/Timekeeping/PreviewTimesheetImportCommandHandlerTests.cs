@@ -30,7 +30,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
                 "2026-09",
                 "TIM-WRONG",
                 "x.csv",
-                [new TimesheetImportRowValidator.RawImportRow(1, "MNV-DEV", 22, 0, 0, 0)])));
+                [new TimesheetImportRowValidator.RawImportRow(1, "MNV-DEV", 22, 0, 0, 0, null)])));
     }
 
     [Fact]
@@ -48,7 +48,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
             "2026-09",
             "TIM-V1",
             "x.csv",
-            [new TimesheetImportRowValidator.RawImportRow(1, "NO-SUCH", 22, null, null, null)]));
+            [new TimesheetImportRowValidator.RawImportRow(1, "NO-SUCH", 22, null, null, null, null)]));
 
         Assert.True(result.HasMustErrors);
         Assert.Equal(1, result.ErrorRows);
@@ -69,7 +69,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
                 "2026-09",
                 "TIM-V1",
                 null,
-                [new TimesheetImportRowValidator.RawImportRow(1, "MNV-DEV", 22, null, null, null)])));
+                [new TimesheetImportRowValidator.RawImportRow(1, "MNV-DEV", 22, null, null, null, null)])));
     }
 
     [Fact]
@@ -186,7 +186,8 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
                 return Task.FromResult<TimesheetImportBatchSnapshot?>(new TimesheetImportBatchSnapshot(
                     id, "2026-09", TemplateId, "TIM-V1", TimesheetImportBatchStatus.Preview,
                     "local-dev", DateTime.UtcNow, null, 1, 1, true,
-                    [new TimesheetImportRowSnapshot(Guid.NewGuid(), 1, "X", null, null, null, null, null, false, "E", "err")]));
+                    [new TimesheetImportRowSnapshot(
+                        Guid.NewGuid(), 1, "X", null, null, null, null, null, null, false, "E", "err")]));
             }
 
             var model = LastModel!;
@@ -204,7 +205,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
                 model.Rows.Any(r => !r.IsOk),
                 model.Rows.Select(r => new TimesheetImportRowSnapshot(
                     Guid.NewGuid(), r.RowNumber, r.EmployeeCode, r.EmployeeId, r.WorkDays, r.Ot15, r.Ot20, r.Ot30,
-                    r.IsOk, r.ErrorCode, r.ErrorMessage)).ToList()));
+                    r.OtUnclassified, r.IsOk, r.ErrorCode, r.ErrorMessage)).ToList()));
         }
 
         public Task<TimesheetPeriodSnapshot?> FindPeriodByYmAsync(
@@ -212,9 +213,19 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
             CancellationToken cancellationToken = default) =>
             Task.FromResult<TimesheetPeriodSnapshot?>(null);
 
+        public Task<IReadOnlyList<TimesheetPeriodSnapshot>> ListPeriodsAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<TimesheetPeriodSnapshot>>([]);
+
         public Task<TimesheetPeriodSnapshot?> CommitAsync(
             Guid batchId,
             string committedByIdpSubject,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<TimesheetPeriodSnapshot?>(null);
+
+        public Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
+            string periodYm,
+            string closedByIdpSubject,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<TimesheetPeriodSnapshot?>(null);
     }

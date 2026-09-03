@@ -96,6 +96,16 @@ internal sealed class TimesheetTemplateColumnConfiguration : IEntityTypeConfigur
                 SortOrder = 5,
                 IsRequired = false,
                 MapsTo = "Ot30"
+            },
+            new TimesheetTemplateColumn
+            {
+                Id = TimSeed.ColOtUnclassifiedId,
+                TemplateVersionId = TimSeed.TemplateV1Id,
+                ColumnKey = "ot_unclassified",
+                DisplayName = "OT chưa phân loại",
+                SortOrder = 6,
+                IsRequired = false,
+                MapsTo = "OtUnclassified"
             });
     }
 }

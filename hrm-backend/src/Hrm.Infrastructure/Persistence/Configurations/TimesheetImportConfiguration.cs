@@ -31,6 +31,7 @@ internal sealed class TimesheetImportRowConfiguration : IEntityTypeConfiguration
         builder.Property(x => x.Ot15).HasPrecision(5, 2);
         builder.Property(x => x.Ot20).HasPrecision(5, 2);
         builder.Property(x => x.Ot30).HasPrecision(5, 2);
+        builder.Property(x => x.OtUnclassified).HasPrecision(5, 2);
         builder.Property(x => x.ErrorCode).HasMaxLength(64);
         builder.Property(x => x.ErrorMessage).HasMaxLength(1000);
         builder.HasOne(x => x.Batch)
@@ -51,6 +52,7 @@ internal sealed class TimesheetPeriodConfiguration : IEntityTypeConfiguration<Ti
         builder.HasIndex(x => x.PeriodYm).IsUnique();
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
         builder.Property(x => x.CommittedByIdpSubject).HasMaxLength(256);
+        builder.Property(x => x.ClosedByIdpSubject).HasMaxLength(256);
     }
 }
 
@@ -65,6 +67,7 @@ internal sealed class TimesheetLineConfiguration : IEntityTypeConfiguration<Time
         builder.Property(x => x.Ot15).HasPrecision(5, 2);
         builder.Property(x => x.Ot20).HasPrecision(5, 2);
         builder.Property(x => x.Ot30).HasPrecision(5, 2);
+        builder.Property(x => x.OtUnclassified).HasPrecision(5, 2);
         builder.HasOne(x => x.Period)
             .WithMany(x => x.Lines)
             .HasForeignKey(x => x.PeriodId)

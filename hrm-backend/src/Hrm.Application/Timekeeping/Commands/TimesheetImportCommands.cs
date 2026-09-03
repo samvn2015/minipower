@@ -121,6 +121,61 @@ public sealed class CommitTimesheetImportCommandHandler(
     }
 }
 
+public sealed record CloseTimesheetPeriodCommand(string? ActorIdpSubject, string PeriodYm) : ICommand;
+
+public sealed class CloseTimesheetPeriodCommandHandler(
+    IIdentityAccountReadRepository accounts,
+    ITimesheetImportRepository imports)
+    : IAsyncCommandHandler<CloseTimesheetPeriodCommand, TimesheetCloseResult>
+{
+    public async Task<TimesheetCloseResult> HandleAsync(
+        CloseTimesheetPeriodCommand command,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        IamAccessGuard.RequireAuthenticated(command.ActorIdpSubject);
+        var actor = await accounts.FindByIdpSubjectAsync(command.ActorIdpSubject!, cancellationToken)
+            .ConfigureAwait(false);
+        TimHrGuard.RequireHrForImport(actor);
+
+        if (string.IsNullOrWhiteSpace(command.PeriodYm)
+            || command.PeriodYm.Length != 7
+            || command.PeriodYm[4] != '-')
+        {
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "PeriodYm phải dạng YYYY-MM.");
+        }
+
+        var ym = command.PeriodYm.Trim();
+        var period = await imports.FindPeriodByYmAsync(ym, cancellationToken).ConfigureAwait(false)
+            ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"Kỳ công {ym} không tồn tại.");
+
+        if (period.Status != TimesheetPeriodStatus.Draft)
+        {
+            throw new ConflictException(
+                HrmErrorCodes.Conflict,
+                $"Kỳ {ym} không ở trạng thái Draft (hiện: {period.Status}).");
+        }
+
+        if (period.Lines.Any(l => l.OtUnclassified > 0))
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Còn giờ OT chưa phân loại 1.5/2.0/3.0 — cấm chốt (TIM-FR-007).");
+        }
+
+        var closed = await imports
+            .ClosePeriodAsync(ym, command.ActorIdpSubject!, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new ConflictException(HrmErrorCodes.Conflict, $"Không chốt được kỳ {ym}.");
+
+        return new TimesheetCloseResult(
+            closed.Id,
+            closed.PeriodYm,
+            closed.Status.ToString(),
+            closed.LineCount);
+    }
+}
+
 internal static class TimImportDtoMapper
 {
     public static TimesheetImportBatchDto Map(TimesheetImportBatchSnapshot batch) =>
@@ -140,7 +195,25 @@ internal static class TimImportDtoMapper
                 r.Ot15,
                 r.Ot20,
                 r.Ot30,
+                r.OtUnclassified,
                 r.IsOk,
                 r.ErrorCode,
                 r.ErrorMessage)).ToList());
+
+    public static TimesheetPeriodDto MapPeriod(TimesheetPeriodSnapshot period) =>
+        new(
+            period.Id,
+            period.PeriodYm,
+            period.Status.ToString(),
+            period.SourceImportBatchId,
+            period.LineCount,
+            period.Lines.Select(l => new TimesheetLineDto(
+                l.Id,
+                l.EmployeeId,
+                l.EmployeeCode,
+                l.WorkDays,
+                l.Ot15,
+                l.Ot20,
+                l.Ot30,
+                l.OtUnclassified)).ToList());
 }

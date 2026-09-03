@@ -11,6 +11,7 @@ import { LeaveC2QueuePage } from "./pages/LeaveC2QueuePage";
 import { LeavePage } from "./pages/LeavePage";
 import { LoginPage } from "./pages/LoginPage";
 import { TimImportPage } from "./pages/TimImportPage";
+import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
 
 export default function App() {
@@ -32,6 +33,7 @@ export default function App() {
           <Route path="/leave/c2" element={<LeaveC2QueuePage />} />
           <Route path="/tim/templates" element={<TimTemplatePage />} />
           <Route path="/tim/imports" element={<TimImportPage />} />
+          <Route path="/tim/periods" element={<TimPeriodPage />} />
           <Route path="/employees" element={<EmployeeListPage />} />
           <Route path="/employees/new" element={<EmployeeFormPage />} />
           <Route path="/employees/:id" element={<EmployeeFormPage />} />

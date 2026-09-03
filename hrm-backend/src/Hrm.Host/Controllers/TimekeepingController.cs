@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
 
-/// <summary>TIM — template master + import preview/commit (FR-001…005).</summary>
+/// <summary>TIM — template, import, period close (FR-001…007).</summary>
 [ApiController]
 [Route("v1/tim")]
 [Authorize]
@@ -78,7 +78,8 @@ public sealed class TimekeepingController(
             r.WorkDays,
             r.Ot15,
             r.Ot20,
-            r.Ot30)).ToList();
+            r.Ot30,
+            r.OtUnclassified)).ToList();
 
         var result = await commands.DispatchAsync<PreviewTimesheetImportCommand, TimesheetImportBatchDto>(
             new PreviewTimesheetImportCommand(
@@ -109,6 +110,33 @@ public sealed class TimekeepingController(
         return Ok(result);
     }
 
+    [HttpGet("periods")]
+    public async Task<IActionResult> ListPeriods(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListTimesheetPeriodsQuery, IReadOnlyList<TimesheetPeriodDto>>(
+            new ListTimesheetPeriodsQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet("periods/{ym}")]
+    public async Task<IActionResult> GetPeriod(string ym, CancellationToken cancellationToken)
+    {
+        var dto = await queries.DispatchAsync<GetTimesheetPeriodQuery, TimesheetPeriodDto>(
+            new GetTimesheetPeriodQuery(User.GetIdpSubject(), ym),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("periods/{ym}/close")]
+    public async Task<IActionResult> ClosePeriod(string ym, CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<CloseTimesheetPeriodCommand, TimesheetCloseResult>(
+            new CloseTimesheetPeriodCommand(User.GetIdpSubject(), ym),
+            cancellationToken);
+        return Ok(result);
+    }
+
     public sealed record CreateTimesheetTemplateRequest(
         string VersionCode,
         string Name,
@@ -133,5 +161,6 @@ public sealed class TimekeepingController(
         decimal? WorkDays,
         decimal? Ot15,
         decimal? Ot20,
-        decimal? Ot30);
+        decimal? Ot30,
+        decimal? OtUnclassified);
 }

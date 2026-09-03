@@ -10,7 +10,9 @@ import type { TimesheetImportBatch, TimesheetTemplate } from "../api/types";
 export function TimImportPage() {
   const [active, setActive] = useState<TimesheetTemplate | null>(null);
   const [periodYm, setPeriodYm] = useState("2026-10");
-  const [csvText, setCsvText] = useState("mnv,n_thuc,ot_15,ot_20,ot_30\nMNV-DEV,22,0,0,0\n");
+  const [csvText, setCsvText] = useState(
+    "mnv,n_thuc,ot_15,ot_20,ot_30,ot_unclassified\nMNV-DEV,22,0,0,0,0\n",
+  );
   const [batch, setBatch] = useState<TimesheetImportBatch | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -48,6 +50,7 @@ export function TimImportPage() {
         ot15: num(idx("ot_15")),
         ot20: num(idx("ot_20")),
         ot30: num(idx("ot_30")),
+        otUnclassified: num(idx("ot_unclassified")),
       };
     });
   }
@@ -104,6 +107,9 @@ export function TimImportPage() {
         </div>
         <Link className="btn btn-secondary" to="/tim/templates">
           ← Mẫu TIM
+        </Link>
+        <Link className="btn btn-secondary" to="/tim/periods">
+          Chốt tháng →
         </Link>
       </div>
 
