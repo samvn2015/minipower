@@ -11,6 +11,7 @@ using Hrm.Application.Identity.Queries;
 using Hrm.Application.Leave.Commands;
 using Hrm.Application.Leave.Dtos;
 using Hrm.Application.Leave.Queries;
+using Hrm.Application.Timekeeping;
 using Hrm.Application.Timekeeping.Commands;
 using Hrm.Application.Timekeeping.Dtos;
 using Hrm.Application.Timekeeping.Queries;
@@ -65,6 +66,9 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<ListTimesheetTemplatesQuery, IReadOnlyList<TimesheetTemplateDto>>, ListTimesheetTemplatesQueryHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CreateTimesheetTemplateCommand, TimesheetTemplateCreateResult>, CreateTimesheetTemplateCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<PublishTimesheetTemplateCommand, TimesheetTemplatePublishResult>, PublishTimesheetTemplateCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<PreviewTimesheetImportCommand, TimesheetImportBatchDto>, PreviewTimesheetImportCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CommitTimesheetImportCommand, TimesheetCommitResult>, CommitTimesheetImportCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetTimesheetImportBatchQuery, TimesheetImportBatchDto>, GetTimesheetImportBatchQueryHandler>();
 
         return builder;
     }

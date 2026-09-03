@@ -40,6 +40,14 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<TimesheetTemplateColumn> TimesheetTemplateColumns => Set<TimesheetTemplateColumn>();
 
+    public DbSet<TimesheetImportBatch> TimesheetImportBatches => Set<TimesheetImportBatch>();
+
+    public DbSet<TimesheetImportRow> TimesheetImportRows => Set<TimesheetImportRow>();
+
+    public DbSet<TimesheetPeriod> TimesheetPeriods => Set<TimesheetPeriod>();
+
+    public DbSet<TimesheetLine> TimesheetLines => Set<TimesheetLine>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

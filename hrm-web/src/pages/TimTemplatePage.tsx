@@ -1,4 +1,5 @@
 import { FormEvent, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
   createTimesheetTemplate,
   fetchActiveTimesheetTemplate,
@@ -88,6 +89,9 @@ export function TimTemplatePage() {
       <div>
         <h2>Công bố mẫu chấm công</h2>
         <p className="muted">TIM-SCR-002 — một version Active; cột lấy từ master (không hardcode URD).</p>
+        <Link className="btn btn-secondary" to="/tim/imports">
+          Import công →
+        </Link>
       </div>
 
       {error && <div className="error-box">{error}</div>}
