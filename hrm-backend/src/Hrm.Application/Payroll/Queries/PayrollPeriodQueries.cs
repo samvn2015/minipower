@@ -81,7 +81,12 @@ public sealed class GetPayrollPeriodQueryHandler(
                 l.Ot20,
                 l.Ot30,
                 l.ContractAllowance,
-                l.MonthlyAllowance)).ToList());
+                l.MonthlyAllowance,
+                l.BhRate,
+                l.TncnRate,
+                l.BhAmount,
+                l.TncnAmount,
+                l.NetPay)).ToList());
     }
 }
 

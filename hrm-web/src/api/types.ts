@@ -264,6 +264,11 @@ export type PayLine = {
   ot30: number;
   contractAllowance: number;
   monthlyAllowance: number;
+  bhRate: number;
+  tncnRate: number;
+  bhAmount: number;
+  tncnAmount: number;
+  netPay: number;
 };
 
 export type PayPeriod = {

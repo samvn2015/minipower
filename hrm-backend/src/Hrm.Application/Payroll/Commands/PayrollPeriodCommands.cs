@@ -21,7 +21,8 @@ public sealed class RunPayrollPeriodCommandHandler(
     IPayPeriodRepository payPeriods,
     IEmployeeReadRepository employees,
     IPayRegulationReadRepository regulations,
-    IPayAllowanceRepository allowances)
+    IPayAllowanceRepository allowances,
+    IPayContractSalaryRepository salaries)
     : IAsyncCommandHandler<RunPayrollPeriodCommand, PayRunResult>
 {
     public async Task<PayRunResult> HandleAsync(
@@ -59,6 +60,16 @@ public sealed class RunPayrollPeriodCommandHandler(
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
                 $"Thiếu master {PayRegulationCodes.ProbationTimeWageFactor}.");
+        var bhReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.BhEmployeeRate, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Thiếu master {PayRegulationCodes.BhEmployeeRate}.");
+        var tncnReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.TncnTempRate, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Thiếu master {PayRegulationCodes.TncnTempRate}.");
 
         var employeeIds = tim.Lines.Select(l => l.EmployeeId).Distinct().ToList();
         var contracts = new Dictionary<Guid, EmployeeContractSnapshot?>();
@@ -80,6 +91,16 @@ public sealed class RunPayrollPeriodCommandHandler(
             var monthlyPc = await allowances
                 .SumMonthlyAsync(ym, l.EmployeeId, cancellationToken)
                 .ConfigureAwait(false);
+            var salary = await salaries
+                .GetAmountAsync(l.EmployeeId, cancellationToken)
+                .ConfigureAwait(false);
+            var statutory = PayrollStatutoryCalculator.Compute(
+                salary,
+                factor,
+                contractPc,
+                monthlyPc,
+                bhReg.DecimalValue,
+                tncnReg.DecimalValue);
             // OT chỉ từ TIM Closed — PAY-FR-004 (không nhập tay).
             lines.Add(new PayLineCreateModel(
                 l.EmployeeId,
@@ -93,7 +114,12 @@ public sealed class RunPayrollPeriodCommandHandler(
                 l.Ot20,
                 l.Ot30,
                 contractPc,
-                monthlyPc));
+                monthlyPc,
+                statutory.BhRate,
+                statutory.TncnRate,
+                statutory.BhAmount,
+                statutory.TncnAmount,
+                statutory.NetPay));
         }
 
         var period = await payPeriods

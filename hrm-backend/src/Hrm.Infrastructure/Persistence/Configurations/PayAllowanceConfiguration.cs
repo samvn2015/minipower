@@ -71,3 +71,24 @@ internal sealed class PayMonthlyAllowanceConfiguration : IEntityTypeConfiguratio
         builder.HasIndex(x => new { x.PeriodYm, x.EmployeeId, x.Code }).IsUnique();
     }
 }
+
+internal sealed class PayContractSalaryConfiguration : IEntityTypeConfiguration<PayContractSalary>
+{
+    public void Configure(EntityTypeBuilder<PayContractSalary> builder)
+    {
+        builder.ToTable("pay_contract_salary");
+        builder.HasKey(x => x.Id);
+        builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
+        builder.Property(x => x.Amount).HasPrecision(18, 2);
+        builder.HasIndex(x => x.EmployeeId).IsUnique();
+
+        builder.HasData(
+            new PayContractSalary
+            {
+                Id = PaySeed.DevContractSalaryId,
+                EmployeeId = EmpSeed.DevEmployeeId,
+                EmployeeCode = EmpSeed.DevEmployeeCode,
+                Amount = 10_000_000m
+            });
+    }
+}

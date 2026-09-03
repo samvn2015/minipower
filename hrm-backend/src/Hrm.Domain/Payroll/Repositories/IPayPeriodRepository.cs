@@ -13,7 +13,12 @@ public sealed record PayLineSnapshot(
     decimal Ot20,
     decimal Ot30,
     decimal ContractAllowance,
-    decimal MonthlyAllowance);
+    decimal MonthlyAllowance,
+    decimal BhRate,
+    decimal TncnRate,
+    decimal BhAmount,
+    decimal TncnAmount,
+    decimal NetPay);
 
 public sealed record PayPeriodSnapshot(
     Guid Id,
@@ -34,7 +39,12 @@ public sealed record PayLineCreateModel(
     decimal Ot20,
     decimal Ot30,
     decimal ContractAllowance,
-    decimal MonthlyAllowance);
+    decimal MonthlyAllowance,
+    decimal BhRate,
+    decimal TncnRate,
+    decimal BhAmount,
+    decimal TncnAmount,
+    decimal NetPay);
 
 public interface IPayPeriodGate
 {

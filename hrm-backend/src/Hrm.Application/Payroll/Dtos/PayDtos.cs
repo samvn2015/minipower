@@ -13,7 +13,12 @@ public sealed record PayLineDto(
     decimal Ot20,
     decimal Ot30,
     decimal ContractAllowance,
-    decimal MonthlyAllowance);
+    decimal MonthlyAllowance,
+    decimal BhRate,
+    decimal TncnRate,
+    decimal BhAmount,
+    decimal TncnAmount,
+    decimal NetPay);
 
 public sealed record PayPeriodDto(
     Guid Id,

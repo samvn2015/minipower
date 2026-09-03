@@ -10,4 +10,10 @@ internal static class PaySeed
     public static readonly Guid CatalogFuelId = Guid.Parse("c4c4c4c4-c4c4-c4c4-c4c4-c4c4c4c4c4c4");
 
     public static readonly Guid DevMealContractId = Guid.Parse("c5c5c5c5-c5c5-c5c5-c5c5-c5c5c5c5c5c5");
+
+    public static readonly Guid BhEmployeeRateId = Guid.Parse("c6c6c6c6-c6c6-c6c6-c6c6-c6c6c6c6c6c6");
+
+    public static readonly Guid TncnTempRateId = Guid.Parse("c7c7c7c7-c7c7-c7c7-c7c7-c7c7c7c7c7c7");
+
+    public static readonly Guid DevContractSalaryId = Guid.Parse("c8c8c8c8-c8c8-c8c8-c8c8-c8c8c8c8c8c8");
 }

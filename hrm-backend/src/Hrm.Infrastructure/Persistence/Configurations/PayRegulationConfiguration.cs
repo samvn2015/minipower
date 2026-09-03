@@ -32,6 +32,20 @@ internal sealed class PayRegulationConfiguration : IEntityTypeConfiguration<PayR
                 Code = PayRegulationCodes.StandardWorkDaysDefault,
                 Name = "Ngày công chuẩn mặc định (khi tháng chưa có lịch)",
                 DecimalValue = 22m
+            },
+            new PayRegulation
+            {
+                Id = PaySeed.BhEmployeeRateId,
+                Code = PayRegulationCodes.BhEmployeeRate,
+                Name = "Tỷ lệ BH người lao động (hiệu lực kỳ)",
+                DecimalValue = 0.10m
+            },
+            new PayRegulation
+            {
+                Id = PaySeed.TncnTempRateId,
+                Code = PayRegulationCodes.TncnTempRate,
+                Name = "Tỷ lệ TNCN tạm (hiệu lực kỳ)",
+                DecimalValue = 0.05m
             });
     }
 }

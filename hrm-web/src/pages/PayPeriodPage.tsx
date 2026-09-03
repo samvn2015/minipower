@@ -112,6 +112,9 @@ export function PayPeriodPage() {
                   <th>OT 3.0</th>
                   <th>PC HĐ</th>
                   <th>PC tháng</th>
+                  <th>BH</th>
+                  <th>TNCN tạm</th>
+                  <th>Thực lĩnh</th>
                 </tr>
               </thead>
               <tbody>
@@ -128,6 +131,9 @@ export function PayPeriodPage() {
                     <td>{l.ot30}</td>
                     <td>{l.contractAllowance}</td>
                     <td>{l.monthlyAllowance}</td>
+                    <td>{l.bhAmount}</td>
+                    <td>{l.tncnAmount}</td>
+                    <td>{l.netPay}</td>
                   </tr>
                 ))}
               </tbody>
