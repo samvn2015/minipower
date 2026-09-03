@@ -24,6 +24,7 @@ import type {
   PayAllowanceCatalogItem,
   PayMonthlyAllowance,
   PayMonthlyAllowanceResult,
+  PayPayslip,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -506,4 +507,16 @@ export async function upsertPayMonthlyAllowance(payload: {
   );
   if ("periodYm" in body && typeof body.periodYm === "string") return body;
   return unwrap(body as ApiEnvelope<PayMonthlyAllowanceResult>);
+}
+
+export async function fetchMyPayslips(): Promise<PayPayslip[]> {
+  const body = await apiFetch<PayPayslip[] | ApiEnvelope<PayPayslip[]>>("/v1/pay/payslips/me");
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<PayPayslip[]>);
+}
+
+export async function fetchPayslip(id: string): Promise<PayPayslip> {
+  const body = await apiFetch<PayPayslip | ApiEnvelope<PayPayslip>>(`/v1/pay/payslips/${id}`);
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<PayPayslip>);
 }

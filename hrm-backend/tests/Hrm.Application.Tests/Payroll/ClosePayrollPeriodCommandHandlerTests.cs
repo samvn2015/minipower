@@ -160,6 +160,16 @@ public sealed class ClosePayrollPeriodCommandHandlerTests
             _closed = true;
             return Task.CompletedTask;
         }
+
+        public Task<PayPayslipSnapshot?> FindPayslipByLineIdAsync(
+            Guid lineId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<PayPayslipSnapshot?>(null);
+
+        public Task<IReadOnlyList<PayPayslipSnapshot>> ListClosedPayslipsByEmployeeCodeAsync(
+            string employeeCode,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<PayPayslipSnapshot>>([]);
     }
 
     private sealed class FakeAllowance(string[]? unknownCodes = null) : IPayAllowanceRepository

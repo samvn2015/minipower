@@ -310,3 +310,27 @@ export type PayMonthlyAllowanceResult = {
   code: string;
   amount: number;
 };
+
+export type PayPayslip = {
+  id: string;
+  periodId: string;
+  periodYm: string;
+  status: string;
+  employeeId: string;
+  employeeCode: string;
+  workDays: number;
+  leaveDaysUnpaid: number;
+  leaveDaysPaid: number;
+  nTinh: number;
+  timeWageFactor: number;
+  ot15: number;
+  ot20: number;
+  ot30: number;
+  contractAllowance: number;
+  monthlyAllowance: number;
+  bhRate: number;
+  tncnRate: number;
+  bhAmount: number;
+  tncnAmount: number;
+  netPay: number;
+};

@@ -137,6 +137,56 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
+    public async Task<PayPayslipSnapshot?> FindPayslipByLineIdAsync(
+        Guid lineId,
+        CancellationToken cancellationToken = default)
+    {
+        var line = await db.PayLines.AsNoTracking()
+            .Include(x => x.Period)
+            .FirstOrDefaultAsync(x => x.Id == lineId, cancellationToken)
+            .ConfigureAwait(false);
+        return line?.Period is null ? null : MapPayslip(line, line.Period);
+    }
+
+    public async Task<IReadOnlyList<PayPayslipSnapshot>> ListClosedPayslipsByEmployeeCodeAsync(
+        string employeeCode,
+        CancellationToken cancellationToken = default)
+    {
+        var rows = await db.PayLines.AsNoTracking()
+            .Include(x => x.Period)
+            .Where(x => x.EmployeeCode == employeeCode
+                        && x.Period != null
+                        && x.Period.Status == PayPeriodStatus.Closed)
+            .OrderByDescending(x => x.Period!.PeriodYm)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return rows.Select(l => MapPayslip(l, l.Period!)).ToList();
+    }
+
+    private static PayPayslipSnapshot MapPayslip(PayLine line, PayPeriod period) =>
+        new(
+            line.Id,
+            period.Id,
+            period.PeriodYm,
+            period.Status,
+            line.EmployeeId,
+            line.EmployeeCode,
+            line.WorkDays,
+            line.LeaveDaysUnpaid,
+            line.LeaveDaysPaid,
+            line.NTinh,
+            line.TimeWageFactor,
+            line.Ot15,
+            line.Ot20,
+            line.Ot30,
+            line.ContractAllowance,
+            line.MonthlyAllowance,
+            line.BhRate,
+            line.TncnRate,
+            line.BhAmount,
+            line.TncnAmount,
+            line.NetPay);
+
     private static PayPeriodSnapshot Map(PayPeriod entity) =>
         new(
             entity.Id,

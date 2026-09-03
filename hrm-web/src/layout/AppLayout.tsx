@@ -56,6 +56,9 @@ export function AppLayout() {
             <Link className="btn btn-ghost" to="/leave">
               Nghỉ phép
             </Link>
+            <Link className="btn btn-ghost" to="/pay/payslips">
+              Phiếu lương
+            </Link>
             {(user.roles.includes("IAM-ROLE-LM") ||
               user.roles.includes("IAM-ROLE-HR") ||
               user.roles.includes("IAM-ROLE-PGD")) && (

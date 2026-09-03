@@ -85,6 +85,8 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<ListPayrollPeriodsQuery, IReadOnlyList<PayPeriodDto>>, ListPayrollPeriodsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListPayAllowanceCatalogQuery, IReadOnlyList<PayAllowanceCatalogDto>>, ListPayAllowanceCatalogQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListPayMonthlyAllowancesQuery, IReadOnlyList<PayMonthlyAllowanceDto>>, ListPayMonthlyAllowancesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListMyPayslipsQuery, IReadOnlyList<PayPayslipDto>>, ListMyPayslipsQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetPayslipQuery, PayPayslipDto>, GetPayslipQueryHandler>();
 
         return builder;
     }

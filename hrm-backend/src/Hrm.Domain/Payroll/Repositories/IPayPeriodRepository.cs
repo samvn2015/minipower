@@ -69,4 +69,35 @@ public interface IPayPeriodRepository : IPayPeriodGate
 
     /// <summary>Đánh dấu kỳ PAY Closed (TIM unlock gate + PAY-SCR-003 stub).</summary>
     Task MarkClosedAsync(string periodYm, string closedByIdpSubject, CancellationToken cancellationToken = default);
+
+    Task<PayPayslipSnapshot?> FindPayslipByLineIdAsync(
+        Guid lineId,
+        CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<PayPayslipSnapshot>> ListClosedPayslipsByEmployeeCodeAsync(
+        string employeeCode,
+        CancellationToken cancellationToken = default);
 }
+
+public sealed record PayPayslipSnapshot(
+    Guid LineId,
+    Guid PeriodId,
+    string PeriodYm,
+    PayPeriodStatus Status,
+    Guid EmployeeId,
+    string EmployeeCode,
+    decimal WorkDays,
+    decimal LeaveDaysUnpaid,
+    decimal LeaveDaysPaid,
+    decimal NTinh,
+    decimal TimeWageFactor,
+    decimal Ot15,
+    decimal Ot20,
+    decimal Ot30,
+    decimal ContractAllowance,
+    decimal MonthlyAllowance,
+    decimal BhRate,
+    decimal TncnRate,
+    decimal BhAmount,
+    decimal TncnAmount,
+    decimal NetPay);
