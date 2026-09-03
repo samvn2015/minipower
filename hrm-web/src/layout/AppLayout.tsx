@@ -75,6 +75,9 @@ export function AppLayout() {
                 <Link className="btn btn-ghost" to="/employees">
                   Nhân viên
                 </Link>
+                <Link className="btn btn-ghost" to="/tim/templates">
+                  Mẫu công TIM
+                </Link>
                 <Link className="btn btn-ghost" to="/line-manager-changes">
                   Duyệt LM
                 </Link>
