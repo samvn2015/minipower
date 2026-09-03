@@ -186,6 +186,7 @@ export type TimesheetImportRow = {
   ot15: number | null;
   ot20: number | null;
   ot30: number | null;
+  otUnclassified: number | null;
   isOk: boolean;
   errorCode: string | null;
   errorMessage: string | null;
@@ -204,6 +205,33 @@ export type TimesheetImportBatch = {
 };
 
 export type TimesheetCommitResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+};
+
+export type TimesheetLine = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  workDays: number;
+  ot15: number;
+  ot20: number;
+  ot30: number;
+  otUnclassified: number;
+};
+
+export type TimesheetPeriod = {
+  id: string;
+  periodYm: string;
+  status: string;
+  sourceImportBatchId: string | null;
+  lineCount: number;
+  lines: TimesheetLine[];
+};
+
+export type TimesheetCloseResult = {
   periodId: string;
   periodYm: string;
   status: string;

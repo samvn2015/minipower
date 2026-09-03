@@ -27,6 +27,7 @@ public sealed record TimesheetImportRowDto(
     decimal? Ot15,
     decimal? Ot20,
     decimal? Ot30,
+    decimal? OtUnclassified,
     bool IsOk,
     string? ErrorCode,
     string? ErrorMessage);
@@ -45,6 +46,30 @@ public sealed record TimesheetImportBatchDto(
 public sealed record TimesheetImportPreviewResult(Guid BatchId, bool HasMustErrors, int TotalRows, int ErrorRows);
 
 public sealed record TimesheetCommitResult(
+    Guid PeriodId,
+    string PeriodYm,
+    string Status,
+    int LineCount);
+
+public sealed record TimesheetLineDto(
+    Guid Id,
+    Guid EmployeeId,
+    string EmployeeCode,
+    decimal WorkDays,
+    decimal Ot15,
+    decimal Ot20,
+    decimal Ot30,
+    decimal OtUnclassified);
+
+public sealed record TimesheetPeriodDto(
+    Guid Id,
+    string PeriodYm,
+    string Status,
+    Guid? SourceImportBatchId,
+    int LineCount,
+    IReadOnlyList<TimesheetLineDto> Lines);
+
+public sealed record TimesheetCloseResult(
     Guid PeriodId,
     string PeriodYm,
     string Status,

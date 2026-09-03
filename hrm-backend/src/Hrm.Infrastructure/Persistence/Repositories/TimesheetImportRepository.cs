@@ -38,6 +38,7 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
                 Ot15 = r.Ot15,
                 Ot20 = r.Ot20,
                 Ot30 = r.Ot30,
+                OtUnclassified = r.OtUnclassified,
                 IsOk = r.IsOk,
                 ErrorCode = r.ErrorCode,
                 ErrorMessage = r.ErrorMessage
@@ -68,14 +69,18 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
             .Include(x => x.Lines)
             .FirstOrDefaultAsync(x => x.PeriodYm == periodYm, cancellationToken)
             .ConfigureAwait(false);
-        return entity is null
-            ? null
-            : new TimesheetPeriodSnapshot(
-                entity.Id,
-                entity.PeriodYm,
-                entity.Status,
-                entity.SourceImportBatchId,
-                entity.Lines.Count);
+        return entity is null ? null : MapPeriod(entity);
+    }
+
+    public async Task<IReadOnlyList<TimesheetPeriodSnapshot>> ListPeriodsAsync(
+        CancellationToken cancellationToken = default)
+    {
+        var rows = await db.TimesheetPeriods.AsNoTracking()
+            .Include(x => x.Lines)
+            .OrderByDescending(x => x.PeriodYm)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return rows.Select(MapPeriod).ToList();
     }
 
     public async Task<TimesheetPeriodSnapshot?> CommitAsync(
@@ -132,7 +137,8 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
                 WorkDays = row.WorkDays ?? 0,
                 Ot15 = row.Ot15 ?? 0,
                 Ot20 = row.Ot20 ?? 0,
-                Ot30 = row.Ot30 ?? 0
+                Ot30 = row.Ot30 ?? 0,
+                OtUnclassified = row.OtUnclassified ?? 0
             });
         }
 
@@ -140,19 +146,54 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
         period.SourceImportBatchId = batch.Id;
         period.CommittedAtUtc = DateTime.UtcNow;
         period.CommittedByIdpSubject = committedByIdpSubject;
+        period.ClosedAtUtc = null;
+        period.ClosedByIdpSubject = null;
 
         batch.Status = TimesheetImportBatchStatus.Committed;
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
         await tx.CommitAsync(cancellationToken).ConfigureAwait(false);
 
-        return new TimesheetPeriodSnapshot(
-            period.Id,
-            period.PeriodYm,
-            period.Status,
-            period.SourceImportBatchId,
-            period.Lines.Count);
+        return MapPeriod(period);
     }
+
+    public async Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
+        string periodYm,
+        string closedByIdpSubject,
+        CancellationToken cancellationToken = default)
+    {
+        var period = await db.TimesheetPeriods
+            .Include(x => x.Lines)
+            .FirstOrDefaultAsync(x => x.PeriodYm == periodYm, cancellationToken)
+            .ConfigureAwait(false);
+
+        if (period is null || period.Status != TimesheetPeriodStatus.Draft)
+            return null;
+
+        period.Status = TimesheetPeriodStatus.Closed;
+        period.ClosedAtUtc = DateTime.UtcNow;
+        period.ClosedByIdpSubject = closedByIdpSubject;
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return MapPeriod(period);
+    }
+
+    private static TimesheetPeriodSnapshot MapPeriod(TimesheetPeriod entity) =>
+        new(
+            entity.Id,
+            entity.PeriodYm,
+            entity.Status,
+            entity.SourceImportBatchId,
+            entity.Lines.Count,
+            entity.Lines.Select(l => new TimesheetLineSnapshot(
+                l.Id,
+                l.EmployeeId,
+                l.EmployeeCode,
+                l.WorkDays,
+                l.Ot15,
+                l.Ot20,
+                l.Ot30,
+                l.OtUnclassified)).ToList());
 
     private static TimesheetImportBatchSnapshot MapBatch(TimesheetImportBatch entity) =>
         new(
@@ -176,6 +217,7 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
                 r.Ot15,
                 r.Ot20,
                 r.Ot30,
+                r.OtUnclassified,
                 r.IsOk,
                 r.ErrorCode,
                 r.ErrorMessage)).ToList());
