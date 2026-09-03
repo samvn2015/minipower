@@ -19,6 +19,8 @@ import type {
   TimesheetPeriod,
   TimesheetCloseResult,
   TimesheetUnlockResult,
+  PayPeriod,
+  PayRunResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -447,4 +449,19 @@ export async function unlockTimesheetPeriod(ym: string): Promise<TimesheetUnlock
   );
   if ("periodId" in body && typeof body.periodId === "string") return body;
   return unwrap(body as ApiEnvelope<TimesheetUnlockResult>);
+}
+
+export async function fetchPayrollPeriod(ym: string): Promise<PayPeriod> {
+  const body = await apiFetch<PayPeriod | ApiEnvelope<PayPeriod>>(`/v1/pay/periods/${ym}`);
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<PayPeriod>);
+}
+
+export async function runPayrollPeriod(ym: string): Promise<PayRunResult> {
+  const body = await apiFetch<PayRunResult | ApiEnvelope<PayRunResult>>(
+    `/v1/pay/periods/${ym}/run`,
+    { method: "POST" },
+  );
+  if ("periodId" in body && typeof body.periodId === "string") return body;
+  return unwrap(body as ApiEnvelope<PayRunResult>);
 }
