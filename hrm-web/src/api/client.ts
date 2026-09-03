@@ -14,6 +14,8 @@ import type {
   LineManagerChangeItem,
   LineManagerChangeResult,
   TimesheetTemplate,
+  TimesheetImportBatch,
+  TimesheetCommitResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -387,4 +389,34 @@ export async function publishTimesheetTemplate(
   >(`/v1/tim/templates/${id}/publish`, { method: "POST" });
   if ("id" in body && typeof body.id === "string") return body;
   return unwrap(body as ApiEnvelope<{ id: string; versionCode: string; status: string }>);
+}
+
+export async function previewTimesheetImport(payload: {
+  periodYm: string;
+  templateVersionCode: string;
+  fileName?: string;
+  rows: {
+    rowNumber: number;
+    employeeCode?: string;
+    workDays?: number;
+    ot15?: number;
+    ot20?: number;
+    ot30?: number;
+  }[];
+}): Promise<TimesheetImportBatch> {
+  const body = await apiFetch<TimesheetImportBatch | ApiEnvelope<TimesheetImportBatch>>(
+    "/v1/tim/imports",
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  if ("id" in body && typeof body.id === "string") return body;
+  return unwrap(body as ApiEnvelope<TimesheetImportBatch>);
+}
+
+export async function commitTimesheetImport(id: string): Promise<TimesheetCommitResult> {
+  const body = await apiFetch<TimesheetCommitResult | ApiEnvelope<TimesheetCommitResult>>(
+    `/v1/tim/imports/${id}/commit`,
+    { method: "POST" },
+  );
+  if ("periodId" in body && typeof body.periodId === "string") return body;
+  return unwrap(body as ApiEnvelope<TimesheetCommitResult>);
 }

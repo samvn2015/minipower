@@ -178,3 +178,34 @@ export type TimesheetTemplate = {
   publishedByIdpSubject: string | null;
   columns: TimesheetTemplateColumn[];
 };
+
+export type TimesheetImportRow = {
+  rowNumber: number;
+  employeeCode: string | null;
+  workDays: number | null;
+  ot15: number | null;
+  ot20: number | null;
+  ot30: number | null;
+  isOk: boolean;
+  errorCode: string | null;
+  errorMessage: string | null;
+};
+
+export type TimesheetImportBatch = {
+  id: string;
+  periodYm: string;
+  templateVersionCode: string;
+  status: string;
+  totalRows: number;
+  errorRows: number;
+  hasMustErrors: boolean;
+  fileName: string | null;
+  rows: TimesheetImportRow[];
+};
+
+export type TimesheetCommitResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+};

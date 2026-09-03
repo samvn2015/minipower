@@ -78,6 +78,9 @@ export function AppLayout() {
                 <Link className="btn btn-ghost" to="/tim/templates">
                   Mẫu công TIM
                 </Link>
+                <Link className="btn btn-ghost" to="/tim/imports">
+                  Import công
+                </Link>
                 <Link className="btn btn-ghost" to="/line-manager-changes">
                   Duyệt LM
                 </Link>
