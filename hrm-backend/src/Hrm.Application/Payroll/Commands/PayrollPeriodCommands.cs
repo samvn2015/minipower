@@ -20,7 +20,8 @@ public sealed class RunPayrollPeriodCommandHandler(
     ITimesheetImportRepository timesheets,
     IPayPeriodRepository payPeriods,
     IEmployeeReadRepository employees,
-    IPayRegulationReadRepository regulations)
+    IPayRegulationReadRepository regulations,
+    IPayAllowanceRepository allowances)
     : IAsyncCommandHandler<RunPayrollPeriodCommand, PayRunResult>
 {
     public async Task<PayRunResult> HandleAsync(
@@ -67,13 +68,20 @@ public sealed class RunPayrollPeriodCommandHandler(
             contracts[id] = emp?.Contract;
         }
 
-        var lines = tim.Lines.Select(l =>
+        var lines = new List<PayLineCreateModel>(tim.Lines.Count);
+        foreach (var l in tim.Lines)
         {
             contracts.TryGetValue(l.EmployeeId, out var contract);
             var factor = PayrollTimeWageFactor.Resolve(contract, ym, probationReg.DecimalValue);
             var nTinh = PayrollDayCalculator.ComputeNTinh(l.WorkDays, l.LeaveDaysUnpaid);
+            var contractPc = await allowances
+                .SumContractAsync(l.EmployeeId, cancellationToken)
+                .ConfigureAwait(false);
+            var monthlyPc = await allowances
+                .SumMonthlyAsync(ym, l.EmployeeId, cancellationToken)
+                .ConfigureAwait(false);
             // OT chỉ từ TIM Closed — PAY-FR-004 (không nhập tay).
-            return new PayLineCreateModel(
+            lines.Add(new PayLineCreateModel(
                 l.EmployeeId,
                 l.EmployeeCode,
                 l.WorkDays,
@@ -83,8 +91,10 @@ public sealed class RunPayrollPeriodCommandHandler(
                 factor,
                 l.Ot15,
                 l.Ot20,
-                l.Ot30);
-        }).ToList();
+                l.Ot30,
+                contractPc,
+                monthlyPc));
+        }
 
         var period = await payPeriods
             .RunDraftAsync(ym, command.ActorIdpSubject!, lines, cancellationToken)
@@ -103,7 +113,8 @@ public sealed class ClosePayrollPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
     IPayPeriodRepository payPeriods,
     IPayRegulationReadRepository regulations,
-    IPayWorkdayCalendarRepository calendar)
+    IPayWorkdayCalendarRepository calendar,
+    IPayAllowanceRepository allowances)
     : IAsyncCommandHandler<ClosePayrollPeriodCommand, PayRunResult>
 {
     public async Task<PayRunResult> HandleAsync(
@@ -124,6 +135,16 @@ public sealed class ClosePayrollPeriodCommandHandler(
         }
 
         var ym = command.PeriodYm.Trim();
+        var unknownCodes = await allowances
+            .ListUnknownMonthlyCodesAsync(ym, cancellationToken)
+            .ConfigureAwait(false);
+        if (unknownCodes.Count > 0)
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                $"Mã PC tháng không thuộc master (PAY-FR-005): {string.Join(", ", unknownCodes)}.");
+        }
+
         var existing = await payPeriods.FindByYmAsync(ym, cancellationToken).ConfigureAwait(false);
         if (existing is { LineCount: > 0 })
         {

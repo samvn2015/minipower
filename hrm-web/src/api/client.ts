@@ -21,6 +21,9 @@ import type {
   TimesheetUnlockResult,
   PayPeriod,
   PayRunResult,
+  PayAllowanceCatalogItem,
+  PayMonthlyAllowance,
+  PayMonthlyAllowanceResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -473,4 +476,34 @@ export async function closePayrollPeriod(ym: string): Promise<PayRunResult> {
   );
   if ("periodId" in body && typeof body.periodId === "string") return body;
   return unwrap(body as ApiEnvelope<PayRunResult>);
+}
+
+export async function fetchPayAllowanceCatalog(): Promise<PayAllowanceCatalogItem[]> {
+  const body = await apiFetch<PayAllowanceCatalogItem[] | ApiEnvelope<PayAllowanceCatalogItem[]>>(
+    "/v1/pay/allowance-catalog",
+  );
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<PayAllowanceCatalogItem[]>);
+}
+
+export async function fetchPayMonthlyAllowances(ym: string): Promise<PayMonthlyAllowance[]> {
+  const body = await apiFetch<PayMonthlyAllowance[] | ApiEnvelope<PayMonthlyAllowance[]>>(
+    `/v1/pay/monthly-allowances/${ym}`,
+  );
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<PayMonthlyAllowance[]>);
+}
+
+export async function upsertPayMonthlyAllowance(payload: {
+  periodYm: string;
+  employeeCode: string;
+  code: string;
+  amount: number;
+}): Promise<PayMonthlyAllowanceResult> {
+  const body = await apiFetch<PayMonthlyAllowanceResult | ApiEnvelope<PayMonthlyAllowanceResult>>(
+    "/v1/pay/monthly-allowances",
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  if ("periodYm" in body && typeof body.periodYm === "string") return body;
+  return unwrap(body as ApiEnvelope<PayMonthlyAllowanceResult>);
 }

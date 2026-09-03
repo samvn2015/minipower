@@ -25,7 +25,8 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, workDays: 22, unpaid: 2, paid: 2, ot15: 1),
             pay,
             new FakeEmployeeRepo(probation: false),
-            new FakeRegRepo(0.85m));
+            new FakeRegRepo(0.85m),
+            new FakeAllowance());
 
         var result = await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
@@ -35,6 +36,26 @@ public sealed class RunPayrollPeriodCommandHandlerTests
         Assert.Equal(20m, pay.LastLines![0].NTinh);
         Assert.Equal(1.00m, pay.LastLines[0].TimeWageFactor);
         Assert.Equal(1m, pay.LastLines[0].Ot15); // OT từ TIM (FR-004)
+        Assert.Equal(0m, pay.LastLines[0].ContractAllowance);
+        Assert.Equal(0m, pay.LastLines[0].MonthlyAllowance);
+    }
+
+    [Fact]
+    public async Task HandleAsync_SumsContractAndMonthlyAllowances()
+    {
+        var pay = new FakePayRepo();
+        var handler = new RunPayrollPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            pay,
+            new FakeEmployeeRepo(probation: false),
+            new FakeRegRepo(0.85m),
+            new FakeAllowance(contract: 730_000m, monthly: 200_000m));
+
+        await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-12"));
+
+        Assert.Equal(730_000m, pay.LastLines![0].ContractAllowance);
+        Assert.Equal(200_000m, pay.LastLines[0].MonthlyAllowance);
     }
 
     [Fact]
@@ -46,7 +67,8 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             pay,
             new FakeEmployeeRepo(probation: true),
-            new FakeRegRepo(0.85m));
+            new FakeRegRepo(0.85m),
+            new FakeAllowance());
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
@@ -61,7 +83,8 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Draft, 20, 0, 0, 0),
             new FakePayRepo(),
             new FakeEmployeeRepo(false),
-            new FakeRegRepo(0.85m));
+            new FakeRegRepo(0.85m),
+            new FakeAllowance());
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07")));
@@ -75,7 +98,8 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             new FakePayRepo(),
             new FakeEmployeeRepo(false),
-            new FakeRegRepo(0.85m));
+            new FakeRegRepo(0.85m),
+            new FakeAllowance());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-lm", "2027-07")));
@@ -231,12 +255,52 @@ public sealed class RunPayrollPeriodCommandHandlerTests
                     l.TimeWageFactor,
                     l.Ot15,
                     l.Ot20,
-                    l.Ot30)).ToList()));
+                    l.Ot30,
+                    l.ContractAllowance,
+                    l.MonthlyAllowance)).ToList()));
         }
 
         public Task MarkClosedAsync(
             string periodYm,
             string closedByIdpSubject,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
+    private sealed class FakeAllowance(decimal contract = 0, decimal monthly = 0) : IPayAllowanceRepository
+    {
+        public Task<IReadOnlyList<PayAllowanceCatalogSnapshot>> ListCatalogAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<PayAllowanceCatalogSnapshot>>([]);
+
+        public Task<bool> IsActiveCodeAsync(string code, CancellationToken cancellationToken = default) =>
+            Task.FromResult(true);
+
+        public Task<decimal> SumContractAsync(Guid employeeId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(contract);
+
+        public Task<decimal> SumMonthlyAsync(
+            string periodYm,
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(monthly);
+
+        public Task<IReadOnlyList<string>> ListUnknownMonthlyCodesAsync(
+            string periodYm,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<string>>([]);
+
+        public Task<IReadOnlyList<PayMonthlyAllowanceSnapshot>> ListMonthlyByYmAsync(
+            string periodYm,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<PayMonthlyAllowanceSnapshot>>([]);
+
+        public Task UpsertMonthlyAsync(
+            string periodYm,
+            Guid employeeId,
+            string employeeCode,
+            string code,
+            decimal amount,
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
     }

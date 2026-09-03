@@ -51,4 +51,10 @@ public class PayLine : BaseEntity<Guid>
     public decimal Ot20 { get; set; }
 
     public decimal Ot30 { get; set; }
+
+    /// <summary>Tổng PC kênh HĐ (mã ∈ master Active) — PAY-FR-005.</summary>
+    public decimal ContractAllowance { get; set; }
+
+    /// <summary>Tổng PC nhập tháng (mã ∈ master Active) — PAY-FR-005/015.</summary>
+    public decimal MonthlyAllowance { get; set; }
 }

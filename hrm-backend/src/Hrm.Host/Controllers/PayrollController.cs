@@ -68,5 +68,50 @@ public sealed class PayrollController(
         return Ok(result);
     }
 
+    /// <summary>Master mã PC — PAY-FR-005/015.</summary>
+    [HttpGet("allowance-catalog")]
+    public async Task<IActionResult> ListCatalog(CancellationToken cancellationToken)
+    {
+        var items = await queries
+            .DispatchAsync<ListPayAllowanceCatalogQuery, IReadOnlyList<PayAllowanceCatalogDto>>(
+                new ListPayAllowanceCatalogQuery(User.GetIdpSubject()),
+                cancellationToken);
+        return Ok(items);
+    }
+
+    /// <summary>Danh sách PC nhập tháng — PAY-SCR-004.</summary>
+    [HttpGet("monthly-allowances/{ym}")]
+    public async Task<IActionResult> ListMonthly(string ym, CancellationToken cancellationToken)
+    {
+        var items = await queries
+            .DispatchAsync<ListPayMonthlyAllowancesQuery, IReadOnlyList<PayMonthlyAllowanceDto>>(
+                new ListPayMonthlyAllowancesQuery(User.GetIdpSubject(), ym),
+                cancellationToken);
+        return Ok(items);
+    }
+
+    /// <summary>Ghi PC tháng; mã phải ∈ master — PAY-FR-015.</summary>
+    [HttpPost("monthly-allowances")]
+    public async Task<IActionResult> UpsertMonthly(
+        [FromBody] UpsertMonthlyAllowanceRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<UpsertPayMonthlyAllowanceCommand, PayMonthlyAllowanceResult>(
+            new UpsertPayMonthlyAllowanceCommand(
+                User.GetIdpSubject(),
+                body.PeriodYm,
+                body.EmployeeCode,
+                body.Code,
+                body.Amount),
+            cancellationToken);
+        return Ok(result);
+    }
+
     public sealed record UpsertCalendarRequest(decimal StandardWorkDays);
+
+    public sealed record UpsertMonthlyAllowanceRequest(
+        string PeriodYm,
+        string EmployeeCode,
+        string Code,
+        decimal Amount);
 }

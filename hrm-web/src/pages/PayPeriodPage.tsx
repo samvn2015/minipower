@@ -110,6 +110,8 @@ export function PayPeriodPage() {
                   <th>OT 1.5</th>
                   <th>OT 2.0</th>
                   <th>OT 3.0</th>
+                  <th>PC HĐ</th>
+                  <th>PC tháng</th>
                 </tr>
               </thead>
               <tbody>
@@ -124,6 +126,8 @@ export function PayPeriodPage() {
                     <td>{l.ot15}</td>
                     <td>{l.ot20}</td>
                     <td>{l.ot30}</td>
+                    <td>{l.contractAllowance}</td>
+                    <td>{l.monthlyAllowance}</td>
                   </tr>
                 ))}
               </tbody>
