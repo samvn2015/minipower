@@ -144,5 +144,11 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
             Guid employeeId,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(true);
+
+        public Task<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>> ListApprovedOverlappingPeriodAsync(
+            string periodYm,
+            IReadOnlyList<Guid> employeeIds,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>>([]);
     }
 }

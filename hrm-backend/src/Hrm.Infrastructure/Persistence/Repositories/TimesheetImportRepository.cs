@@ -160,6 +160,7 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
     public async Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
         string periodYm,
         string closedByIdpSubject,
+        IReadOnlyList<TimesheetLeaveMergeLine> leaveMerge,
         CancellationToken cancellationToken = default)
     {
         var period = await db.TimesheetPeriods
@@ -169,6 +170,24 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
 
         if (period is null || period.Status != TimesheetPeriodStatus.Draft)
             return null;
+
+        var mergeByEmployee = leaveMerge.ToDictionary(x => x.EmployeeId);
+        foreach (var line in period.Lines)
+        {
+            // Idempotent: reset prior merge then apply (Draft only).
+            line.WorkDays -= line.LeaveDaysPaid;
+            line.LeaveDaysPaid = 0;
+            line.LeaveDaysUnpaid = 0;
+            line.LeaveDaysOther = 0;
+
+            if (!mergeByEmployee.TryGetValue(line.EmployeeId, out var merge))
+                continue;
+
+            line.LeaveDaysPaid = merge.LeaveDaysPaid;
+            line.LeaveDaysUnpaid = merge.LeaveDaysUnpaid;
+            line.LeaveDaysOther = merge.LeaveDaysOther;
+            line.WorkDays += merge.LeaveDaysPaid;
+        }
 
         period.Status = TimesheetPeriodStatus.Closed;
         period.ClosedAtUtc = DateTime.UtcNow;
@@ -193,7 +212,10 @@ internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImp
                 l.Ot15,
                 l.Ot20,
                 l.Ot30,
-                l.OtUnclassified)).ToList());
+                l.OtUnclassified,
+                l.LeaveDaysPaid,
+                l.LeaveDaysUnpaid,
+                l.LeaveDaysOther)).ToList());
 
     private static TimesheetImportBatchSnapshot MapBatch(TimesheetImportBatch entity) =>
         new(

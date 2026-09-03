@@ -68,6 +68,9 @@ internal sealed class TimesheetLineConfiguration : IEntityTypeConfiguration<Time
         builder.Property(x => x.Ot20).HasPrecision(5, 2);
         builder.Property(x => x.Ot30).HasPrecision(5, 2);
         builder.Property(x => x.OtUnclassified).HasPrecision(5, 2);
+        builder.Property(x => x.LeaveDaysPaid).HasPrecision(5, 2);
+        builder.Property(x => x.LeaveDaysUnpaid).HasPrecision(5, 2);
+        builder.Property(x => x.LeaveDaysOther).HasPrecision(5, 2);
         builder.HasOne(x => x.Period)
             .WithMany(x => x.Lines)
             .HasForeignKey(x => x.PeriodId)

@@ -100,4 +100,13 @@ public class TimesheetLine : BaseEntity<Guid>
 
     /// <summary>Giờ OT chưa phân loại — phải = 0 trước khi chốt (TIM-FR-007).</summary>
     public decimal OtUnclassified { get; set; }
+
+    /// <summary>Ngày phép hưởng đã merge vào WorkDays (TIM-FR-008/009).</summary>
+    public decimal LeaveDaysPaid { get; set; }
+
+    /// <summary>Ngày phép không hưởng (N_KHL) — không cộng vào WorkDays.</summary>
+    public decimal LeaveDaysUnpaid { get; set; }
+
+    /// <summary>Ngày phép Đã duyệt khác (ốm/chế độ…) — ghi nhận, không cộng N_thực.</summary>
+    public decimal LeaveDaysOther { get; set; }
 }

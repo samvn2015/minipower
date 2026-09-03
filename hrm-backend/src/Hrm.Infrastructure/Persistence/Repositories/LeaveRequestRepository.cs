@@ -250,6 +250,43 @@ internal sealed class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRep
         return true;
     }
 
+    public async Task<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>> ListApprovedOverlappingPeriodAsync(
+        string periodYm,
+        IReadOnlyList<Guid> employeeIds,
+        CancellationToken cancellationToken = default)
+    {
+        if (employeeIds.Count == 0
+            || periodYm.Length != 7
+            || periodYm[4] != '-'
+            || !int.TryParse(periodYm.AsSpan(0, 4), out var year)
+            || !int.TryParse(periodYm.AsSpan(5, 2), out var month)
+            || month is < 1 or > 12)
+        {
+            return [];
+        }
+
+        var monthStart = new DateOnly(year, month, 1);
+        var monthEnd = monthStart.AddMonths(1).AddDays(-1);
+        var idSet = employeeIds.ToHashSet();
+
+        return await db.LeaveRequests.AsNoTracking()
+            .Include(x => x.LeaveType)
+            .Where(x => x.Status == Domain.Leave.LeaveRequestStatus.Approved
+                        && idSet.Contains(x.EmployeeId)
+                        && x.FromDate <= monthEnd
+                        && x.ToDate >= monthStart)
+            .Select(x => new ApprovedLeaveForTimesheetSnapshot(
+                x.Id,
+                x.EmployeeId,
+                x.LeaveTypeCode,
+                x.LeaveType != null && x.LeaveType.DeductsAnnualBalance,
+                x.FromDate,
+                x.ToDate,
+                x.TotalDays))
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
     private static readonly System.Linq.Expressions.Expression<
         Func<LeaveRequest, LeaveRequestSnapshot>> MapSnapshot = x => new LeaveRequestSnapshot(
         x.Id,

@@ -220,6 +220,9 @@ export type TimesheetLine = {
   ot20: number;
   ot30: number;
   otUnclassified: number;
+  leaveDaysPaid: number;
+  leaveDaysUnpaid: number;
+  leaveDaysOther: number;
 };
 
 export type TimesheetPeriod = {
@@ -236,4 +239,6 @@ export type TimesheetCloseResult = {
   periodYm: string;
   status: string;
   lineCount: number;
+  totalLeaveDaysPaid: number;
+  totalLeaveDaysUnpaid: number;
 };

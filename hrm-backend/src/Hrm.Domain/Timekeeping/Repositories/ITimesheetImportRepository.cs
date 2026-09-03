@@ -57,7 +57,10 @@ public sealed record TimesheetLineSnapshot(
     decimal Ot15,
     decimal Ot20,
     decimal Ot30,
-    decimal OtUnclassified);
+    decimal OtUnclassified,
+    decimal LeaveDaysPaid,
+    decimal LeaveDaysUnpaid,
+    decimal LeaveDaysOther);
 
 public sealed record TimesheetPeriodSnapshot(
     Guid Id,
@@ -66,6 +69,12 @@ public sealed record TimesheetPeriodSnapshot(
     Guid? SourceImportBatchId,
     int LineCount,
     IReadOnlyList<TimesheetLineSnapshot> Lines);
+
+public sealed record TimesheetLeaveMergeLine(
+    Guid EmployeeId,
+    decimal LeaveDaysPaid,
+    decimal LeaveDaysUnpaid,
+    decimal LeaveDaysOther);
 
 public interface ITimesheetImportRepository
 {
@@ -93,11 +102,11 @@ public interface ITimesheetImportRepository
         CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// Close Draft period. Returns null if missing / not Draft.
-    /// Caller must validate OT unclassified before calling.
+    /// Merge phép Đã duyệt (optional) rồi chốt Draft. Returns null if missing / not Draft.
     /// </summary>
     Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
         string periodYm,
         string closedByIdpSubject,
+        IReadOnlyList<TimesheetLeaveMergeLine> leaveMerge,
         CancellationToken cancellationToken = default);
 }
