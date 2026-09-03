@@ -249,3 +249,31 @@ export type TimesheetUnlockResult = {
   status: string;
   lineCount: number;
 };
+
+export type PayLine = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  workDays: number;
+  leaveDaysUnpaid: number;
+  leaveDaysPaid: number;
+  nTinh: number;
+  ot15: number;
+  ot20: number;
+  ot30: number;
+};
+
+export type PayPeriod = {
+  id: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+  lines: PayLine[];
+};
+
+export type PayRunResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+};

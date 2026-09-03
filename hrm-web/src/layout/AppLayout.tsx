@@ -84,6 +84,11 @@ export function AppLayout() {
                 <Link className="btn btn-ghost" to="/tim/periods">
                   Chốt công
                 </Link>
+                {user.roles.includes("IAM-ROLE-HR") && (
+                  <Link className="btn btn-ghost" to="/pay/periods">
+                    Tính lương
+                  </Link>
+                )}
                 <Link className="btn btn-ghost" to="/line-manager-changes">
                   Duyệt LM
                 </Link>

@@ -11,6 +11,9 @@ using Hrm.Application.Identity.Queries;
 using Hrm.Application.Leave.Commands;
 using Hrm.Application.Leave.Dtos;
 using Hrm.Application.Leave.Queries;
+using Hrm.Application.Payroll.Commands;
+using Hrm.Application.Payroll.Dtos;
+using Hrm.Application.Payroll.Queries;
 using Hrm.Application.Timekeeping;
 using Hrm.Application.Timekeeping.Commands;
 using Hrm.Application.Timekeeping.Dtos;
@@ -73,6 +76,11 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<GetTimesheetImportBatchQuery, TimesheetImportBatchDto>, GetTimesheetImportBatchQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListTimesheetPeriodsQuery, IReadOnlyList<TimesheetPeriodDto>>, ListTimesheetPeriodsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetTimesheetPeriodQuery, TimesheetPeriodDto>, GetTimesheetPeriodQueryHandler>();
+
+        builder.Services.AddScoped<IAsyncCommandHandler<RunPayrollPeriodCommand, PayRunResult>, RunPayrollPeriodCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<ClosePayrollPeriodCommand, PayRunResult>, ClosePayrollPeriodCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetPayrollPeriodQuery, PayPeriodDto>, GetPayrollPeriodQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListPayrollPeriodsQuery, IReadOnlyList<PayPeriodDto>>, ListPayrollPeriodsQueryHandler>();
 
         return builder;
     }
