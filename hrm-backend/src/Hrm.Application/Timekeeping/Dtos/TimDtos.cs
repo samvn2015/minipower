@@ -59,7 +59,10 @@ public sealed record TimesheetLineDto(
     decimal Ot15,
     decimal Ot20,
     decimal Ot30,
-    decimal OtUnclassified);
+    decimal OtUnclassified,
+    decimal LeaveDaysPaid,
+    decimal LeaveDaysUnpaid,
+    decimal LeaveDaysOther);
 
 public sealed record TimesheetPeriodDto(
     Guid Id,
@@ -73,4 +76,6 @@ public sealed record TimesheetCloseResult(
     Guid PeriodId,
     string PeriodYm,
     string Status,
-    int LineCount);
+    int LineCount,
+    decimal TotalLeaveDaysPaid,
+    decimal TotalLeaveDaysUnpaid);

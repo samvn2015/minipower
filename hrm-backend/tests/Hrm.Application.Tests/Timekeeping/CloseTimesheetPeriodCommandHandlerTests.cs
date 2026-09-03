@@ -1,6 +1,8 @@
 using Hrm.Application.Timekeeping.Commands;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
+using Hrm.Domain.Leave;
+using Hrm.Domain.Leave.Repositories;
 using Hrm.Domain.Timekeeping;
 using Hrm.Domain.Timekeeping.Repositories;
 using Jarvis.Domain.Shared.ExceptionHandling;
@@ -22,17 +24,80 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
                 TimesheetPeriodStatus.Draft,
                 null,
                 1,
-                [Line(otUnclassified: 0, ot15: 2)]));
+                [Line(workDays: 20, otUnclassified: 0)]));
 
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
-            imports);
+            imports,
+            new FakeLeaveRepo([]));
 
         var result = await handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11"));
 
         Assert.Equal("Closed", result.Status);
         Assert.Equal("2026-11", result.PeriodYm);
         Assert.True(imports.CloseCalled);
+        Assert.Equal(0m, result.TotalLeaveDaysPaid);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ApprovedPaidLeave_MergedIntoWorkDays()
+    {
+        var imports = new FakeImportRepo(
+            new TimesheetPeriodSnapshot(
+                PeriodId,
+                "2026-11",
+                TimesheetPeriodStatus.Draft,
+                null,
+                1,
+                [Line(workDays: 20, otUnclassified: 0)]));
+
+        var leaves = new List<ApprovedLeaveForTimesheetSnapshot>
+        {
+            new(
+                Guid.NewGuid(),
+                EmployeeId,
+                "LEV-ANNUAL",
+                DeductsAnnualBalance: true,
+                new DateOnly(2026, 11, 10),
+                new DateOnly(2026, 11, 11),
+                2m)
+        };
+
+        var handler = new CloseTimesheetPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            imports,
+            new FakeLeaveRepo(leaves));
+
+        var result = await handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11"));
+
+        Assert.Equal("Closed", result.Status);
+        Assert.Equal(2m, result.TotalLeaveDaysPaid);
+        Assert.Equal(22m, imports.LastClosed!.Lines[0].WorkDays);
+        Assert.Equal(2m, imports.LastClosed.Lines[0].LeaveDaysPaid);
+    }
+
+    [Fact]
+    public async Task HandleAsync_PendingLeave_NotMerged()
+    {
+        // Leave repo only returns Approved — PendingC1 never appears.
+        var imports = new FakeImportRepo(
+            new TimesheetPeriodSnapshot(
+                PeriodId,
+                "2026-11",
+                TimesheetPeriodStatus.Draft,
+                null,
+                1,
+                [Line(workDays: 20, otUnclassified: 0)]));
+
+        var handler = new CloseTimesheetPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            imports,
+            new FakeLeaveRepo([]));
+
+        var result = await handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11"));
+
+        Assert.Equal(0m, result.TotalLeaveDaysPaid);
+        Assert.Equal(20m, imports.LastClosed!.Lines[0].WorkDays);
     }
 
     [Fact]
@@ -45,11 +110,12 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
                 TimesheetPeriodStatus.Draft,
                 null,
                 1,
-                [Line(otUnclassified: 3, ot15: 0)]));
+                [Line(workDays: 20, otUnclassified: 3)]));
 
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
-            imports);
+            imports,
+            new FakeLeaveRepo([]));
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11")));
@@ -70,14 +136,15 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
 
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-LM"]),
-            imports);
+            imports,
+            new FakeLeaveRepo([]));
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new CloseTimesheetPeriodCommand("local-lm", "2026-11")));
     }
 
-    private static TimesheetLineSnapshot Line(decimal otUnclassified, decimal ot15) =>
-        new(Guid.NewGuid(), EmployeeId, "MNV-DEV", 22, ot15, 0, 0, otUnclassified);
+    private static TimesheetLineSnapshot Line(decimal workDays, decimal otUnclassified) =>
+        new(Guid.NewGuid(), EmployeeId, "MNV-DEV", workDays, 0, 0, 0, otUnclassified, 0, 0, 0);
 
     private sealed class FakeAccountRepo(string[] roles) : IIdentityAccountReadRepository
     {
@@ -93,9 +160,63 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
             Task.FromResult<IdentityAccountSnapshot?>(null);
     }
 
+    private sealed class FakeLeaveRepo(IReadOnlyList<ApprovedLeaveForTimesheetSnapshot> leaves)
+        : ILeaveRequestRepository
+    {
+        public Task<Guid> CreateAsync(LeaveRequestCreateModel model, CancellationToken cancellationToken = default)
+            => Task.FromResult(Guid.NewGuid());
+
+        public Task<LeaveRequestSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
+            => Task.FromResult<LeaveRequestSnapshot?>(null);
+
+        public Task<IReadOnlyList<LeaveRequestSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LeaveRequestSnapshot>>([]);
+
+        public Task<IReadOnlyList<LeaveRequestPendingC1Snapshot>> ListPendingC1ByLineManagerIdAsync(
+            Guid lineManagerEmployeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LeaveRequestPendingC1Snapshot>>([]);
+
+        public Task<bool> ApproveC1Async(Guid id, string reviewedByIdpSubject, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+
+        public Task<bool> RejectC1Async(
+            Guid id, string reviewedByIdpSubject, string? reviewNote, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+
+        public Task<IReadOnlyList<LeaveRequestPendingC1Snapshot>> ListPendingC2Async(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LeaveRequestPendingC1Snapshot>>([]);
+
+        public Task<bool> ApproveC2Async(
+            Guid id, string reviewedByIdpSubject, bool deductsAnnualBalance, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+
+        public Task<bool> RejectC2Async(
+            Guid id, string reviewedByIdpSubject, string? reviewNote, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+
+        public Task<bool> HasOpenOverlapAsync(
+            Guid employeeId, DateOnly fromDate, DateOnly toDate, LeaveDayPart dayPart,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(false);
+
+        public Task<bool> CancelByEmployeeAsync(Guid id, Guid employeeId, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
+
+        public Task<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>> ListApprovedOverlappingPeriodAsync(
+            string periodYm,
+            IReadOnlyList<Guid> employeeIds,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(leaves);
+    }
+
     private sealed class FakeImportRepo(TimesheetPeriodSnapshot period) : ITimesheetImportRepository
     {
         public bool CloseCalled { get; private set; }
+        public TimesheetPeriodSnapshot? LastClosed { get; private set; }
 
         public Task<Guid> CreatePreviewAsync(
             TimesheetImportBatchCreateModel model,
@@ -126,13 +247,33 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         public Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
             string periodYm,
             string closedByIdpSubject,
+            IReadOnlyList<TimesheetLeaveMergeLine> leaveMerge,
             CancellationToken cancellationToken = default)
         {
             CloseCalled = true;
-            return Task.FromResult<TimesheetPeriodSnapshot?>(period with
+            var mergeMap = leaveMerge.ToDictionary(x => x.EmployeeId);
+            var lines = period.Lines.Select(l =>
             {
-                Status = TimesheetPeriodStatus.Closed
-            });
+                mergeMap.TryGetValue(l.EmployeeId, out var m);
+                var paid = m?.LeaveDaysPaid ?? 0;
+                var unpaid = m?.LeaveDaysUnpaid ?? 0;
+                var other = m?.LeaveDaysOther ?? 0;
+                return l with
+                {
+                    WorkDays = l.WorkDays + paid,
+                    LeaveDaysPaid = paid,
+                    LeaveDaysUnpaid = unpaid,
+                    LeaveDaysOther = other
+                };
+            }).ToList();
+
+            LastClosed = period with
+            {
+                Status = TimesheetPeriodStatus.Closed,
+                Lines = lines,
+                LineCount = lines.Count
+            };
+            return Task.FromResult<TimesheetPeriodSnapshot?>(LastClosed);
         }
     }
 }

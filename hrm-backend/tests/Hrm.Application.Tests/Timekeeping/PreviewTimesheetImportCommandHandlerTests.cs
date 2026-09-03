@@ -226,6 +226,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
         public Task<TimesheetPeriodSnapshot?> ClosePeriodAsync(
             string periodYm,
             string closedByIdpSubject,
+            IReadOnlyList<TimesheetLeaveMergeLine> leaveMerge,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<TimesheetPeriodSnapshot?>(null);
     }

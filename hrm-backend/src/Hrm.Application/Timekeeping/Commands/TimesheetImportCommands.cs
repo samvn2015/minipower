@@ -2,6 +2,7 @@ using Hrm.Application.Common;
 using Hrm.Application.Timekeeping.Dtos;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
+using Hrm.Domain.Leave.Repositories;
 using Hrm.Domain.Shared.Constants;
 using Hrm.Domain.Timekeeping;
 using Hrm.Domain.Timekeeping.Repositories;
@@ -125,7 +126,8 @@ public sealed record CloseTimesheetPeriodCommand(string? ActorIdpSubject, string
 
 public sealed class CloseTimesheetPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ITimesheetImportRepository imports)
+    ITimesheetImportRepository imports,
+    ILeaveRequestRepository leaveRequests)
     : IAsyncCommandHandler<CloseTimesheetPeriodCommand, TimesheetCloseResult>
 {
     public async Task<TimesheetCloseResult> HandleAsync(
@@ -163,8 +165,23 @@ public sealed class CloseTimesheetPeriodCommandHandler(
                 "Còn giờ OT chưa phân loại 1.5/2.0/3.0 — cấm chốt (TIM-FR-007).");
         }
 
+        var employeeIds = period.Lines.Select(l => l.EmployeeId).Distinct().ToList();
+        var approved = await leaveRequests
+            .ListApprovedOverlappingPeriodAsync(ym, employeeIds, cancellationToken)
+            .ConfigureAwait(false);
+
+        var leaveInputs = approved.Select(a => new ApprovedLeaveInput(
+            a.EmployeeId,
+            a.LeaveTypeCode,
+            a.DeductsAnnualBalance,
+            a.FromDate,
+            a.ToDate,
+            a.TotalDays)).ToList();
+
+        var mergeLines = TimesheetLeaveMerger.BuildMergeLines(ym, employeeIds, leaveInputs);
+
         var closed = await imports
-            .ClosePeriodAsync(ym, command.ActorIdpSubject!, cancellationToken)
+            .ClosePeriodAsync(ym, command.ActorIdpSubject!, mergeLines, cancellationToken)
             .ConfigureAwait(false)
             ?? throw new ConflictException(HrmErrorCodes.Conflict, $"Không chốt được kỳ {ym}.");
 
@@ -172,7 +189,9 @@ public sealed class CloseTimesheetPeriodCommandHandler(
             closed.Id,
             closed.PeriodYm,
             closed.Status.ToString(),
-            closed.LineCount);
+            closed.LineCount,
+            closed.Lines.Sum(l => l.LeaveDaysPaid),
+            closed.Lines.Sum(l => l.LeaveDaysUnpaid));
     }
 }
 
@@ -215,5 +234,8 @@ internal static class TimImportDtoMapper
                 l.Ot15,
                 l.Ot20,
                 l.Ot30,
-                l.OtUnclassified)).ToList());
+                l.OtUnclassified,
+                l.LeaveDaysPaid,
+                l.LeaveDaysUnpaid,
+                l.LeaveDaysOther)).ToList());
 }

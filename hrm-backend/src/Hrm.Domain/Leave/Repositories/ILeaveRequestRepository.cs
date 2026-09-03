@@ -93,4 +93,20 @@ public interface ILeaveRequestRepository
         Guid id,
         Guid employeeId,
         CancellationToken cancellationToken = default);
+
+    /// <summary>Đơn Approved giao với tháng YYYY-MM (TIM-FR-008).</summary>
+    Task<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>> ListApprovedOverlappingPeriodAsync(
+        string periodYm,
+        IReadOnlyList<Guid> employeeIds,
+        CancellationToken cancellationToken = default);
 }
+
+public sealed record ApprovedLeaveForTimesheetSnapshot(
+    Guid Id,
+    Guid EmployeeId,
+    string LeaveTypeCode,
+    bool DeductsAnnualBalance,
+    DateOnly FromDate,
+    DateOnly ToDate,
+    decimal TotalDays);
+
