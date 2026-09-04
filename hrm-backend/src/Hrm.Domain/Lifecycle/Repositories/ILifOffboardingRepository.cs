@@ -41,4 +41,9 @@ public interface ILifOffboardingRepository
         DateOnly lastWorkingDayN,
         string confirmedByIdpSubject,
         CancellationToken cancellationToken = default);
+
+    Task<LifOffboardingSnapshot> CloseAsync(
+        Guid id,
+        string closedByIdpSubject,
+        CancellationToken cancellationToken = default);
 }

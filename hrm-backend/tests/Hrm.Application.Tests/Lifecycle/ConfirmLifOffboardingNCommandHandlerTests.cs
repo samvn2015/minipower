@@ -110,5 +110,11 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
                 id, EmpId, "MNV-X", "HR-MANUAL", LifOffboardingStatus.ConfirmedN,
                 lastWorkingDayN, ResignationSignedDate, confirmedByIdpSubject, DateTime.UtcNow,
                 DateTime.UtcNow, "hr", null));
+
+        public Task<LifOffboardingSnapshot> CloseAsync(
+            Guid id,
+            string closedByIdpSubject,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 }

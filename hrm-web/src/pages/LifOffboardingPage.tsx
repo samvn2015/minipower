@@ -1,22 +1,33 @@
 import { useEffect, useState } from "react";
 import {
+  closeLifOffboarding,
   confirmLifOffboardingN,
+  fetchLifOffboardingChecklist,
   fetchLifOffboardings,
+  upsertLifOffChecklistTick,
 } from "../api/client";
-import type { LifOffboarding } from "../api/types";
+import type { LifOffboarding, LifOffChecklistBoard } from "../api/types";
 
 export function LifOffboardingPage() {
   const [items, setItems] = useState<LifOffboarding[]>([]);
+  const [board, setBoard] = useState<LifOffChecklistBoard | null>(null);
   const [caseId, setCaseId] = useState("");
   const [n, setN] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
-  async function reload() {
+  async function reload(selected?: string) {
     const rows = await fetchLifOffboardings();
     setItems(rows);
+    const id = selected || caseId || rows[0]?.id || "";
     if (!caseId && rows[0]) setCaseId(rows[0].id);
+    if (id) {
+      setCaseId(id);
+      setBoard(await fetchLifOffboardingChecklist(id));
+    } else {
+      setBoard(null);
+    }
   }
 
   useEffect(() => {
@@ -26,6 +37,16 @@ export function LifOffboardingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  async function onSelectCase(id: string) {
+    setCaseId(id);
+    setError(null);
+    try {
+      setBoard(await fetchLifOffboardingChecklist(id));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Không tải checklist");
+    }
+  }
+
   async function onConfirm() {
     setError(null);
     setMessage(null);
@@ -34,19 +55,40 @@ export function LifOffboardingPage() {
       setMessage(
         `Đã xác nhận N=${dto.lastWorkingDayN} · N+3=${dto.nPlus3Expected} (job eligible=${dto.jobNPlus3Eligible}).`,
       );
-      await reload();
+      await reload(caseId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Xác nhận N thất bại");
+    }
+  }
+
+  async function onTick(code: string, checked: boolean) {
+    setError(null);
+    try {
+      setBoard(await upsertLifOffChecklistTick(caseId, code, checked));
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Tick thất bại");
+    }
+  }
+
+  async function onClose() {
+    setError(null);
+    setMessage(null);
+    try {
+      const dto = await closeLifOffboarding(caseId);
+      setMessage(`Đã đóng off ${dto.employeeCode} (${dto.status}).`);
+      await reload();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Đóng off thất bại");
     }
   }
 
   return (
     <div className="card stack">
       <div>
-        <h2>Offboarding — xác nhận N</h2>
+        <h2>Offboarding</h2>
         <p className="muted">
-          LIF-SCR-001/003 — N = <strong>ngày LV cuối</strong> (không dùng ngày ký đơn). Hiện N+3 lịch
-          (LIF-FR-003/013). Chỉ HR.
+          LIF-SCR-001/003/005 — N = ngày LV cuối; checklist off từ master; thiếu Must không đóng
+          (FR-003/009).
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
@@ -55,7 +97,7 @@ export function LifOffboardingPage() {
       <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
         <label className="muted">
           Case{" "}
-          <select value={caseId} onChange={(e) => setCaseId(e.target.value)}>
+          <select value={caseId} onChange={(e) => onSelectCase(e.target.value)}>
             {items.map((c) => (
               <option key={c.id} value={c.id}>
                 {c.employeeCode} · {c.status}
@@ -69,6 +111,14 @@ export function LifOffboardingPage() {
         </label>
         <button type="button" className="btn" onClick={onConfirm} disabled={!caseId || !n}>
           HR xác nhận N
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onClose}
+          disabled={!board?.canClose}
+        >
+          Đóng off
         </button>
       </div>
 
@@ -84,7 +134,6 @@ export function LifOffboardingPage() {
                 <th>N</th>
                 <th>N+3</th>
                 <th>Job?</th>
-                <th>Ngày ký (tham chiếu)</th>
               </tr>
             </thead>
             <tbody>
@@ -96,11 +145,45 @@ export function LifOffboardingPage() {
                   <td>{r.lastWorkingDayN ?? "—"}</td>
                   <td>{r.nPlus3Expected ?? "—"}</td>
                   <td>{r.jobNPlus3Eligible ? "Eligible" : "No"}</td>
-                  <td>{r.resignationSignedDate ?? "—"}</td>
                 </tr>
               ))}
             </tbody>
           </table>
+        </div>
+      )}
+
+      {board && (
+        <div className="stack">
+          <h3>Checklist off (SCR-005)</h3>
+          <div className="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Tick</th>
+                  <th>Mã</th>
+                  <th>Hạng mục</th>
+                  <th>Must?</th>
+                </tr>
+              </thead>
+              <tbody>
+                {board.items.map((i) => (
+                  <tr key={i.code}>
+                    <td>
+                      <input
+                        type="checkbox"
+                        checked={i.isChecked}
+                        onChange={(e) => onTick(i.code, e.target.checked)}
+                      />
+                    </td>
+                    <td>{i.code}</td>
+                    <td>{i.name}</td>
+                    <td>{i.isMust ? "Must" : "Optional"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+          <p className="muted">canClose = {board.canClose ? "true" : "false"}</p>
         </div>
       )}
     </div>

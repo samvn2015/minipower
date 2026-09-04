@@ -272,5 +272,11 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             string confirmedByIdpSubject,
             CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
+
+        public Task<LifOffboardingSnapshot> CloseAsync(
+            Guid id,
+            string closedByIdpSubject,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 }

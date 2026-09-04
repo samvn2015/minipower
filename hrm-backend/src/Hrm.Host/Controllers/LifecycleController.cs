@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
 
-/// <summary>LIF — offboarding N / N+3 (FR-003/004/013/015).</summary>
+/// <summary>LIF — offboarding N/N+3 + checklist off (FR-003/009).</summary>
 [ApiController]
 [Route("v1/lif")]
 [Authorize]
@@ -17,7 +17,6 @@ public sealed class LifecycleController(
     IAsyncQueryDispatcher queries,
     IAsyncCommandDispatcher commands) : ControllerBase
 {
-    /// <summary>LIF-SCR-001 — danh sách case (Open + ConfirmedN).</summary>
     [HttpGet("offboarding")]
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
@@ -55,7 +54,6 @@ public sealed class LifecycleController(
         return CreatedAtAction(nameof(Get), new { id = dto.Id }, dto);
     }
 
-    /// <summary>LIF-SCR-003 — HR xác nhận N = ngày LV cuối (không phải ngày ký).</summary>
     [HttpPost("offboarding/{id:guid}/confirm-n")]
     public async Task<IActionResult> ConfirmN(
         Guid id,
@@ -67,6 +65,38 @@ public sealed class LifecycleController(
             cancellationToken);
         return Ok(dto);
     }
+
+    /// <summary>LIF-SCR-005 — checklist off từ master.</summary>
+    [HttpGet("offboarding/{id:guid}/checklist")]
+    public async Task<IActionResult> GetChecklist(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await queries.DispatchAsync<GetLifOffChecklistQuery, LifOffChecklistBoardDto>(
+            new GetLifOffChecklistQuery(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPut("offboarding/{id:guid}/checklist/{itemCode}")]
+    public async Task<IActionResult> UpsertTick(
+        Guid id,
+        string itemCode,
+        [FromBody] UpsertLifOffChecklistTickRequest body,
+        CancellationToken cancellationToken)
+    {
+        var dto = await commands.DispatchAsync<UpsertLifOffChecklistTickCommand, LifOffChecklistBoardDto>(
+            new UpsertLifOffChecklistTickCommand(User.GetIdpSubject(), id, itemCode, body.IsChecked),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("offboarding/{id:guid}/close")]
+    public async Task<IActionResult> Close(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await commands.DispatchAsync<CloseLifOffboardingCommand, LifOffboardingDto>(
+            new CloseLifOffboardingCommand(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(dto);
+    }
 }
 
 public sealed record CreateLifOffboardingRequest(
@@ -75,3 +105,5 @@ public sealed record CreateLifOffboardingRequest(
     string? Note);
 
 public sealed record ConfirmLifOffboardingNRequest(DateOnly LastWorkingDayN);
+
+public sealed record UpsertLifOffChecklistTickRequest(bool IsChecked);

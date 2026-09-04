@@ -81,6 +81,25 @@ internal sealed class LifOffboardingRepository(AppDbContext db) : ILifOffboardin
         return Map(row);
     }
 
+    public async Task<LifOffboardingSnapshot> CloseAsync(
+        Guid id,
+        string closedByIdpSubject,
+        CancellationToken cancellationToken = default)
+    {
+        var row = await db.LifOffboardingCases
+            .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Offboarding case not found.");
+
+        row.Status = LifOffboardingStatus.Closed;
+        row.Note = string.IsNullOrWhiteSpace(row.Note)
+            ? $"Closed by {closedByIdpSubject}"
+            : $"{row.Note} | Closed by {closedByIdpSubject}";
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return Map(row);
+    }
+
     private static LifOffboardingSnapshot Map(LifOffboardingCase x) =>
         new(
             x.Id,
