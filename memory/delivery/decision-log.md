@@ -156,3 +156,16 @@
 - Affects: probation DOC-16
 - Trace: e2e-api-prb-slice-a…e · DEC-DLV-012
 - Confidence: cao
+
+### DEC-DLV-014 — Execute St payroll DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: PAY slices A–K e2e đã land; tiếp rollup sau PRB DOC-16.
+- Options: A Để trống · B **St theo e2e A–K** · C Pass đủ NFR-002 audit mọi thao tác
+- Decision: chọn **B**
+- Why (loại C vì mới chắc `PayslipViewed`)
+- Consequences:
+  - `docs/03-modules/payroll/DOC-16` v0.2: Pass TC-001…018 + NFR-001; **Partial** NFR-002.
+  - Cùng PR/branch với DEC-DLV-013 (probation) nếu chưa merge.
+- Affects: payroll DOC-16
+- Trace: e2e-api-pay-slice-a…k · DEC-DLV-013
+- Confidence: cao
