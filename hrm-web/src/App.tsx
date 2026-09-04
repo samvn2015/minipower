@@ -18,6 +18,9 @@ import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
 import { isHr, isHrOrIt, isIt, useCurrentUser } from "./hooks/useCurrentUser";
 import { PrbCasesPage } from "./pages/PrbCasesPage";
+import { PrbDecidePage } from "./pages/PrbDecidePage";
+import { PrbEvaluatePage } from "./pages/PrbEvaluatePage";
+import { PrbIncompletePage } from "./pages/PrbIncompletePage";
 import { PrbMyMilestonesPage } from "./pages/PrbMyMilestonesPage";
 import { LifOffboardingPage } from "./pages/LifOffboardingPage";
 import { LifOnboardingPage } from "./pages/LifOnboardingPage";
@@ -44,6 +47,16 @@ function RequireTimTemplate({ children }: { children: ReactNode }) {
 function RequirePrbHr({ children }: { children: ReactNode }) {
   const user = useCurrentUser();
   const ok = user.roles.some((r) => r === "IAM-ROLE-HR" || r === "IAM-ROLE-PGD");
+  if (!ok) return <Navigate to="/prb/me" replace />;
+  return <>{children}</>;
+}
+
+/** SCR-002 — LM hoặc HR/PGD đề xuất. */
+function RequirePrbPropose({ children }: { children: ReactNode }) {
+  const user = useCurrentUser();
+  const ok = user.roles.some(
+    (r) => r === "IAM-ROLE-HR" || r === "IAM-ROLE-PGD" || r === "IAM-ROLE-LM",
+  );
   if (!ok) return <Navigate to="/prb/me" replace />;
   return <>{children}</>;
 }
@@ -125,6 +138,30 @@ export default function App() {
             element={
               <RequirePrbHr>
                 <PrbCasesPage />
+              </RequirePrbHr>
+            }
+          />
+          <Route
+            path="/prb/cases/:employeeId/evaluate"
+            element={
+              <RequirePrbPropose>
+                <PrbEvaluatePage />
+              </RequirePrbPropose>
+            }
+          />
+          <Route
+            path="/prb/cases/:employeeId/decide"
+            element={
+              <RequirePrbHr>
+                <PrbDecidePage />
+              </RequirePrbHr>
+            }
+          />
+          <Route
+            path="/prb/incomplete"
+            element={
+              <RequirePrbHr>
+                <PrbIncompletePage />
               </RequirePrbHr>
             }
           />

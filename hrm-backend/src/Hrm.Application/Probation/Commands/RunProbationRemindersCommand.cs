@@ -1,3 +1,4 @@
+using Hrm.Application.Common;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
@@ -24,7 +25,8 @@ public sealed record ProbationReminderRunResult(
 public sealed class RunProbationRemindersCommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
-    IProbationReminderRepository reminders)
+    IProbationReminderRepository reminders,
+    IHostRoleGate hostRoleGate)
     : IAsyncCommandHandler<RunProbationRemindersCommand, ProbationReminderRunResult>
 {
     public const string ChannelInAppAndEmail = "hrm-inapp+email";
@@ -36,6 +38,13 @@ public sealed class RunProbationRemindersCommandHandler(
         var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
         PrbAccessGuard.RequireHrOrPgd(actor);
+
+        if (!hostRoleGate.IsActiveHost())
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Host Standby — job T-15/T-7 không chạy DR (PRB-TC-HA-001)");
+        }
 
         var asOf = request.AsOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
         var all = await employees.ListAsync(cancellationToken);

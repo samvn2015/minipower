@@ -606,6 +606,34 @@ export async function fetchProbationOutcomes(): Promise<ProbationMasterItem[]> {
   return unwrap(body as ApiEnvelope<ProbationMasterItem[]>);
 }
 
+export async function fetchProbationCriteria(): Promise<ProbationMasterItem[]> {
+  const body = await apiFetch<ProbationMasterItem[] | ApiEnvelope<ProbationMasterItem[]>>(
+    "/v1/prb/masters/criteria",
+  );
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<ProbationMasterItem[]>);
+}
+
+export async function fetchProbationExtendDurations(): Promise<ProbationMasterItem[]> {
+  const body = await apiFetch<ProbationMasterItem[] | ApiEnvelope<ProbationMasterItem[]>>(
+    "/v1/prb/masters/extend-durations",
+  );
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<ProbationMasterItem[]>);
+}
+
+export async function proposeProbationEvaluation(
+  employeeId: string,
+  payload: { outcomeCode: string; note?: string },
+): Promise<ProbationEvaluation> {
+  const body = await apiFetch<ProbationEvaluation | ApiEnvelope<ProbationEvaluation>>(
+    `/v1/prb/evaluations/${employeeId}/propose`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<ProbationEvaluation>);
+}
+
 export async function decideProbationEvaluation(
   employeeId: string,
   payload: { outcomeCode: string; note?: string; extendDurationCode?: string },

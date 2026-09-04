@@ -209,3 +209,17 @@
 - Consequences: `lifecycle/DOC-16` v0.2. **Đủ 7 module Must** DOC-16 execute St v0.2 (cùng IAM/PRB/PAY/TIM/LEV).
 - Trace: e2e-api-lif-slice-a…d · DEC-DLV-017
 - Confidence: cao
+
+### DEC-DLV-020 — Siết PRB HA Standby + SCR-001…004 · [2026-09-04]
+- Status: accepted *(PGD chọn «siết Partial SCR/HA»)*
+- Context: Overview nợ Partial SCR/HA; PRB-TC-HA-001 Open; TC-013 Partial.
+- Options: A Chỉ HA · B Chỉ SCR · C **HA + tách 4 màn PRB** · D LIF SCR trước
+- Decision: chọn **C** (một module PRB)
+- Why (loại D vì overview ghi PRB·LIF nhưng một slice = 1 module; HA PRB còn Open)
+- Consequences:
+  - `RunProbationRemindersCommandHandler` + `IHostRoleGate` → Standby BadRequest, count 0.
+  - Web: SCR-001 cases · 002 evaluate · 003 decide · 004 incomplete.
+  - `probation/DOC-16`: HA-001 + TC-013 **Pass** (v0.3).
+- Affects: PRB Application · hrm-web · DOC-16 probation
+- Trace: ADR-003 · PRB-TC-HA-001 · PRB-TC-013 · DEC-DLV-013
+- Confidence: cao *(unit HA)* · vừa *(SCR khung, chưa pixel E2E)*

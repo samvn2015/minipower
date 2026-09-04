@@ -1,41 +1,31 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import {
-  decideProbationEvaluation,
   fetchProbationCases,
-  fetchProbationOutcomes,
   fetchProbationReminders,
   runProbationReminders,
 } from "../api/client";
-import type { ProbationCase, ProbationMasterItem, ProbationReminder } from "../api/types";
+import type { ProbationCase, ProbationReminder } from "../api/types";
 
+/** PRB-SCR-001 — hàng TV + job; điều hướng SCR-002/003/004. */
 export function PrbCasesPage() {
   const [items, setItems] = useState<ProbationCase[]>([]);
   const [reminders, setReminders] = useState<ProbationReminder[]>([]);
-  const [outcomes, setOutcomes] = useState<ProbationMasterItem[]>([]);
   const [asOf, setAsOf] = useState("");
-  const [decideEmpId, setDecideEmpId] = useState("");
-  const [decideCode, setDecideCode] = useState("PASS");
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   async function reload() {
-    const [cases, rem, outs] = await Promise.all([
-      fetchProbationCases(),
-      fetchProbationReminders(),
-      fetchProbationOutcomes(),
-    ]);
+    const [cases, rem] = await Promise.all([fetchProbationCases(), fetchProbationReminders()]);
     setItems(cases);
     setReminders(rem);
-    setOutcomes(outs);
-    if (!decideEmpId && cases[0]) setDecideEmpId(cases[0].employeeId);
   }
 
   useEffect(() => {
     reload()
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   async function onRunJob() {
@@ -53,28 +43,14 @@ export function PrbCasesPage() {
     }
   }
 
-  async function onDecide() {
-    setError(null);
-    setMessage(null);
-    try {
-      const dto = await decideProbationEvaluation(decideEmpId, {
-        outcomeCode: decideCode,
-        note: "Chốt từ SCR-001",
-        extendDurationCode: decideCode === "EXTEND" ? "EXT-1M" : undefined,
-      });
-      setMessage(`Đã chốt ${dto.employeeCode}: ${dto.decidedOutcomeCode} (SoT HR).`);
-      await reload();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Chốt thất bại");
-    }
-  }
+  const incomplete = items.filter((c) => !c.hasCompleteMilestone);
 
   return (
     <div className="card stack">
       <div>
         <h2>Hàng thử việc</h2>
         <p className="muted">
-          PRB-SCR-001/003 — mốc EMP · job T-15/T-7 · HR chốt 3 mã master (FR-004/009).
+          PRB-SCR-001 — mốc EMP · job T-15/T-7. Chốt / đề xuất / thiếu mốc → màn riêng.
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
@@ -88,32 +64,11 @@ export function PrbCasesPage() {
         <button type="button" className="btn" onClick={onRunJob}>
           Chạy job T-15/T-7
         </button>
-      </div>
-
-      <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <label className="muted">
-          NV{" "}
-          <select value={decideEmpId} onChange={(e) => setDecideEmpId(e.target.value)}>
-            {items.map((c) => (
-              <option key={c.employeeId} value={c.employeeId}>
-                {c.employeeCode}
-              </option>
-            ))}
-          </select>
-        </label>
-        <label className="muted">
-          Kết quả{" "}
-          <select value={decideCode} onChange={(e) => setDecideCode(e.target.value)}>
-            {outcomes.map((o) => (
-              <option key={o.code} value={o.code}>
-                {o.name}
-              </option>
-            ))}
-          </select>
-        </label>
-        <button type="button" className="btn" onClick={onDecide} disabled={!decideEmpId}>
-          HR Chốt SoT
-        </button>
+        {incomplete.length > 0 && (
+          <Link className="btn btn-ghost" to="/prb/incomplete">
+            Thiếu mốc ({incomplete.length}) — SCR-004
+          </Link>
+        )}
       </div>
 
       {loading && <p className="muted">Đang tải…</p>}
@@ -130,6 +85,7 @@ export function PrbCasesPage() {
                 <th>T-15</th>
                 <th>T-7</th>
                 <th>Mốc đủ?</th>
+                <th></th>
               </tr>
             </thead>
             <tbody>
@@ -142,6 +98,22 @@ export function PrbCasesPage() {
                   <td>{r.t15DueDate ?? "—"}</td>
                   <td>{r.t7DueDate ?? "—"}</td>
                   <td>{r.hasCompleteMilestone ? "Có" : "Thiếu KT"}</td>
+                  <td className="row" style={{ gap: 6, flexWrap: "wrap" }}>
+                    {r.hasCompleteMilestone ? (
+                      <>
+                        <Link className="btn btn-ghost" to={`/prb/cases/${r.employeeId}/evaluate`}>
+                          Đề xuất
+                        </Link>
+                        <Link className="btn btn-ghost" to={`/prb/cases/${r.employeeId}/decide`}>
+                          Chốt
+                        </Link>
+                      </>
+                    ) : (
+                      <Link className="btn btn-ghost" to="/prb/incomplete">
+                        SCR-004
+                      </Link>
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

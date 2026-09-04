@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { fetchMyProbationMilestones } from "../api/client";
 import type { ProbationMilestone } from "../api/types";
 
-/** PRB-SCR-004 — chỉ hiển thị; cấm date picker ảo (FR-015). */
+/** NV xem mốc TV của mình — sửa ngày chỉ trên EMP (FR-015). SCR-004 HR = /prb/incomplete. */
 export function PrbMyMilestonesPage() {
   const [data, setData] = useState<ProbationMilestone | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -20,7 +20,7 @@ export function PrbMyMilestonesPage() {
       <div>
         <h2>Mốc thử việc của tôi</h2>
         <p className="muted">
-          PRB-SCR-004 — nguồn {data?.source ?? "EMP.Contract"}; sửa ngày chỉ trên hồ sơ HĐ EMP.
+          Nguồn {data?.source ?? "EMP.Contract"}; thiếu mốc HR xử lý trên SCR-004 (/prb/incomplete).
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
