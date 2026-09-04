@@ -107,6 +107,26 @@ public sealed class PayrollController(
         return Ok(result);
     }
 
+    /// <summary>Phiếu của tôi (kỳ Closed) — PAY-FR-010 · SCR-005.</summary>
+    [HttpGet("payslips/me")]
+    public async Task<IActionResult> ListMyPayslips(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListMyPayslipsQuery, IReadOnlyList<PayPayslipDto>>(
+            new ListMyPayslipsQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    /// <summary>Phiếu theo id dòng — HR hoặc chính chủ; LM cấp dưới → 403.</summary>
+    [HttpGet("payslips/{id:guid}")]
+    public async Task<IActionResult> GetPayslip(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await queries.DispatchAsync<GetPayslipQuery, PayPayslipDto>(
+            new GetPayslipQuery(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(dto);
+    }
+
     public sealed record UpsertCalendarRequest(decimal StandardWorkDays);
 
     public sealed record UpsertMonthlyAllowanceRequest(

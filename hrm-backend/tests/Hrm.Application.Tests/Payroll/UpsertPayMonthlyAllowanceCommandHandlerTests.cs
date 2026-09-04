@@ -128,6 +128,16 @@ public sealed class UpsertPayMonthlyAllowanceCommandHandlerTests
             string closedByIdpSubject,
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+
+        public Task<PayPayslipSnapshot?> FindPayslipByLineIdAsync(
+            Guid lineId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<PayPayslipSnapshot?>(null);
+
+        public Task<IReadOnlyList<PayPayslipSnapshot>> ListClosedPayslipsByEmployeeCodeAsync(
+            string employeeCode,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<PayPayslipSnapshot>>([]);
     }
 
     private sealed class FakeAllowance(bool codeActive) : IPayAllowanceRepository
