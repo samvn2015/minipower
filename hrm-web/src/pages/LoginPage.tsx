@@ -31,8 +31,8 @@ export function LoginPage() {
           <div>
             <h2>Đăng nhập (Development)</h2>
             <p className="muted">
-              Chọn vai trò để trải nghiệm. Production sẽ dùng Lark SSO — hiện dùng JWT dev
-              từ backend local.
+              Chọn vai trò để trải nghiệm. Production sẽ dùng Lark SSO (OQ-DLV-001).
+              Hiện DEV/UAT dùng JWT local (`/dev/token`) — DEC-DLV-011 tạm bỏ qua JWKS.
             </p>
           </div>
 
