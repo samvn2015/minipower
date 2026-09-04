@@ -6,25 +6,28 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| Test strategy | Chương trình Draft · **7 module DOC-16 Draft** |
-| UAT | Exit khi AC Must Pass |
-| Go-live | DOC-17 **Draft** · 2027 |
-| Code | **không tự** |
+| Test strategy | DOC-16 **Chốt** (7 Must) · execute TC ◐ |
+| UAT | Exit khi AC Must Pass · evidence `tc-run-2026-09-04.md` |
+| Go-live | DOC-17 **Chốt** · 2027 · JWKS/prod PG còn chặn |
+| Code | 7 module Must landed (`main` · #35) · Lark JWKS bypass DEV (DEC-DLV-011) |
 
 ## Tóm tắt
 
-- Slice: fan-out DOC-16 **PAY TIM EMP LIF IAM PRB** Draft (DEC-DLV-003). Leave đã có DEC-DLV-002.
-- **Không** tự chốt / code. EVT/RPT không TC.
+- Must API e2e: PRB/TIM/IAM/LEV/PAY/EMP/LIF có script; TC-run 2026-09-04.
+- **Không** tự baseline. EVT/RPT không TC.
+- DEC-DLV-011: tạm bỏ qua Lark JWKS cho DEV/UAT.
 
 ## Tham chiếu
 
 | Loại | Link |
 |------|------|
 | Docs | [DOC-16 CT](../../docs/04-platform/DOC-16-test-strategy.md) · [DOC-17](../../docs/04-platform/DOC-17-deployment-guide.md) |
-| Decision | DEC-DLV-001…**003** |
+| Decision | DEC-DLV-001…**011** |
+| TC run | [2026-08-29](tc-run-2026-08-29.md) · [2026-09-04](tc-run-2026-09-04.md) |
 
 ## Lịch sử ngắn
 
+- 2026-09-04 — DEC-DLV-011: bypass Lark JWKS DEV/UAT; TC-run sau PR #35.
 - 2026-08-26 — DEC-DLV-001: DOC-16 chương trình + DOC-17 Draft.
 - 2026-08-26 — DEC-DLV-002: leave DOC-16 Draft.
 - 2026-08-26 — DEC-DLV-003: 6 module còn lại DOC-16 Draft.

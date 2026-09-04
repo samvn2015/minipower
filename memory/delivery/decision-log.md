@@ -115,3 +115,31 @@
 - Affects: identity · Gateway · DOC-17 runbook · `hrm-backend` `Authentication:Jwt:Bearer:Authority`
 - Trace: ADR-007 · OQ-DLV-001 · OQ-DLV-007 · `memory/delivery/open-questions.md`
 - Confidence: cao *(vendor + domain)* · vừa *(issuer URL / federation Google-Apple)*
+
+### DEC-DLV-011 — Tạm bỏ qua Lark JWKS (OQ-DLV-001) cho DEV/UAT · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng)*
+- Context: Must 7 module đã land `#35`; IT chưa trả issuer/JWKS. Anh: tạm bỏ qua, không chờ JWKS để tiếp delivery/UAT.
+- Options: A Dừng mọi việc đến JWKS · B **Bypass DEV/UAT bằng dev JWT** · C Bịa issuer/JWKS
+- Decision: chọn **B**
+- Why (loại A vì chậm Must/UAT; loại C vì cấm bịa OQ)
+- Consequences:
+  - **DEV/UAT:** `GET /dev/token` + `appsettings.Development.json` symmetric key; `ValidateIssuerSigningKey` theo env hiện có. Không bật `/dev/token` trên Production.
+  - **Không** đổi DEC-DLV-010 (IdP vẫn Lark). **Không** điền Authority/JWKS giả.
+  - OQ-DLV-001 **còn mở** — chỉ thôi chặn DEV/UAT; **Prod / go-live vẫn chặn** đến IT.
+- Affects: identity auth local · TC IAM Partial · `memory/delivery/open-questions.md`
+- Trace: OQ-DLV-001 · DEC-DLV-010 · PR #35
+- Confidence: cao
+
+### DEC-DLV-012 — Execute St identity DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: Sau Must #35 + TC-run 2026-09-04 + DEC-DLV-011; catalog IAM nhiều ô St trống.
+- Options: A Để trống · B **Cập nhật St theo evidence e2e** (không đổi AC) · C Đánh Pass OIDC Lark
+- Decision: chọn **B**
+- Why (loại A vì che nợ QC; loại C vì JWKS chưa có)
+- Consequences:
+  - `docs/03-modules/identity/DOC-16` v0.2: Pass/Partial theo `e2e-api-iam-rbac` + PAY-J + LEV-C/D + tc-run.
+  - Partial còn: TC-001/002/010/018/NFR-001 (OIDC Lark / disable-login e2e / SCR-001).
+  - **Không** `02-baseline/`. Module DOC-16 khác chưa rollup trong DEC này.
+- Affects: identity DOC-16 · memory/delivery
+- Trace: DEC-DLV-011 · tc-run-2026-09-04
+- Confidence: cao *(API e2e)* · vừa *(Partial OIDC)*
