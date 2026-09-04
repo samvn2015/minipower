@@ -22,7 +22,20 @@ public sealed record LifOffboardingSnapshot(
     DateTime? ConfirmedAtUtc,
     DateTime CreatedAtUtc,
     string CreatedByIdpSubject,
-    string? Note);
+    string? Note,
+    DateTime? GitLockedAtUtc = null,
+    DateTime? CrmSpLockedAtUtc = null,
+    DateOnly? LockAsOfDate = null,
+    bool IsEarlySecurityCr = false,
+    string? EarlyCrReason = null,
+    string? LockedByIdpSubject = null);
+
+public sealed record LifAccessLockApplyModel(
+    Guid CaseId,
+    DateOnly AsOfDate,
+    bool IsEarlySecurityCr,
+    string? CrReason,
+    string LockedByIdpSubject);
 
 public interface ILifOffboardingRepository
 {
@@ -45,5 +58,10 @@ public interface ILifOffboardingRepository
     Task<LifOffboardingSnapshot> CloseAsync(
         Guid id,
         string closedByIdpSubject,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>Khóa Git + CRM SP cùng transaction + outbox (FR-005/006).</summary>
+    Task<LifOffboardingSnapshot> ApplyAccessLocksAsync(
+        LifAccessLockApplyModel model,
         CancellationToken cancellationToken = default);
 }

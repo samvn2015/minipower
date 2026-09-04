@@ -100,6 +100,46 @@ internal sealed class LifOffboardingRepository(AppDbContext db) : ILifOffboardin
         return Map(row);
     }
 
+    public async Task<LifOffboardingSnapshot> ApplyAccessLocksAsync(
+        LifAccessLockApplyModel model,
+        CancellationToken cancellationToken = default)
+    {
+        var row = await db.LifOffboardingCases
+            .FirstOrDefaultAsync(x => x.Id == model.CaseId, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException("Offboarding case not found.");
+
+        if (row.GitLockedAtUtc.HasValue && row.CrmSpLockedAtUtc.HasValue)
+            return Map(row);
+
+        var now = DateTime.UtcNow;
+        // FR-006: cùng lúc — không cho lệch một bên.
+        row.GitLockedAtUtc = now;
+        row.CrmSpLockedAtUtc = now;
+        row.LockAsOfDate = model.AsOfDate;
+        row.IsEarlySecurityCr = model.IsEarlySecurityCr;
+        row.EarlyCrReason = model.CrReason;
+        row.LockedByIdpSubject = model.LockedByIdpSubject;
+
+        db.LifAccessLockOutboxes.Add(new LifAccessLockOutbox
+        {
+            Id = Guid.NewGuid(),
+            CaseId = row.Id,
+            EmployeeId = row.EmployeeId,
+            EmployeeCode = row.EmployeeCode,
+            TargetSystems = LifOffboardingFacts.LockTargetSystems,
+            Channel = LifOffboardingFacts.LockChannelGitAndCrmSp,
+            AsOfDate = model.AsOfDate,
+            IsEarlySecurityCr = model.IsEarlySecurityCr,
+            CrReason = model.CrReason,
+            CreatedAtUtc = now,
+            CreatedByIdpSubject = model.LockedByIdpSubject
+        });
+
+        await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return Map(row);
+    }
+
     private static LifOffboardingSnapshot Map(LifOffboardingCase x) =>
         new(
             x.Id,
@@ -113,5 +153,11 @@ internal sealed class LifOffboardingRepository(AppDbContext db) : ILifOffboardin
             x.ConfirmedAtUtc,
             x.CreatedAtUtc,
             x.CreatedByIdpSubject,
-            x.Note);
+            x.Note,
+            x.GitLockedAtUtc,
+            x.CrmSpLockedAtUtc,
+            x.LockAsOfDate,
+            x.IsEarlySecurityCr,
+            x.EarlyCrReason,
+            x.LockedByIdpSubject);
 }

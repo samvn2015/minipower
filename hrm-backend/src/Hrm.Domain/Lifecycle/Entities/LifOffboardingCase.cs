@@ -28,4 +28,17 @@ public class LifOffboardingCase : BaseEntity<Guid>
     public required string CreatedByIdpSubject { get; set; }
 
     public string? Note { get; set; }
+
+    /// <summary>Khóa Git — luôn cùng lúc CRM SP (LIF-FR-005/006).</summary>
+    public DateTime? GitLockedAtUtc { get; set; }
+
+    public DateTime? CrmSpLockedAtUtc { get; set; }
+
+    public DateOnly? LockAsOfDate { get; set; }
+
+    public bool IsEarlySecurityCr { get; set; }
+
+    public string? EarlyCrReason { get; set; }
+
+    public string? LockedByIdpSubject { get; set; }
 }

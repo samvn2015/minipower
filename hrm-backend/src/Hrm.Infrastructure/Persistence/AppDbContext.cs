@@ -85,6 +85,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<LifOffChecklistTick> LifOffChecklistTicks => Set<LifOffChecklistTick>();
 
+    public DbSet<LifAccessLockOutbox> LifAccessLockOutboxes => Set<LifAccessLockOutbox>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

@@ -23,6 +23,33 @@ public static class LifAccessGuard
         }
     }
 
+    /// <summary>Khóa Git/CRM SP — chỉ IT/PGD; HR 403 (LIF-FR-008).</summary>
+    public static void RequireItOrPgdForLocks(IdentityAccountSnapshot? actor)
+    {
+        if (actor is null || actor.Status != IdentityAccountStatus.Active)
+            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Không có quyền LIF.");
+
+        if (actor.RoleCodes.Any(static r =>
+                string.Equals(r, IamRoleCodes.Hr, StringComparison.OrdinalIgnoreCase))
+            && !actor.RoleCodes.Any(static r =>
+                string.Equals(r, IamRoleCodes.It, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(r, IamRoleCodes.Pgd, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ForbiddenException(
+                HrmErrorCodes.Forbidden,
+                "HR không khóa Git/CRM SP trực tiếp (LIF-FR-008) — chỉ xem + ticket IT.");
+        }
+
+        if (!actor.RoleCodes.Any(static r =>
+                string.Equals(r, IamRoleCodes.It, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(r, IamRoleCodes.Pgd, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ForbiddenException(
+                HrmErrorCodes.Forbidden,
+                "Chỉ IT/PGD (job) khóa Git + CRM SP (LIF-FR-005/008).");
+        }
+    }
+
     public static void RequireAuthenticated(IdentityAccountSnapshot? actor)
     {
         if (actor is null || actor.Status != IdentityAccountStatus.Active)

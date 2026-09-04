@@ -116,5 +116,10 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
             string closedByIdpSubject,
             CancellationToken cancellationToken = default) =>
             throw new NotImplementedException();
+
+        public Task<LifOffboardingSnapshot> ApplyAccessLocksAsync(
+            LifAccessLockApplyModel model,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 }

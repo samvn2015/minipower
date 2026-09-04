@@ -193,3 +193,123 @@ internal static class LifOffChecklistBoardBuilder
         return new LifOffChecklistBoardDto(existing.Id, existing.Status.ToString(), canClose, board);
     }
 }
+
+public sealed record ApplyLifOffboardingLocksCommand(
+    string ActorIdpSubject,
+    Guid CaseId,
+    DateOnly? AsOfDate,
+    string? EarlyCrReason) : ICommand;
+
+public sealed record RunLifNPlus3LocksCommand(
+    string ActorIdpSubject,
+    DateOnly? AsOfDate) : ICommand;
+
+public sealed class ApplyLifOffboardingLocksCommandHandler(
+    IIdentityAccountReadRepository accounts,
+    ILifOffboardingRepository offboardings)
+    : IAsyncCommandHandler<ApplyLifOffboardingLocksCommand, LifOffboardingDto>
+{
+    public async Task<LifOffboardingDto> HandleAsync(
+        ApplyLifOffboardingLocksCommand request,
+        CancellationToken cancellationToken = default)
+    {
+        var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
+            ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
+        LifAccessGuard.RequireItOrPgdForLocks(actor);
+
+        var existing = await offboardings.FindByIdAsync(request.CaseId, cancellationToken)
+            ?? throw new NotFoundException(HrmErrorCodes.NotFound, "Không tìm thấy case offboarding.");
+
+        if (existing.Status != LifOffboardingStatus.ConfirmedN
+            || existing.LastWorkingDayN is not { } n)
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Chỉ khóa khi N đã HR xác nhận (LIF-FR-005).");
+        }
+
+        if (existing.GitLockedAtUtc.HasValue && existing.CrmSpLockedAtUtc.HasValue)
+            return LifOffboardingMapper.ToDto(existing);
+
+        var asOf = request.AsOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var cr = string.IsNullOrWhiteSpace(request.EarlyCrReason)
+            ? null
+            : request.EarlyCrReason.Trim();
+        var early = cr is not null;
+
+        if (!early && !LifOffboardingFacts.IsNPlus3Reached(n, asOf))
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                $"Cấm khóa trước N+3 ({LifOffboardingFacts.ComputeNPlus3(n):yyyy-MM-dd}) trừ CR an ninh (LIF-FR-007).");
+        }
+
+        var snap = await offboardings.ApplyAccessLocksAsync(
+            new LifAccessLockApplyModel(
+                request.CaseId,
+                asOf,
+                early,
+                cr,
+                request.ActorIdpSubject),
+            cancellationToken);
+
+        return LifOffboardingMapper.ToDto(snap);
+    }
+}
+
+public sealed class RunLifNPlus3LocksCommandHandler(
+    IIdentityAccountReadRepository accounts,
+    ILifOffboardingRepository offboardings)
+    : IAsyncCommandHandler<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>
+{
+    public async Task<LifNPlus3LockRunResult> HandleAsync(
+        RunLifNPlus3LocksCommand request,
+        CancellationToken cancellationToken = default)
+    {
+        var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
+            ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
+        LifAccessGuard.RequireItOrPgdForLocks(actor);
+
+        var asOf = request.AsOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        var all = await offboardings.ListAsync(cancellationToken);
+
+        var locked = 0;
+        var skippedNotDue = 0;
+        var skippedAlready = 0;
+        var skippedNoN = 0;
+
+        foreach (var c in all)
+        {
+            if (c.Status != LifOffboardingStatus.ConfirmedN || c.LastWorkingDayN is not { } n)
+            {
+                skippedNoN++;
+                continue;
+            }
+
+            if (c.GitLockedAtUtc.HasValue && c.CrmSpLockedAtUtc.HasValue)
+            {
+                skippedAlready++;
+                continue;
+            }
+
+            // Job không CR — chỉ ≥ N+3 (FR-007).
+            if (!LifOffboardingFacts.IsNPlus3Reached(n, asOf))
+            {
+                skippedNotDue++;
+                continue;
+            }
+
+            await offboardings.ApplyAccessLocksAsync(
+                new LifAccessLockApplyModel(
+                    c.Id,
+                    asOf,
+                    IsEarlySecurityCr: false,
+                    CrReason: null,
+                    request.ActorIdpSubject),
+                cancellationToken);
+            locked++;
+        }
+
+        return new LifNPlus3LockRunResult(asOf, locked, skippedNotDue, skippedAlready, skippedNoN);
+    }
+}

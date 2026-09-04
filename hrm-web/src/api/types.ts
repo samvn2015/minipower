@@ -433,6 +433,21 @@ export type LifOffboarding = {
   confirmedByIdpSubject?: string | null;
   confirmedAtUtc?: string | null;
   note?: string | null;
+  gitLocked?: boolean;
+  crmSpLocked?: boolean;
+  lockedAtUtc?: string | null;
+  lockAsOfDate?: string | null;
+  isEarlySecurityCr?: boolean;
+  earlyCrReason?: string | null;
+  lockedByIdpSubject?: string | null;
+};
+
+export type LifNPlus3LockRunResult = {
+  asOfDate: string;
+  locked: number;
+  skippedNotDue: number;
+  skippedAlreadyLocked: number;
+  skippedNoN: number;
 };
 
 export type LifOffChecklistItem = {

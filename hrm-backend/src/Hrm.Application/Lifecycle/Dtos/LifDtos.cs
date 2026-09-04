@@ -14,7 +14,14 @@ public sealed record LifOffboardingDto(
     DateTime? ConfirmedAtUtc,
     DateTime CreatedAtUtc,
     string CreatedByIdpSubject,
-    string? Note);
+    string? Note,
+    bool GitLocked = false,
+    bool CrmSpLocked = false,
+    DateTime? LockedAtUtc = null,
+    DateOnly? LockAsOfDate = null,
+    bool IsEarlySecurityCr = false,
+    string? EarlyCrReason = null,
+    string? LockedByIdpSubject = null);
 
 public sealed record LifOffChecklistItemDto(
     string Code,
@@ -30,3 +37,10 @@ public sealed record LifOffChecklistBoardDto(
     string Status,
     bool CanClose,
     IReadOnlyList<LifOffChecklistItemDto> Items);
+
+public sealed record LifNPlus3LockRunResult(
+    DateOnly AsOfDate,
+    int Locked,
+    int SkippedNotDue,
+    int SkippedAlreadyLocked,
+    int SkippedNoN);
