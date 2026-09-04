@@ -70,10 +70,14 @@ export function AppLayout() {
             </Link>
             {(user.roles.includes("IAM-ROLE-HR") ||
               user.roles.includes("IAM-ROLE-PGD")) && (
+              <Link className="btn btn-ghost" to="/prb/cases">
+                Hàng TV
+              </Link>
+            )}
+            {(user.roles.includes("IAM-ROLE-HR") ||
+              user.roles.includes("IAM-ROLE-PGD") ||
+              user.roles.includes("IAM-ROLE-IT")) && (
               <>
-                <Link className="btn btn-ghost" to="/prb/cases">
-                  Hàng TV
-                </Link>
                 <Link className="btn btn-ghost" to="/lif/onboarding">
                   Onboarding
                 </Link>

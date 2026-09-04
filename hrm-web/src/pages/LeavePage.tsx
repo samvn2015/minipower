@@ -34,13 +34,25 @@ export function LeavePage({ channel = "web" }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const [bal, typeRows, myRequests, profile] = await Promise.all([
-        fetchMyLeaveBalance(year),
+      const [balResult, typeRows, myRequests, profile] = await Promise.all([
+        fetchMyLeaveBalance(year).then(
+          (bal) => ({ ok: true as const, bal }),
+          (err: unknown) => ({
+            ok: false as const,
+            message: err instanceof Error ? err.message : "Không tải được quỹ phép",
+          }),
+        ),
         fetchLeaveTypes(),
         fetchMyLeaveRequests(),
         fetchMyEmployee(),
       ]);
-      setBalance(bal);
+      if (balResult.ok) {
+        setBalance(balResult.bal);
+      } else {
+        setBalance(null);
+        // LEV-FR-015: thiếu quỹ năm → cảnh báo, vẫn cho nộp loại không trừ quỹ / đổi persona
+        setError(balResult.message);
+      }
       setTypes(typeRows);
       setRequests(myRequests);
       if (profile.lineManagerEmployeeId && !handoverEmployeeId) {
@@ -134,12 +146,20 @@ export function LeavePage({ channel = "web" }: Props) {
         <p className="muted">Đang tải…</p>
       ) : (
         <>
-          {balance && (
+          {balance ? (
             <div className="card stack" style={{ background: "var(--surface-2)" }}>
               <h3>Quỹ phép {balance.year}</h3>
               <p>
                 Còn lại: <strong>{balance.remainingDays}</strong> / {balance.entitledDays} ngày
                 (đã dùng {balance.usedDays})
+              </p>
+            </div>
+          ) : (
+            <div className="card stack" style={{ background: "var(--surface-2)" }}>
+              <h3>Quỹ phép {year}</h3>
+              <p className="muted">
+                Chưa có quỹ (LEV-FR-015). UAT nộp phép năm: đăng nhập <strong>HR / NV</strong>{" "}
+                (<code>local-dev</code> (MNV-DEV đã seed). Persona LM chỉ duyệt C1.
               </p>
             </div>
           )}
