@@ -450,6 +450,21 @@ export type LifNPlus3LockRunResult = {
   skippedNoN: number;
 };
 
+export type LifOnboarding = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  status: string;
+  note?: string | null;
+  emailCtyProvisioned: boolean;
+  gitProvisioned: boolean;
+  crmSpProvisioned: boolean;
+  chatProvisioned: boolean;
+  allProvisioned: boolean;
+  closedByIdpSubject?: string | null;
+  closedAtUtc?: string | null;
+};
+
 export type LifOffChecklistItem = {
   code: string;
   name: string;

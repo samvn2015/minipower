@@ -50,6 +50,22 @@ public static class LifAccessGuard
         }
     }
 
+    public static void RequireHrItOrPgd(IdentityAccountSnapshot? actor)
+    {
+        if (actor is null || actor.Status != IdentityAccountStatus.Active)
+            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Không có quyền LIF.");
+
+        if (!actor.RoleCodes.Any(static r =>
+                string.Equals(r, IamRoleCodes.Hr, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(r, IamRoleCodes.It, StringComparison.OrdinalIgnoreCase)
+                || string.Equals(r, IamRoleCodes.Pgd, StringComparison.OrdinalIgnoreCase)))
+        {
+            throw new ForbiddenException(
+                HrmErrorCodes.Forbidden,
+                "Chỉ HR/IT/PGD đánh dấu cấp TK onboarding (LIF-FR-002).");
+        }
+    }
+
     public static void RequireAuthenticated(IdentityAccountSnapshot? actor)
     {
         if (actor is null || actor.Status != IdentityAccountStatus.Active)

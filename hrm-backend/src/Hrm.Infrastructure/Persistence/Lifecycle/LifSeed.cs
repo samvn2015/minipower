@@ -48,4 +48,39 @@ internal static class LifSeed
             SortOrder = 4
         }
     ];
+
+    public static readonly Guid OnPaperworkId = Guid.Parse("a1a1a1a1-a1a1-a1a1-a1a1-a1a1a1a1a1a1");
+    public static readonly Guid OnOrientationId = Guid.Parse("a2a2a2a2-a2a2-a2a2-a2a2-a2a2a2a2a2a2");
+    public static readonly Guid OnBuddyId = Guid.Parse("a3a3a3a3-a3a3-a3a3-a3a3-a3a3a3a3a3a3");
+
+    public static LifOnChecklistItem[] OnChecklistItems() =>
+    [
+        new()
+        {
+            Id = OnPaperworkId,
+            Code = "ON-PAPERWORK",
+            Name = "Hồ sơ / giấy tờ nhận việc",
+            IsMust = true,
+            IsActive = true,
+            SortOrder = 1
+        },
+        new()
+        {
+            Id = OnOrientationId,
+            Code = "ON-ORIENTATION",
+            Name = "Orientation nội bộ",
+            IsMust = true,
+            IsActive = true,
+            SortOrder = 2
+        },
+        new()
+        {
+            Id = OnBuddyId,
+            Code = "ON-BUDDY",
+            Name = "Gán buddy",
+            IsMust = false,
+            IsActive = true,
+            SortOrder = 3
+        }
+    ];
 }

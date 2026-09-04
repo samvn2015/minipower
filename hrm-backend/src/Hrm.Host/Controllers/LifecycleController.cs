@@ -136,6 +136,83 @@ public sealed class LifecycleController(
             cancellationToken);
         return Ok(result);
     }
+
+    [HttpGet("onboarding")]
+    public async Task<IActionResult> ListOnboarding(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListLifOnboardingQuery, IReadOnlyList<LifOnboardingDto>>(
+            new ListLifOnboardingQuery(User.GetIdpSubject()),
+            cancellationToken);
+        return Ok(items);
+    }
+
+    [HttpGet("onboarding/{id:guid}")]
+    public async Task<IActionResult> GetOnboarding(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await queries.DispatchAsync<GetLifOnboardingQuery, LifOnboardingDto>(
+            new GetLifOnboardingQuery(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("onboarding")]
+    public async Task<IActionResult> CreateOnboarding(
+        [FromBody] CreateLifOnboardingRequest body,
+        CancellationToken cancellationToken)
+    {
+        var dto = await commands.DispatchAsync<CreateLifOnboardingCommand, LifOnboardingDto>(
+            new CreateLifOnboardingCommand(User.GetIdpSubject(), body.EmployeeId, body.Note),
+            cancellationToken);
+        return CreatedAtAction(nameof(GetOnboarding), new { id = dto.Id }, dto);
+    }
+
+    [HttpGet("onboarding/{id:guid}/checklist")]
+    public async Task<IActionResult> GetOnChecklist(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await queries.DispatchAsync<GetLifOnChecklistQuery, LifOffChecklistBoardDto>(
+            new GetLifOnChecklistQuery(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPut("onboarding/{id:guid}/checklist/{itemCode}")]
+    public async Task<IActionResult> UpsertOnTick(
+        Guid id,
+        string itemCode,
+        [FromBody] UpsertLifOffChecklistTickRequest body,
+        CancellationToken cancellationToken)
+    {
+        var dto = await commands.DispatchAsync<UpsertLifOnChecklistTickCommand, LifOffChecklistBoardDto>(
+            new UpsertLifOnChecklistTickCommand(User.GetIdpSubject(), id, itemCode, body.IsChecked),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("onboarding/{id:guid}/provisions/{systemCode}")]
+    public async Task<IActionResult> MarkProvisioned(
+        Guid id,
+        string systemCode,
+        [FromBody] MarkLifProvisionRequest? body,
+        CancellationToken cancellationToken)
+    {
+        var dto = await commands.DispatchAsync<MarkLifOnboardingProvisionedCommand, LifOnboardingDto>(
+            new MarkLifOnboardingProvisionedCommand(
+                User.GetIdpSubject(),
+                id,
+                systemCode,
+                body?.DeferGitToNPlus3 ?? false),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    [HttpPost("onboarding/{id:guid}/close")]
+    public async Task<IActionResult> CloseOnboarding(Guid id, CancellationToken cancellationToken)
+    {
+        var dto = await commands.DispatchAsync<CloseLifOnboardingCommand, LifOnboardingDto>(
+            new CloseLifOnboardingCommand(User.GetIdpSubject(), id),
+            cancellationToken);
+        return Ok(dto);
+    }
 }
 
 public sealed record CreateLifOffboardingRequest(
@@ -150,3 +227,7 @@ public sealed record UpsertLifOffChecklistTickRequest(bool IsChecked);
 public sealed record ApplyLifOffboardingLocksRequest(string? AsOfDate, string? EarlyCrReason);
 
 public sealed record RunLifNPlus3LocksRequest(string? AsOfDate);
+
+public sealed record CreateLifOnboardingRequest(Guid EmployeeId, string? Note);
+
+public sealed record MarkLifProvisionRequest(bool DeferGitToNPlus3);

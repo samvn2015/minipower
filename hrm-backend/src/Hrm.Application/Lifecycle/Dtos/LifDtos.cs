@@ -44,3 +44,23 @@ public sealed record LifNPlus3LockRunResult(
     int SkippedNotDue,
     int SkippedAlreadyLocked,
     int SkippedNoN);
+
+public sealed record LifOnboardingDto(
+    Guid Id,
+    Guid EmployeeId,
+    string EmployeeCode,
+    string Status,
+    DateTime CreatedAtUtc,
+    string CreatedByIdpSubject,
+    string? Note,
+    bool EmailCtyProvisioned,
+    bool GitProvisioned,
+    bool CrmSpProvisioned,
+    bool ChatProvisioned,
+    DateTime? EmailCtyProvisionedAtUtc,
+    DateTime? GitProvisionedAtUtc,
+    DateTime? CrmSpProvisionedAtUtc,
+    DateTime? ChatProvisionedAtUtc,
+    bool AllProvisioned,
+    string? ClosedByIdpSubject,
+    DateTime? ClosedAtUtc);
