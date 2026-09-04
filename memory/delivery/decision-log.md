@@ -193,3 +193,19 @@
 - Affects: leave DOC-16
 - Trace: e2e-api-lev-slice-b…f · DEC-DLV-015
 - Confidence: cao
+
+### DEC-DLV-017 — Execute St employee-profile DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: EMP A/B + e2e-full; đủ ô trống 014–016/NFR-001.
+- Decision: cập nhật St **Pass** theo evidence (không đổi AC).
+- Consequences: `employee-profile/DOC-16` v0.2 Pass catalog Must.
+- Trace: e2e-api-emp-slice-a/b · DEC-DLV-016
+- Confidence: cao
+
+### DEC-DLV-018 — Execute St lifecycle DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: LIF A–D e2e + HostRoleGate; SCR/Should còn mỏng.
+- Decision: Pass hầu hết; **Partial** TC-011/012/014/NFR-002; **Pass** HA-001.
+- Consequences: `lifecycle/DOC-16` v0.2. **Đủ 7 module Must** DOC-16 execute St v0.2 (cùng IAM/PRB/PAY/TIM/LEV).
+- Trace: e2e-api-lif-slice-a…d · DEC-DLV-017
+- Confidence: cao
