@@ -7,6 +7,7 @@ using Hrm.Domain.Payroll.Repositories;
 using Hrm.Domain.Shared.Constants;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Domain.Shared.ExceptionHandling;
+using Jarvis.Domain.Shared.Messaging;
 
 namespace Hrm.Application.Payroll.Commands;
 

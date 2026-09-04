@@ -16,6 +16,14 @@ import { PayPeriodPage } from "./pages/PayPeriodPage";
 import { TimImportPage } from "./pages/TimImportPage";
 import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
+import { isHr, useCurrentUser } from "./hooks/useCurrentUser";
+import type { ReactNode } from "react";
+
+function RequirePayHr({ children }: { children: ReactNode }) {
+  const user = useCurrentUser();
+  if (!isHr(user)) return <Navigate to="/pay/payslips" replace />;
+  return <>{children}</>;
+}
 
 export default function App() {
   return (
@@ -38,8 +46,22 @@ export default function App() {
           <Route path="/tim/templates" element={<TimTemplatePage />} />
           <Route path="/tim/imports" element={<TimImportPage />} />
           <Route path="/tim/periods" element={<TimPeriodPage />} />
-          <Route path="/pay/periods" element={<PayPeriodPage />} />
-          <Route path="/pay/allowances" element={<PayAllowancePage />} />
+          <Route
+            path="/pay/periods"
+            element={
+              <RequirePayHr>
+                <PayPeriodPage />
+              </RequirePayHr>
+            }
+          />
+          <Route
+            path="/pay/allowances"
+            element={
+              <RequirePayHr>
+                <PayAllowancePage />
+              </RequirePayHr>
+            }
+          />
           <Route path="/employees" element={<EmployeeListPage />} />
           <Route path="/employees/new" element={<EmployeeFormPage />} />
           <Route path="/employees/:id" element={<EmployeeFormPage />} />
