@@ -28,6 +28,7 @@
 
 ## Lịch sử ngắn
 
+- 2026-09-04 — UAT checklist Must DEV; DOC-16 execute 7 module (DEC-DLV-012…018).
 - 2026-09-04 — DEC-DLV-011: bypass Lark JWKS DEV/UAT; TC-run sau PR #35.
 - 2026-08-26 — DEC-DLV-001: DOC-16 chương trình + DOC-17 Draft.
 - 2026-08-26 — DEC-DLV-002: leave DOC-16 Draft.
