@@ -2,13 +2,14 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   createEmployee,
+  fetchContractTypes,
   fetchEducationLevels,
   fetchEmployee,
   fetchEmployees,
   submitLineManagerChange,
   updateEmployee,
 } from "../api/client";
-import type { EducationLevel, EmployeeListItem } from "../api/types";
+import type { EducationLevel, EmpCatalogItem, EmployeeListItem } from "../api/types";
 
 const ORG_UNITS = [{ code: "ORG-HQ", label: "Trụ sở chính (ORG-HQ)" }];
 
@@ -23,6 +24,8 @@ export function EmployeeFormPage() {
   const [orgUnitCode, setOrgUnitCode] = useState("ORG-HQ");
   const [educationLevelCode, setEducationLevelCode] = useState("");
   const [educationLevels, setEducationLevels] = useState<EducationLevel[]>([]);
+  const [contractTypes, setContractTypes] = useState<EmpCatalogItem[]>([]);
+  const [contractType, setContractType] = useState("");
   const [seniorityText, setSeniorityText] = useState<string | null>(null);
   const [withContract, setWithContract] = useState(true);
   const [status, setStatus] = useState<string | null>(null);
@@ -37,16 +40,23 @@ export function EmployeeFormPage() {
 
   useEffect(() => {
     let active = true;
-    fetchEducationLevels()
-      .then((rows) => {
-        if (active) setEducationLevels(rows);
+    Promise.all([fetchEducationLevels(), fetchContractTypes()])
+      .then(([edu, contracts]) => {
+        if (!active) return;
+        setEducationLevels(edu);
+        setContractTypes(contracts);
+        if (!contractType && contracts[0]) setContractType(contracts[0].code);
       })
       .catch(() => {
-        if (active) setEducationLevels([]);
+        if (active) {
+          setEducationLevels([]);
+          setContractTypes([]);
+        }
       });
     return () => {
       active = false;
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -108,10 +118,10 @@ export function EmployeeFormPage() {
           educationLevelCode: educationLevelCode || undefined,
           contract: withContract
             ? {
-                contractType: "PROBATION",
+                contractType: contractType || contractTypes[0]?.code || "PROBATION",
                 startDate: "2026-01-01",
                 endDate: "2026-06-30",
-                isProbation: true,
+                isProbation: (contractType || contractTypes[0]?.code) === "PROBATION",
               }
             : undefined,
         });
@@ -236,14 +246,28 @@ export function EmployeeFormPage() {
         )}
 
         {isNew && (
-          <label className="row">
-            <input
-              type="checkbox"
-              checked={withContract}
-              onChange={(e) => setWithContract(e.target.checked)}
-            />
-            Tạo kèm HĐ thử việc mẫu
-          </label>
+          <>
+            <label className="row">
+              <input
+                type="checkbox"
+                checked={withContract}
+                onChange={(e) => setWithContract(e.target.checked)}
+              />
+              Tạo kèm HĐ (loại từ master FR-014)
+            </label>
+            {withContract && (
+              <label>
+                Loại HĐ
+                <select value={contractType} onChange={(e) => setContractType(e.target.value)}>
+                  {contractTypes.map((t) => (
+                    <option key={t.code} value={t.code}>
+                      {t.name}
+                    </option>
+                  ))}
+                </select>
+              </label>
+            )}
+          </>
         )}
 
         {!isNew && (

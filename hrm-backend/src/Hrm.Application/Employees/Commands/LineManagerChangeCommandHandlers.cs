@@ -83,6 +83,8 @@ public sealed record ApproveLineManagerChangeCommand(string? ActorIdpSubject, Gu
 
 public sealed class ApproveLineManagerChangeCommandHandler(
     IIdentityAccountReadRepository accounts,
+    IEmployeeReadRepository employees,
+    IOrgUnitReadRepository orgUnits,
     ILineManagerChangeRepository changes,
     IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ApproveLineManagerChangeCommand, LineManagerChangeResult>
@@ -103,6 +105,19 @@ public sealed class ApproveLineManagerChangeCommandHandler(
 
         if (request.Status != LineManagerChangeStatus.Pending)
             throw new ConflictException(HrmErrorCodes.Conflict, "Đề xuất không còn chờ duyệt.");
+
+        var proposedLm = await employees.FindByIdAsync(request.ProposedLineManagerEmployeeId, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new BadRequestException(HrmErrorCodes.BadRequest, "LM mới không tồn tại (EMP-FR-016).");
+
+        if (proposedLm.Status != EmployeeStatus.Active)
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "LM mới không hiệu lực (EMP-FR-016).");
+
+        if (!string.IsNullOrWhiteSpace(proposedLm.OrgUnitCode)
+            && !await orgUnits.IsActiveAsync(proposedLm.OrgUnitCode, cancellationToken).ConfigureAwait(false))
+        {
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "Org LM mới không hiệu lực (EMP-FR-016).");
+        }
 
         var approved = await changes.ApproveAsync(
             command.RequestId,

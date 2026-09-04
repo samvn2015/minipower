@@ -2,6 +2,7 @@ import type {
   ApiEnvelope,
   CurrentUser,
   EducationLevel,
+  EmpCatalogItem,
   EmployeeDetail,
   EmployeeListItem,
   IdentityAccount,
@@ -165,6 +166,12 @@ export type UpdateEmployeePayload = {
 export async function fetchEducationLevels(): Promise<EducationLevel[]> {
   const body = await apiFetch<ApiEnvelope<EducationLevel[]>>("/v1/emp/education-levels");
   return unwrap(body);
+}
+
+export async function fetchContractTypes(): Promise<EmpCatalogItem[]> {
+  const body = await apiFetch<EmpCatalogItem[] | ApiEnvelope<EmpCatalogItem[]>>("/v1/emp/contract-types");
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<EmpCatalogItem[]>);
 }
 
 export async function fetchMyEmployee(): Promise<EmployeeDetail> {
