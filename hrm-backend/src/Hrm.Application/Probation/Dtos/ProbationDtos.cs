@@ -23,3 +23,18 @@ public sealed record ProbationMilestoneDto(
     DateOnly? T15DueDate,
     DateOnly? T7DueDate,
     string Source);
+
+public sealed record ProbationReminderDto(
+    Guid Id,
+    string Kind,
+    Guid EmployeeId,
+    string EmployeeCode,
+    DateOnly ProbationEndDate,
+    DateOnly DueDate,
+    DateOnly AsOfDate,
+    Guid? AssigneeEmployeeId,
+    string? AssigneeEmployeeCode,
+    string InAppMessage,
+    string EmailTo,
+    string Channel,
+    DateTime CreatedAtUtc);

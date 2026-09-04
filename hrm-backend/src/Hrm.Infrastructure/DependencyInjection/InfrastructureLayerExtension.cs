@@ -3,6 +3,7 @@ using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave.Repositories;
 using Hrm.Domain.Payroll.Repositories;
+using Hrm.Domain.Probation.Repositories;
 using Hrm.Domain.Timekeeping.Repositories;
 using Hrm.Domain.Repositories;
 using Hrm.Infrastructure.Persistence;
@@ -49,6 +50,7 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IPayAllowanceRepository, PayAllowanceRepository>();
         builder.Services.AddScoped<IPayContractSalaryRepository, PayContractSalaryRepository>();
         builder.Services.AddScoped<IPayExportOutboxRepository, PayExportOutboxRepository>();
+        builder.Services.AddScoped<IProbationReminderRepository, ProbationReminderRepository>();
 
         // Credentials: User Secrets / env (ConnectionStrings__AppDbContext). Không hard-code password.
         // Placeholder chỉ để đăng ký DI khi chưa có secret — ping/swagger vẫn chạy; mở DB thật cần OQ-DLV-003.
