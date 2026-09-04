@@ -8,10 +8,14 @@ import {
   upsertLifOnChecklistTick,
 } from "../api/client";
 import type { LifOffChecklistBoard, LifOnboarding } from "../api/types";
+import { isHr, isItOnly, useCurrentUser } from "../hooks/useCurrentUser";
 
 const SYSTEMS = ["EmailCty", "Git", "CrmSp", "Chat"] as const;
 
 export function LifOnboardingPage() {
+  const user = useCurrentUser();
+  const hr = isHr(user);
+  const itOnly = isItOnly(user);
   const [items, setItems] = useState<LifOnboarding[]>([]);
   const [board, setBoard] = useState<LifOffChecklistBoard | null>(null);
   const [caseId, setCaseId] = useState("");
@@ -105,24 +109,29 @@ export function LifOnboardingPage() {
         <p className="muted">
           LIF-SCR-002 — checklist Must + cấp Email/Git/CRM SP/chat lúc on; cấm hẹn Git = N+3
           (FR-001/002).
+          {itOnly ? " · IT: xem case + cấp TK; HR mở/đóng case." : ""}
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
       {message && <div className="success-box">{message}</div>}
 
       <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <label className="muted">
-          EmployeeId{" "}
-          <input
-            value={employeeId}
-            onChange={(e) => setEmployeeId(e.target.value)}
-            placeholder="guid NV"
-            style={{ minWidth: 260 }}
-          />
-        </label>
-        <button type="button" className="btn" onClick={onCreate} disabled={!employeeId}>
-          Mở onboarding
-        </button>
+        {hr && (
+          <>
+            <label className="muted">
+              EmployeeId{" "}
+              <input
+                value={employeeId}
+                onChange={(e) => setEmployeeId(e.target.value)}
+                placeholder="guid NV"
+                style={{ minWidth: 260 }}
+              />
+            </label>
+            <button type="button" className="btn" onClick={onCreate} disabled={!employeeId}>
+              Mở onboarding
+            </button>
+          </>
+        )}
         <label className="muted">
           Case{" "}
           <select value={caseId} onChange={(e) => onSelectCase(e.target.value)}>
@@ -133,14 +142,16 @@ export function LifOnboardingPage() {
             ))}
           </select>
         </label>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={onClose}
-          disabled={!board?.canClose}
-        >
-          Đóng on
-        </button>
+        {hr && (
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onClose}
+            disabled={!board?.canClose}
+          >
+            Đóng on
+          </button>
+        )}
       </div>
 
       {loading && <p className="muted">Đang tải…</p>}
@@ -194,6 +205,7 @@ export function LifOnboardingPage() {
                       <input
                         type="checkbox"
                         checked={i.isChecked}
+                        disabled={!hr}
                         onChange={(e) => onTick(i.code, e.target.checked)}
                       />
                     </td>

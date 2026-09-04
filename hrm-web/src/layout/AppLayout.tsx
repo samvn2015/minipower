@@ -115,25 +115,25 @@ export function AppLayout() {
                 <Link className="btn btn-ghost" to="/tim/templates">
                   Mẫu công TIM
                 </Link>
-                <Link className="btn btn-ghost" to="/tim/imports">
-                  Import công
-                </Link>
-                <Link className="btn btn-ghost" to="/tim/periods">
-                  Chốt công
-                </Link>
                 {user.roles.includes("IAM-ROLE-HR") && (
                   <>
+                    <Link className="btn btn-ghost" to="/tim/imports">
+                      Import công
+                    </Link>
+                    <Link className="btn btn-ghost" to="/tim/periods">
+                      Chốt công
+                    </Link>
                     <Link className="btn btn-ghost" to="/pay/periods">
                       Tính lương
                     </Link>
                     <Link className="btn btn-ghost" to="/pay/allowances">
                       PC tháng
                     </Link>
+                    <Link className="btn btn-ghost" to="/line-manager-changes">
+                      Duyệt LM
+                    </Link>
                   </>
                 )}
-                <Link className="btn btn-ghost" to="/line-manager-changes">
-                  Duyệt LM
-                </Link>
                 <Link className="btn btn-ghost" to="/iam/accounts">
                   IAM
                 </Link>
