@@ -10,5 +10,8 @@ public class LeaveType
     /// <summary>Loại này trừ quỹ phép năm khi HR duyệt C2 (LEV-BR-005/006).</summary>
     public bool DeductsAnnualBalance { get; set; }
 
+    /// <summary>Bắt buộc file đúng mẫu Cty (ốm/BHXH) — LEV-FR-008.</summary>
+    public bool RequiresCompanyTemplateFile { get; set; }
+
     public LeaveTypeStatus Status { get; set; } = LeaveTypeStatus.Active;
 }

@@ -22,7 +22,8 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
         var handler = new ApproveLeaveRequestC1CommandHandler(
             new FakeAccountRepo("local-lm", "MNV-HO"),
             new FakeEmployeeRepo(),
-            new FakeLeaveRequestRepo());
+            new FakeLeaveRequestRepo(),
+            new FakeNotify());
 
         var result = await handler.HandleAsync(new ApproveLeaveRequestC1Command("local-lm", RequestId));
 
@@ -35,7 +36,8 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
         var handler = new ApproveLeaveRequestC1CommandHandler(
             new FakeAccountRepo("local-dev", "MNV-DEV"),
             new FakeEmployeeRepo(),
-            new FakeLeaveRequestRepo());
+            new FakeLeaveRequestRepo(),
+            new FakeNotify());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new ApproveLeaveRequestC1Command("local-dev", RequestId)));
@@ -59,6 +61,19 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
             string employeeCode,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IdentityAccountSnapshot?>(null);
+    }
+
+    private sealed class FakeNotify : ILeaveNotificationOutbox
+    {
+        public Task PublishAsync(
+            LeaveNotificationCreateModel model,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<IReadOnlyList<LeaveNotificationSnapshot>> ListByEmployeeAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LeaveNotificationSnapshot>>([]);
     }
 
     private sealed class FakeEmployeeRepo : IEmployeeReadRepository

@@ -71,6 +71,7 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<ApproveLeaveRequestC2Command, LeaveRequestActionResult>, ApproveLeaveRequestC2CommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RejectLeaveRequestC2Command, LeaveRequestActionResult>, RejectLeaveRequestC2CommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CancelLeaveRequestCommand, LeaveRequestActionResult>, CancelLeaveRequestCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListMyLeaveNotificationsQuery, IReadOnlyList<LeaveNotificationDto>>, ListMyLeaveNotificationsQueryHandler>();
 
         builder.Services.AddScoped<IAsyncQueryHandler<GetActiveTimesheetTemplateQuery, TimesheetTemplateDto?>, GetActiveTimesheetTemplateQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListTimesheetTemplatesQuery, IReadOnlyList<TimesheetTemplateDto>>, ListTimesheetTemplatesQueryHandler>();

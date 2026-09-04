@@ -22,6 +22,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
                 Code = LevSeed.AnnualCode,
                 Name = "Phép năm",
                 DeductsAnnualBalance = true,
+                RequiresCompanyTemplateFile = false,
                 Status = LeaveTypeStatus.Active
             },
             new LeaveType
@@ -29,6 +30,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
                 Code = LevSeed.UnpaidCode,
                 Name = "Phép không hưởng lương",
                 DeductsAnnualBalance = false,
+                RequiresCompanyTemplateFile = false,
                 Status = LeaveTypeStatus.Active
             },
             new LeaveType
@@ -36,6 +38,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
                 Code = LevSeed.SickCode,
                 Name = "Phép ốm/BHXH",
                 DeductsAnnualBalance = false,
+                RequiresCompanyTemplateFile = true,
                 Status = LeaveTypeStatus.Active
             },
             new LeaveType
@@ -43,6 +46,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
                 Code = LevSeed.MarriageCode,
                 Name = "Phép kết hôn",
                 DeductsAnnualBalance = false,
+                RequiresCompanyTemplateFile = false,
                 Status = LeaveTypeStatus.Active
             },
             new LeaveType
@@ -50,6 +54,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
                 Code = LevSeed.BereavementCode,
                 Name = "Phép tang chế",
                 DeductsAnnualBalance = false,
+                RequiresCompanyTemplateFile = false,
                 Status = LeaveTypeStatus.Active
             },
             new LeaveType
@@ -57,6 +62,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
                 Code = LevSeed.MaternityCode,
                 Name = "Nghỉ chế độ Nam/Nữ",
                 DeductsAnnualBalance = false,
+                RequiresCompanyTemplateFile = false,
                 Status = LeaveTypeStatus.Active
             });
     }

@@ -12,7 +12,8 @@ internal sealed class LeaveTypeReadRepository(AppDbContext db) : ILeaveTypeReadR
         await db.LeaveTypes.AsNoTracking()
             .Where(x => x.Status == LeaveTypeStatus.Active)
             .OrderBy(x => x.Code)
-            .Select(x => new LeaveTypeSnapshot(x.Code, x.Name, x.DeductsAnnualBalance, x.Status))
+            .Select(x => new LeaveTypeSnapshot(
+                x.Code, x.Name, x.DeductsAnnualBalance, x.RequiresCompanyTemplateFile, x.Status))
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
 
@@ -21,7 +22,8 @@ internal sealed class LeaveTypeReadRepository(AppDbContext db) : ILeaveTypeReadR
         CancellationToken cancellationToken = default) =>
         await db.LeaveTypes.AsNoTracking()
             .Where(x => x.Code == code)
-            .Select(x => new LeaveTypeSnapshot(x.Code, x.Name, x.DeductsAnnualBalance, x.Status))
+            .Select(x => new LeaveTypeSnapshot(
+                x.Code, x.Name, x.DeductsAnnualBalance, x.RequiresCompanyTemplateFile, x.Status))
             .FirstOrDefaultAsync(cancellationToken)
             .ConfigureAwait(false);
 }

@@ -19,14 +19,18 @@ public sealed record CreateLeaveRequestCommand(
     LeaveDayPart DayPart,
     string Reason,
     Guid HandoverEmployeeId,
-    bool IsEmergency) : ICommand;
+    bool IsEmergency,
+    string? AttachmentFileName = null,
+    bool AttachmentMatchesCompanyTemplate = false,
+    DateOnly? SubmittedOn = null) : ICommand;
 
 public sealed class CreateLeaveRequestCommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
     ILeaveTypeReadRepository leaveTypes,
     ILeaveBalanceRepository balances,
-    ILeaveRequestRepository requests)
+    ILeaveRequestRepository requests,
+    ILeaveNotificationOutbox notifications)
     : IAsyncCommandHandler<CreateLeaveRequestCommand, LeaveRequestCreateResult>
 {
     public async Task<LeaveRequestCreateResult> HandleAsync(
@@ -63,9 +67,32 @@ public sealed class CreateLeaveRequestCommandHandler(
         if (leaveType.Status != LeaveTypeStatus.Active)
             throw new BadRequestException(HrmErrorCodes.BadRequest, "Loại phép không còn hiệu lực.");
 
+        if (leaveType.RequiresCompanyTemplateFile)
+        {
+            if (string.IsNullOrWhiteSpace(command.AttachmentFileName)
+                || !command.AttachmentMatchesCompanyTemplate)
+            {
+                throw new BadRequestException(
+                    HrmErrorCodes.BadRequest,
+                    "Ốm/BHXH bắt buộc file đúng mẫu Cty (LEV-FR-008).");
+            }
+        }
+
         var totalDays = LeaveDayCalculator.Calculate(command.FromDate, command.ToDate, command.DayPart);
         if (totalDays <= 0)
             throw new BadRequestException(HrmErrorCodes.BadRequest, "Số ngày đơn phải > 0.");
+
+        var submittedOn = command.SubmittedOn ?? DateOnly.FromDateTime(DateTime.UtcNow);
+        if (LeaveAdvanceNotice.IsLateWithoutEmergency(
+                submittedOn,
+                command.FromDate,
+                command.ToDate,
+                command.IsEmergency))
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Nộp trễ hạn 3 NLĐ — đánh dấu Nghỉ đột xuất (LEV-FR-006/007).");
+        }
 
         if (leaveType.DeductsAnnualBalance)
         {
@@ -109,8 +136,20 @@ public sealed class CreateLeaveRequestCommandHandler(
                 totalDays,
                 command.Reason.Trim(),
                 command.HandoverEmployeeId,
-                command.IsEmergency),
+                command.IsEmergency,
+                string.IsNullOrWhiteSpace(command.AttachmentFileName)
+                    ? null
+                    : command.AttachmentFileName.Trim(),
+                command.AttachmentMatchesCompanyTemplate),
             cancellationToken).ConfigureAwait(false);
+
+        await LeaveNotify.EmitAsync(
+                notifications,
+                id,
+                employee.Id,
+                LeaveNotificationEvents.Submitted,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new LeaveRequestCreateResult(id, LeaveRequestStatus.PendingC1.ToString(), totalDays);
     }

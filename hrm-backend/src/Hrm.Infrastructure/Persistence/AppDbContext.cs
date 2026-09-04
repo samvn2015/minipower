@@ -39,6 +39,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<LeaveRequest> LeaveRequests => Set<LeaveRequest>();
 
+    public DbSet<LeaveNotification> LeaveNotifications => Set<LeaveNotification>();
+
     public DbSet<TimesheetTemplateVersion> TimesheetTemplateVersions => Set<TimesheetTemplateVersion>();
 
     public DbSet<TimesheetTemplateColumn> TimesheetTemplateColumns => Set<TimesheetTemplateColumn>();

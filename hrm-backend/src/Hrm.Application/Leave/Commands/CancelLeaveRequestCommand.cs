@@ -15,7 +15,8 @@ public sealed record CancelLeaveRequestCommand(string? ActorIdpSubject, Guid Req
 public sealed class CancelLeaveRequestCommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
-    ILeaveRequestRepository requests)
+    ILeaveRequestRepository requests,
+    ILeaveNotificationOutbox notifications)
     : IAsyncCommandHandler<CancelLeaveRequestCommand, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -42,7 +43,7 @@ public sealed class CancelLeaveRequestCommandHandler(
         {
             throw new ConflictException(
                 HrmErrorCodes.Conflict,
-                "Không hủy được đơn đã duyệt/từ chối/đã hủy (LEV-TC-014).");
+                "Không hủy/hoàn quỹ sau C2 hoặc đơn đã đóng (LEV-FR-014).");
         }
 
         if (request.Status is not (LeaveRequestStatus.PendingC1 or LeaveRequestStatus.PendingC2))
@@ -55,6 +56,14 @@ public sealed class CancelLeaveRequestCommandHandler(
             .ConfigureAwait(false);
         if (!cancelled)
             throw new NotFoundException(HrmErrorCodes.NotFound, "Không hủy được đơn.");
+
+        await LeaveNotify.EmitAsync(
+                notifications,
+                request.Id,
+                employee.Id,
+                LeaveNotificationEvents.Cancelled,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Cancelled.ToString());
     }

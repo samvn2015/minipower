@@ -17,7 +17,7 @@ public sealed class ListLeaveTypesQueryHandler(ILeaveTypeReadRepository leaveTyp
         ArgumentNullException.ThrowIfNull(query);
         var items = await leaveTypes.ListActiveAsync(cancellationToken).ConfigureAwait(false);
         return items
-            .Select(x => new LeaveTypeDto(x.Code, x.Name, x.DeductsAnnualBalance))
+            .Select(x => new LeaveTypeDto(x.Code, x.Name, x.DeductsAnnualBalance, x.RequiresCompanyTemplateFile))
             .ToList();
     }
 }

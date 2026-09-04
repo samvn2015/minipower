@@ -42,6 +42,7 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<ILeaveTypeReadRepository, LeaveTypeReadRepository>();
         builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
         builder.Services.AddScoped<ILeaveRequestRepository, LeaveRequestRepository>();
+        builder.Services.AddScoped<ILeaveNotificationOutbox, LeaveNotificationOutbox>();
         builder.Services.AddScoped<ITimesheetTemplateRepository, TimesheetTemplateRepository>();
         builder.Services.AddScoped<ITimesheetImportRepository, TimesheetImportRepository>();
         builder.Services.AddScoped<IPayPeriodRepository, PayPeriodRepository>();

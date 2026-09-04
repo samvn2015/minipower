@@ -25,6 +25,8 @@ internal sealed class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRep
             HandoverEmployeeId = model.HandoverEmployeeId,
             Status = Domain.Leave.LeaveRequestStatus.PendingC1,
             IsEmergency = model.IsEmergency,
+            AttachmentFileName = model.AttachmentFileName,
+            AttachmentMatchesCompanyTemplate = model.AttachmentMatchesCompanyTemplate,
             SubmittedAtUtc = DateTime.UtcNow
         };
 
@@ -301,5 +303,7 @@ internal sealed class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRep
         x.HandoverEmployeeId,
         x.Status,
         x.IsEmergency,
-        x.SubmittedAtUtc);
+        x.SubmittedAtUtc,
+        x.AttachmentFileName,
+        x.AttachmentMatchesCompanyTemplate);
 }

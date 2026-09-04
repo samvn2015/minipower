@@ -17,7 +17,8 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
         var handler = new ApproveLeaveRequestC2CommandHandler(
             new FakeAccountRepo("local-dev", ["IAM-ROLE-HR"]),
             new FakeLeaveRequestRepo(),
-            new FakeLeaveTypeRepo());
+            new FakeLeaveTypeRepo(),
+            new FakeNotify());
 
         var result = await handler.HandleAsync(new ApproveLeaveRequestC2Command("local-dev", RequestId));
 
@@ -30,7 +31,8 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
         var handler = new ApproveLeaveRequestC2CommandHandler(
             new FakeAccountRepo("local-lm", ["IAM-ROLE-LM", "IAM-ROLE-NV"]),
             new FakeLeaveRequestRepo(),
-            new FakeLeaveTypeRepo());
+            new FakeLeaveTypeRepo(),
+            new FakeNotify());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new ApproveLeaveRequestC2Command("local-lm", RequestId)));
@@ -66,7 +68,20 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
             string code,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<LeaveTypeSnapshot?>(
-                new LeaveTypeSnapshot(code, "Annual", true, LeaveTypeStatus.Active));
+                new LeaveTypeSnapshot(code, "Annual", true, false, LeaveTypeStatus.Active));
+    }
+
+    private sealed class FakeNotify : ILeaveNotificationOutbox
+    {
+        public Task PublishAsync(
+            LeaveNotificationCreateModel model,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<IReadOnlyList<LeaveNotificationSnapshot>> ListByEmployeeAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LeaveNotificationSnapshot>>([]);
     }
 
     private sealed class FakeLeaveRequestRepo : ILeaveRequestRepository
