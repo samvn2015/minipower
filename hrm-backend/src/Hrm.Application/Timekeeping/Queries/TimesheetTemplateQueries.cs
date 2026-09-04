@@ -7,15 +7,23 @@ using Jarvis.Domain.Shared.Messaging;
 
 namespace Hrm.Application.Timekeeping.Queries;
 
-public sealed record GetActiveTimesheetTemplateQuery : IQuery;
+public sealed record GetActiveTimesheetTemplateQuery(string? ActorIdpSubject) : IQuery;
 
-public sealed class GetActiveTimesheetTemplateQueryHandler(ITimesheetTemplateRepository templates)
+public sealed class GetActiveTimesheetTemplateQueryHandler(
+    IIdentityAccountReadRepository accounts,
+    ITimesheetTemplateRepository templates)
     : IAsyncQueryHandler<GetActiveTimesheetTemplateQuery, TimesheetTemplateDto?>
 {
     public async Task<TimesheetTemplateDto?> HandleAsync(
         GetActiveTimesheetTemplateQuery query,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(query);
+        IamAccessGuard.RequireAuthenticated(query.ActorIdpSubject);
+        var actor = await accounts.FindByIdpSubjectAsync(query.ActorIdpSubject!, cancellationToken)
+            .ConfigureAwait(false);
+        TimHrGuard.RequireHrOrItForTemplate(actor);
+
         var active = await templates.FindActiveAsync(cancellationToken).ConfigureAwait(false);
         return active is null ? null : TimDtoMapper.Map(active);
     }

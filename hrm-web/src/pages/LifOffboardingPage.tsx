@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import {
+  applyLifOffboardingLocks,
   closeLifOffboarding,
   confirmLifOffboardingN,
   fetchLifOffboardingChecklist,
@@ -13,6 +14,7 @@ export function LifOffboardingPage() {
   const [board, setBoard] = useState<LifOffChecklistBoard | null>(null);
   const [caseId, setCaseId] = useState("");
   const [n, setN] = useState("");
+  const [earlyCrReason, setEarlyCrReason] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -58,6 +60,21 @@ export function LifOffboardingPage() {
       await reload(caseId);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Xác nhận N thất bại");
+    }
+  }
+
+  async function onEarlyCrLock() {
+    setError(null);
+    setMessage(null);
+    try {
+      // Early CR an ninh — khóa Git+CRM SP trước N+3; không CRM sales.
+      const dto = await applyLifOffboardingLocks(caseId, { earlyCrReason });
+      setMessage(
+        `Đã khóa early CR cho ${dto.employeeCode} (git=${dto.gitLocked ? "yes" : "no"}, crmSp=${dto.crmSpLocked ? "yes" : "no"}).`,
+      );
+      await reload(caseId);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Early CR lock thất bại");
     }
   }
 
@@ -119,6 +136,27 @@ export function LifOffboardingPage() {
           disabled={!board?.canClose}
         >
           Đóng off
+        </button>
+      </div>
+
+      <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+        <label className="muted">
+          Early CR reason{" "}
+          <input
+            type="text"
+            value={earlyCrReason}
+            onChange={(e) => setEarlyCrReason(e.target.value)}
+            placeholder="Lý do an ninh (không CRM sales)"
+            style={{ minWidth: 240 }}
+          />
+        </label>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={onEarlyCrLock}
+          disabled={!caseId || !earlyCrReason.trim()}
+        >
+          Early CR lock
         </button>
       </div>
 
@@ -190,7 +228,8 @@ export function LifOffboardingPage() {
           <p className="muted">canClose = {board.canClose ? "true" : "false"}</p>
           <p className="muted">
             SCR-004: HR chỉ xem trạng thái Git/CRM SP — không nút khóa / không credential Git. Job IT:{" "}
-            <code>POST /v1/lif/offboarding/jobs/nplus3-locks</code>.
+            <code>POST /v1/lif/offboarding/jobs/nplus3-locks</code>. Early CR: IT/PGD qua form trên
+            (không CRM sales).
           </p>
         </div>
       )}

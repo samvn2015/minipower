@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Hrm.Application.Probation.Dtos;
+using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Constants;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Constants;
@@ -132,7 +133,8 @@ public sealed class DecideProbationEvaluationCommandHandler(
     IEmployeeWriteRepository employeeWrites,
     IProbationMasterReadRepository masters,
     IProbationEvaluationRepository evaluations,
-    ILifOffboardingRepository offboardings)
+    ILifOffboardingRepository offboardings,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<DecideProbationEvaluationCommand, ProbationEvaluationDto>
 {
     public const string LifSourcePrbFail = "PRB-FAIL";
@@ -238,6 +240,15 @@ public sealed class DecideProbationEvaluationCommandHandler(
                 cancellationToken);
             lifId = lif.Id;
         }
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.ProbationDecided,
+                emp.Id,
+                snap.Id,
+                request.ActorIdpSubject,
+                outcome),
+            cancellationToken);
 
         return ProbationEvaluationMapper.ToDto(snap, converted, newEnd, lifId);
     }

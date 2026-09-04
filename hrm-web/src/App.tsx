@@ -16,7 +16,7 @@ import { PayPeriodPage } from "./pages/PayPeriodPage";
 import { TimImportPage } from "./pages/TimImportPage";
 import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
-import { isHr, useCurrentUser } from "./hooks/useCurrentUser";
+import { isHr, isHrOrIt, useCurrentUser } from "./hooks/useCurrentUser";
 import { PrbCasesPage } from "./pages/PrbCasesPage";
 import { PrbMyMilestonesPage } from "./pages/PrbMyMilestonesPage";
 import { LifOffboardingPage } from "./pages/LifOffboardingPage";
@@ -26,6 +26,18 @@ import type { ReactNode } from "react";
 function RequirePayHr({ children }: { children: ReactNode }) {
   const user = useCurrentUser();
   if (!isHr(user)) return <Navigate to="/pay/payslips" replace />;
+  return <>{children}</>;
+}
+
+function RequireHr({ children }: { children: ReactNode }) {
+  const user = useCurrentUser();
+  if (!isHr(user)) return <Navigate to="/profile" replace />;
+  return <>{children}</>;
+}
+
+function RequireTimTemplate({ children }: { children: ReactNode }) {
+  const user = useCurrentUser();
+  if (!isHrOrIt(user)) return <Navigate to="/profile" replace />;
   return <>{children}</>;
 }
 
@@ -50,14 +62,36 @@ export default function App() {
         >
           <Route path="/" element={<Navigate to="/profile" replace />} />
           <Route path="/profile" element={<MyProfilePage />} />
-          <Route path="/leave" element={<LeavePage />} />
+          <Route path="/leave" element={<LeavePage channel="web" />} />
+          <Route path="/leave/m" element={<LeavePage channel="mobile" />} />
           <Route path="/pay/payslips" element={<PayPayslipPage channel="web" />} />
           <Route path="/pay/m/payslips" element={<PayPayslipPage channel="mobile" />} />
           <Route path="/leave/c1" element={<LeaveC1QueuePage />} />
           <Route path="/leave/c2" element={<LeaveC2QueuePage />} />
-          <Route path="/tim/templates" element={<TimTemplatePage />} />
-          <Route path="/tim/imports" element={<TimImportPage />} />
-          <Route path="/tim/periods" element={<TimPeriodPage />} />
+          <Route
+            path="/tim/templates"
+            element={
+              <RequireTimTemplate>
+                <TimTemplatePage />
+              </RequireTimTemplate>
+            }
+          />
+          <Route
+            path="/tim/imports"
+            element={
+              <RequireHr>
+                <TimImportPage />
+              </RequireHr>
+            }
+          />
+          <Route
+            path="/tim/periods"
+            element={
+              <RequireHr>
+                <TimPeriodPage />
+              </RequireHr>
+            }
+          />
           <Route
             path="/pay/periods"
             element={

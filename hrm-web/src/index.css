@@ -245,3 +245,12 @@ th {
 .pay-mobile h2 {
   font-size: 1.35rem;
 }
+
+.leave-mobile .btn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+
+.leave-mobile h2 {
+  font-size: 1.35rem;
+}

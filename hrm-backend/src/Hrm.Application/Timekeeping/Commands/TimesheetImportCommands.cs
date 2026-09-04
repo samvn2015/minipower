@@ -44,6 +44,28 @@ public sealed class PreviewTimesheetImportCommandHandler(
             throw new BadRequestException(HrmErrorCodes.BadRequest, "PeriodYm phải dạng YYYY-MM.");
         }
 
+        if (!string.IsNullOrWhiteSpace(command.FileName))
+        {
+            var name = command.FileName.Trim();
+            var lower = name.ToLowerInvariant();
+            if (lower.Contains("punch", StringComparison.Ordinal)
+                || lower.Contains("device", StringComparison.Ordinal)
+                || lower.Contains("zkteco", StringComparison.Ordinal))
+            {
+                throw new BadRequestException(
+                    HrmErrorCodes.BadRequest,
+                    "Chỉ nhận file Excel/CSV đúng mẫu — cấm máy CC / punch / device (TIM-FR-010 / TIM-TC-010).");
+            }
+
+            var ext = Path.GetExtension(name).ToLowerInvariant();
+            if (ext is not (".xlsx" or ".xls" or ".csv"))
+            {
+                throw new BadRequestException(
+                    HrmErrorCodes.BadRequest,
+                    "Chỉ nhận .xlsx/.xls/.csv đúng mẫu — cấm máy CC (TIM-FR-010 / TIM-TC-010).");
+            }
+        }
+
         var active = await templates.FindActiveAsync(cancellationToken).ConfigureAwait(false)
             ?? throw new BadRequestException(HrmErrorCodes.BadRequest, "Chưa có mẫu Active.");
 
