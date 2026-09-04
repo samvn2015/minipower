@@ -15,6 +15,7 @@ internal sealed class LifOffboardingCaseConfiguration : IEntityTypeConfiguration
         builder.Property(x => x.Source).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
         builder.Property(x => x.CreatedByIdpSubject).IsRequired().HasMaxLength(256);
+        builder.Property(x => x.ConfirmedByIdpSubject).HasMaxLength(256);
         builder.Property(x => x.Note).HasMaxLength(2000);
         builder.HasIndex(x => x.EmployeeId);
         builder.HasIndex(x => x.Status);

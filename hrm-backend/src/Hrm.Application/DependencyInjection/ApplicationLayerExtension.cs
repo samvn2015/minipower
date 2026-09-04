@@ -17,6 +17,9 @@ using Hrm.Application.Payroll.Queries;
 using Hrm.Application.Probation.Commands;
 using Hrm.Application.Probation.Dtos;
 using Hrm.Application.Probation.Queries;
+using Hrm.Application.Lifecycle.Commands;
+using Hrm.Application.Lifecycle.Dtos;
+using Hrm.Application.Lifecycle.Queries;
 using Hrm.Application.Timekeeping;
 using Hrm.Application.Timekeeping.Commands;
 using Hrm.Application.Timekeeping.Dtos;
@@ -103,6 +106,11 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationCriteriaQuery, IReadOnlyList<ProbationMasterItemDto>>, ListProbationCriteriaQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationExtendDurationsQuery, IReadOnlyList<ProbationExtendDurationDto>>, ListProbationExtendDurationsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>, ListProbationEvaluationsQueryHandler>();
+
+        builder.Services.AddScoped<IAsyncQueryHandler<ListLifOffboardingQuery, IReadOnlyList<LifOffboardingDto>>, ListLifOffboardingQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetLifOffboardingQuery, LifOffboardingDto>, GetLifOffboardingQueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CreateLifOffboardingCommand, LifOffboardingDto>, CreateLifOffboardingCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<ConfirmLifOffboardingNCommand, LifOffboardingDto>, ConfirmLifOffboardingNCommandHandler>();
 
         return builder;
     }

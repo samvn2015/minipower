@@ -2,7 +2,7 @@ using Jarvis.Domain.Entities;
 
 namespace Hrm.Domain.Lifecycle.Entities;
 
-/// <summary>Case offboarding — mở từ PRB Không đạt (PRB-FR-007) hoặc LIF UC-002.</summary>
+/// <summary>Case offboarding — PRB-FAIL hoặc LIF UC-002.</summary>
 public class LifOffboardingCase : BaseEntity<Guid>
 {
     public Guid EmployeeId { get; set; }
@@ -13,8 +13,15 @@ public class LifOffboardingCase : BaseEntity<Guid>
 
     public LifOffboardingStatus Status { get; set; } = LifOffboardingStatus.Open;
 
-    /// <summary>N = ngày LV cuối — chỉ HR xác nhận (LIF-FR-003); null khi mới mở từ PRB.</summary>
+    /// <summary>N = ngày LV cuối — chỉ HR xác nhận (LIF-FR-003).</summary>
     public DateOnly? LastWorkingDayN { get; set; }
+
+    /// <summary>Ngày ký đơn (nếu có) — không được dùng làm N (FR-003).</summary>
+    public DateOnly? ResignationSignedDate { get; set; }
+
+    public string? ConfirmedByIdpSubject { get; set; }
+
+    public DateTime? ConfirmedAtUtc { get; set; }
 
     public DateTime CreatedAtUtc { get; set; }
 

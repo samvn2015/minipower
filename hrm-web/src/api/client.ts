@@ -32,6 +32,7 @@ import type {
   ProbationReminderRunResult,
   ProbationMasterItem,
   ProbationEvaluation,
+  LifOffboarding,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -590,4 +591,22 @@ export async function decideProbationEvaluation(
   );
   if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
   return unwrap(body as ApiEnvelope<ProbationEvaluation>);
+}
+
+export async function fetchLifOffboardings(): Promise<LifOffboarding[]> {
+  const body = await apiFetch<LifOffboarding[] | ApiEnvelope<LifOffboarding[]>>("/v1/lif/offboarding");
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<LifOffboarding[]>);
+}
+
+export async function confirmLifOffboardingN(
+  caseId: string,
+  lastWorkingDayN: string,
+): Promise<LifOffboarding> {
+  const body = await apiFetch<LifOffboarding | ApiEnvelope<LifOffboarding>>(
+    `/v1/lif/offboarding/${caseId}/confirm-n`,
+    { method: "POST", body: JSON.stringify({ lastWorkingDayN }) },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffboarding>);
 }
