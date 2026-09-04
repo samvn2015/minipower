@@ -71,6 +71,9 @@ export function AppLayout() {
                 <Link className="btn btn-ghost" to="/prb/cases">
                   Hàng TV
                 </Link>
+                <Link className="btn btn-ghost" to="/lif/onboarding">
+                  Onboarding
+                </Link>
                 <Link className="btn btn-ghost" to="/lif/offboarding">
                   Offboarding
                 </Link>

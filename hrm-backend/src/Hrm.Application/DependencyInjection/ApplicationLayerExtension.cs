@@ -116,6 +116,13 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<CloseLifOffboardingCommand, LifOffboardingDto>, CloseLifOffboardingCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<ApplyLifOffboardingLocksCommand, LifOffboardingDto>, ApplyLifOffboardingLocksCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>, RunLifNPlus3LocksCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListLifOnboardingQuery, IReadOnlyList<LifOnboardingDto>>, ListLifOnboardingQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetLifOnboardingQuery, LifOnboardingDto>, GetLifOnboardingQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetLifOnChecklistQuery, LifOffChecklistBoardDto>, GetLifOnChecklistQueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CreateLifOnboardingCommand, LifOnboardingDto>, CreateLifOnboardingCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<UpsertLifOnChecklistTickCommand, LifOffChecklistBoardDto>, UpsertLifOnChecklistTickCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<MarkLifOnboardingProvisionedCommand, LifOnboardingDto>, MarkLifOnboardingProvisionedCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CloseLifOnboardingCommand, LifOnboardingDto>, CloseLifOnboardingCommandHandler>();
 
         return builder;
     }

@@ -35,6 +35,7 @@ import type {
   LifOffboarding,
   LifOffChecklistBoard,
   LifNPlus3LockRunResult,
+  LifOnboarding,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -650,4 +651,62 @@ export async function runLifNPlus3Locks(asOfDate?: string): Promise<LifNPlus3Loc
   );
   if ("locked" in body && typeof body.locked === "number") return body;
   return unwrap(body as ApiEnvelope<LifNPlus3LockRunResult>);
+}
+
+export async function fetchLifOnboardings(): Promise<LifOnboarding[]> {
+  const body = await apiFetch<LifOnboarding[] | ApiEnvelope<LifOnboarding[]>>("/v1/lif/onboarding");
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<LifOnboarding[]>);
+}
+
+export async function createLifOnboarding(employeeId: string, note?: string): Promise<LifOnboarding> {
+  const body = await apiFetch<LifOnboarding | ApiEnvelope<LifOnboarding>>("/v1/lif/onboarding", {
+    method: "POST",
+    body: JSON.stringify({ employeeId, note: note ?? null }),
+  });
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOnboarding>);
+}
+
+export async function fetchLifOnboardingChecklist(caseId: string): Promise<LifOffChecklistBoard> {
+  const body = await apiFetch<LifOffChecklistBoard | ApiEnvelope<LifOffChecklistBoard>>(
+    `/v1/lif/onboarding/${caseId}/checklist`,
+  );
+  if ("caseId" in body && typeof body.caseId === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffChecklistBoard>);
+}
+
+export async function upsertLifOnChecklistTick(
+  caseId: string,
+  itemCode: string,
+  isChecked: boolean,
+): Promise<LifOffChecklistBoard> {
+  const body = await apiFetch<LifOffChecklistBoard | ApiEnvelope<LifOffChecklistBoard>>(
+    `/v1/lif/onboarding/${caseId}/checklist/${encodeURIComponent(itemCode)}`,
+    { method: "PUT", body: JSON.stringify({ isChecked }) },
+  );
+  if ("caseId" in body && typeof body.caseId === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffChecklistBoard>);
+}
+
+export async function markLifOnboardingProvisioned(
+  caseId: string,
+  systemCode: string,
+  deferGitToNPlus3 = false,
+): Promise<LifOnboarding> {
+  const body = await apiFetch<LifOnboarding | ApiEnvelope<LifOnboarding>>(
+    `/v1/lif/onboarding/${caseId}/provisions/${encodeURIComponent(systemCode)}`,
+    { method: "POST", body: JSON.stringify({ deferGitToNPlus3 }) },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOnboarding>);
+}
+
+export async function closeLifOnboarding(caseId: string): Promise<LifOnboarding> {
+  const body = await apiFetch<LifOnboarding | ApiEnvelope<LifOnboarding>>(
+    `/v1/lif/onboarding/${caseId}/close`,
+    { method: "POST", body: "{}" },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOnboarding>);
 }
