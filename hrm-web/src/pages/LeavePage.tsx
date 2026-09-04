@@ -10,7 +10,10 @@ import {
 } from "../api/client";
 import type { LeaveBalance, LeaveRequestItem, LeaveType } from "../api/types";
 
-export function LeavePage() {
+type Props = { channel?: "web" | "mobile" };
+
+export function LeavePage({ channel = "web" }: Props) {
+  const isMobile = channel === "mobile";
   const year = new Date().getFullYear();
   const [balance, setBalance] = useState<LeaveBalance | null>(null);
   const [types, setTypes] = useState<LeaveType[]>([]);
@@ -98,15 +101,30 @@ export function LeavePage() {
   }
 
   return (
-    <div className="card stack">
+    <div className={`card stack${isMobile ? " leave-mobile" : ""}`}>
       <div className="row" style={{ justifyContent: "space-between" }}>
         <div>
-          <h2>Nghỉ phép</h2>
-          <p className="muted">LEV-SCR — quỹ phép, nộp đơn, danh sách đơn của tôi.</p>
+          <h2>{isMobile ? "Nghỉ phép (mobile)" : "Nghỉ phép"}</h2>
+          <p className="muted">
+            {isMobile
+              ? "LEV-TC-002 — cùng API/IAM với web; không nới quyền."
+              : "LEV-SCR — quỹ phép, nộp đơn, danh sách đơn của tôi."}
+          </p>
+          {isMobile ? (
+            <p className="muted" style={{ fontSize: 13 }}>
+              <Link to="/leave">Mở bản web</Link>
+            </p>
+          ) : (
+            <p className="muted" style={{ fontSize: 13 }}>
+              <Link to="/leave/m">Mở bản mobile</Link>
+            </p>
+          )}
         </div>
-        <Link className="btn btn-secondary" to="/leave/c1">
-          Inbox duyệt C1 →
-        </Link>
+        {!isMobile && (
+          <Link className="btn btn-secondary" to="/leave/c1">
+            Inbox duyệt C1 →
+          </Link>
+        )}
       </div>
 
       {error && <div className="error-box">{error}</div>}

@@ -1,4 +1,5 @@
 using Asp.Versioning;
+using Hrm.Application.Common;
 using Hrm.Application.DependencyInjection;
 using Hrm.Domain.Repositories;
 using Hrm.Host.Services;
@@ -40,6 +41,8 @@ public static class HostLayerExtension
 
         builder.AddApplicationLayer();
         builder.AddInfrastructureLayer();
+
+        builder.Services.AddSingleton<IHostRoleGate, HostRoleGate>();
 
         builder.AddCoreJson();
         builder.AddCoreCors();

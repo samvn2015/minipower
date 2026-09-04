@@ -56,6 +56,9 @@ export function AppLayout() {
             <Link className="btn btn-ghost" to="/leave">
               Nghỉ phép
             </Link>
+            <Link className="btn btn-ghost" to="/leave/m">
+              Nghỉ (mobile)
+            </Link>
             <Link className="btn btn-ghost" to="/pay/payslips">
               Phiếu lương
             </Link>

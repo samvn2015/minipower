@@ -1,3 +1,4 @@
+using Hrm.Application.Common;
 using Hrm.Application.Lifecycle.Dtos;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
@@ -259,7 +260,8 @@ public sealed class ApplyLifOffboardingLocksCommandHandler(
 
 public sealed class RunLifNPlus3LocksCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ILifOffboardingRepository offboardings)
+    ILifOffboardingRepository offboardings,
+    IHostRoleGate hostRoleGate)
     : IAsyncCommandHandler<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>
 {
     public async Task<LifNPlus3LockRunResult> HandleAsync(
@@ -271,6 +273,14 @@ public sealed class RunLifNPlus3LocksCommandHandler(
         LifAccessGuard.RequireItOrPgdForLocks(actor);
 
         var asOf = request.AsOfDate ?? DateOnly.FromDateTime(DateTime.UtcNow);
+
+        if (!hostRoleGate.IsActiveHost())
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Host Standby — job không chạy DR (LIF-TC-HA-001)");
+        }
+
         var all = await offboardings.ListAsync(cancellationToken);
 
         var locked = 0;

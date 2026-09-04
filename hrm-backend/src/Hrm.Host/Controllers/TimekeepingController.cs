@@ -23,7 +23,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetActiveTimesheetTemplateQuery, TimesheetTemplateDto?>(
-            new GetActiveTimesheetTemplateQuery(),
+            new GetActiveTimesheetTemplateQuery(User.GetIdpSubject()),
             cancellationToken);
         return dto is null ? NotFound(new { message = "Chưa có mẫu Active." }) : Ok(dto);
     }

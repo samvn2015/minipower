@@ -1,4 +1,5 @@
 using Hrm.Application.Payroll.Queries;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Payroll;
@@ -17,7 +18,8 @@ public sealed class GetPayslipQueryHandlerTests
     {
         var handler = new GetPayslipQueryHandler(
             new FakeAccountRepo(["IAM-ROLE-NV"], "MNV-DEV"),
-            new FakePayRepo(PayPeriodStatus.Closed, "MNV-DEV"));
+            new FakePayRepo(PayPeriodStatus.Closed, "MNV-DEV"),
+            new FakeAuditLogs());
 
         var dto = await handler.HandleAsync(new GetPayslipQuery("local-nv", LineId));
         Assert.Equal("MNV-DEV", dto.EmployeeCode);
@@ -29,7 +31,8 @@ public sealed class GetPayslipQueryHandlerTests
     {
         var handler = new GetPayslipQueryHandler(
             new FakeAccountRepo(["IAM-ROLE-LM", "IAM-ROLE-NV"], "MNV-HO"),
-            new FakePayRepo(PayPeriodStatus.Closed, "MNV-DEV"));
+            new FakePayRepo(PayPeriodStatus.Closed, "MNV-DEV"),
+            new FakeAuditLogs());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new GetPayslipQuery("local-lm", LineId)));
@@ -40,7 +43,8 @@ public sealed class GetPayslipQueryHandlerTests
     {
         var handler = new GetPayslipQueryHandler(
             new FakeAccountRepo(["IAM-ROLE-NV"], "MNV-DEV"),
-            new FakePayRepo(PayPeriodStatus.Draft, "MNV-DEV"));
+            new FakePayRepo(PayPeriodStatus.Draft, "MNV-DEV"),
+            new FakeAuditLogs());
 
         await Assert.ThrowsAsync<NotFoundException>(() =>
             handler.HandleAsync(new GetPayslipQuery("local-nv", LineId)));
@@ -51,10 +55,22 @@ public sealed class GetPayslipQueryHandlerTests
     {
         var handler = new GetPayslipQueryHandler(
             new FakeAccountRepo(["IAM-ROLE-HR", "IAM-ROLE-NV"], "MNV-DEV"),
-            new FakePayRepo(PayPeriodStatus.Closed, "MNV-HO"));
+            new FakePayRepo(PayPeriodStatus.Closed, "MNV-HO"),
+            new FakeAuditLogs());
 
         var dto = await handler.HandleAsync(new GetPayslipQuery("local-dev", LineId));
         Assert.Equal("MNV-HO", dto.EmployeeCode);
+    }
+
+    private sealed class FakeAuditLogs : IEmpAuditLogRepository
+    {
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeAccountRepo(string[] roles, string? employeeCode) : IIdentityAccountReadRepository

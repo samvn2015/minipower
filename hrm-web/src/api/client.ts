@@ -651,6 +651,25 @@ export async function closeLifOffboarding(caseId: string): Promise<LifOffboardin
   return unwrap(body as ApiEnvelope<LifOffboarding>);
 }
 
+/** IT/PGD early CR lock Git+CRM SP — không CRM sales (LIF-FR-007/008). */
+export async function applyLifOffboardingLocks(
+  caseId: string,
+  payload?: { asOfDate?: string; earlyCrReason?: string },
+): Promise<LifOffboarding> {
+  const body = await apiFetch<LifOffboarding | ApiEnvelope<LifOffboarding>>(
+    `/v1/lif/offboarding/${caseId}/locks`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        asOfDate: payload?.asOfDate ?? null,
+        earlyCrReason: payload?.earlyCrReason ?? null,
+      }),
+    },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffboarding>);
+}
+
 export async function runLifNPlus3Locks(asOfDate?: string): Promise<LifNPlus3LockRunResult> {
   const body = await apiFetch<LifNPlus3LockRunResult | ApiEnvelope<LifNPlus3LockRunResult>>(
     "/v1/lif/offboarding/jobs/nplus3-locks",

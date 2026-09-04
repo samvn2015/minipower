@@ -64,7 +64,8 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             new FakeWrites(),
             new FakeMasters(),
             new FakeEvalRepo(),
-            new FakeLif());
+            new FakeLif(),
+            new FakeAuditLogs());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new DecideProbationEvaluationCommand(
@@ -87,7 +88,8 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             writes,
             new FakeMasters(),
             new FakeEvalRepo(),
-            lif);
+            lif,
+            new FakeAuditLogs());
 
     private static EmployeeSnapshot TvEmp() =>
         new(
@@ -236,6 +238,17 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
                 Guid.NewGuid(), employeeId, employeeCode, probationEndDate,
                 ProbationEvaluationStatus.Decided, null, null, null, null, criteriaPayloadJson,
                 outcomeCode, decidedByIdpSubject, DateTime.UtcNow, note, extendDurationCode));
+    }
+
+    private sealed class FakeAuditLogs : IEmpAuditLogRepository
+    {
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeLif : ILifOffboardingRepository

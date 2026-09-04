@@ -1,5 +1,7 @@
 using Hrm.Application.Common;
 using Hrm.Application.Payroll.Dtos;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Payroll;
 using Hrm.Domain.Payroll.Repositories;
@@ -65,7 +67,8 @@ public sealed record GetPayslipQuery(string? ActorIdpSubject, Guid PayslipId) : 
 
 public sealed class GetPayslipQueryHandler(
     IIdentityAccountReadRepository accounts,
-    IPayPeriodRepository payPeriods)
+    IPayPeriodRepository payPeriods,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncQueryHandler<GetPayslipQuery, PayPayslipDto>
 {
     public async Task<PayPayslipDto> HandleAsync(
@@ -91,6 +94,16 @@ public sealed class GetPayslipQueryHandler(
         }
 
         PayPayslipAccess.EnsureCanView(actor, slip.EmployeeCode);
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.PayslipViewed,
+                slip.EmployeeId,
+                slip.LineId,
+                query.ActorIdpSubject!,
+                slip.PeriodYm),
+            cancellationToken).ConfigureAwait(false);
+
         return ListMyPayslipsQueryHandler.Map(slip);
     }
 }

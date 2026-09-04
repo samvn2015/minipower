@@ -1,3 +1,4 @@
+using Hrm.Application.Common;
 using Hrm.Application.Lifecycle.Commands;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
@@ -80,7 +81,8 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
         var repo = new FakeRepo();
         var handler = new RunLifNPlus3LocksCommandHandler(
             new FakeAccounts(["IAM-ROLE-IT"]),
-            repo);
+            repo,
+            new FakeHostRoleGate(active: true));
 
         var early = await handler.HandleAsync(
             new RunLifNPlus3LocksCommand("it-dev", new DateOnly(2026, 10, 1)));
@@ -91,6 +93,11 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
             new RunLifNPlus3LocksCommand("it-dev", NPlus3));
         Assert.Equal(1, due.Locked);
         Assert.True(repo.LastApply is not null);
+    }
+
+    private sealed class FakeHostRoleGate(bool active) : IHostRoleGate
+    {
+        public bool IsActiveHost() => active;
     }
 
     private sealed class FakeAccounts(string[] roles) : IIdentityAccountReadRepository
