@@ -169,3 +169,15 @@
 - Affects: payroll DOC-16
 - Trace: e2e-api-pay-slice-a…k · DEC-DLV-013
 - Confidence: cao
+
+### DEC-DLV-015 — Execute St timekeeping DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: TIM slices A–F e2e; tiếp sau PAY DOC-16.
+- Options: A Để trống · B **St theo e2e A–F** · C Pass đủ SCR-014 / audit NFR
+- Decision: chọn **B**
+- Why (loại C vì UI/SCR và audit còn Partial)
+- Consequences:
+  - `docs/03-modules/timekeeping/DOC-16` v0.2: Pass hầu hết; **Partial** TC-008/014/NFR-002.
+- Affects: timekeeping DOC-16
+- Trace: e2e-api-tim-slice-a…f · DEC-DLV-014
+- Confidence: cao
