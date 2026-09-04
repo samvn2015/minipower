@@ -419,3 +419,18 @@ export type ProbationEvaluation = {
   decidedAtUtc?: string | null;
   extendDurationCode?: string | null;
 };
+
+export type LifOffboarding = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  source: string;
+  status: string;
+  lastWorkingDayN?: string | null;
+  nPlus3Expected?: string | null;
+  resignationSignedDate?: string | null;
+  jobNPlus3Eligible: boolean;
+  confirmedByIdpSubject?: string | null;
+  confirmedAtUtc?: string | null;
+  note?: string | null;
+};

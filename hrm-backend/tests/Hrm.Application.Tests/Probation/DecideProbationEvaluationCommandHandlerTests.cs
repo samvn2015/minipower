@@ -249,10 +249,15 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             Last = model;
             return Task.FromResult(new LifOffboardingSnapshot(
                 Guid.NewGuid(), model.EmployeeId, model.EmployeeCode, model.Source,
-                LifOffboardingStatus.Open, null, DateTime.UtcNow, model.CreatedByIdpSubject, model.Note));
+                LifOffboardingStatus.Open, null, model.ResignationSignedDate, null, null,
+                DateTime.UtcNow, model.CreatedByIdpSubject, model.Note));
         }
 
         public Task<IReadOnlyList<LifOffboardingSnapshot>> ListOpenAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LifOffboardingSnapshot>>([]);
+
+        public Task<IReadOnlyList<LifOffboardingSnapshot>> ListAsync(
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<LifOffboardingSnapshot>>([]);
 
@@ -260,5 +265,12 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             Guid id,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<LifOffboardingSnapshot?>(null);
+
+        public Task<LifOffboardingSnapshot> ConfirmNAsync(
+            Guid id,
+            DateOnly lastWorkingDayN,
+            string confirmedByIdpSubject,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
     }
 }

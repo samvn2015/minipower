@@ -19,6 +19,7 @@ import { TimTemplatePage } from "./pages/TimTemplatePage";
 import { isHr, useCurrentUser } from "./hooks/useCurrentUser";
 import { PrbCasesPage } from "./pages/PrbCasesPage";
 import { PrbMyMilestonesPage } from "./pages/PrbMyMilestonesPage";
+import { LifOffboardingPage } from "./pages/LifOffboardingPage";
 import type { ReactNode } from "react";
 
 function RequirePayHr({ children }: { children: ReactNode }) {
@@ -78,6 +79,14 @@ export default function App() {
             element={
               <RequirePrbHr>
                 <PrbCasesPage />
+              </RequirePrbHr>
+            }
+          />
+          <Route
+            path="/lif/offboarding"
+            element={
+              <RequirePrbHr>
+                <LifOffboardingPage />
               </RequirePrbHr>
             }
           />
