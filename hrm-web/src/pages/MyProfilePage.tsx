@@ -2,7 +2,7 @@ import { FormEvent, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { fetchEmployee, fetchMyEmployee, updateEmployee } from "../api/client";
 import type { EmployeeDetail } from "../api/types";
-import { isHrOrIt, isIt, useCurrentUser } from "../hooks/useCurrentUser";
+import { isHrOrIt, isIt, isItOnly, useCurrentUser } from "../hooks/useCurrentUser";
 
 export function MyProfilePage() {
   const user = useCurrentUser();
@@ -18,6 +18,13 @@ export function MyProfilePage() {
 
   useEffect(() => {
     let active = true;
+    // IT seed không gắn MNV — bỏ qua /emp/employees/me (IAM-FR-017)
+    if (isItOnly(user)) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
     fetchMyEmployee()
       .then((employee) => {
         if (!active) return;
@@ -36,7 +43,7 @@ export function MyProfilePage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -69,7 +76,7 @@ export function MyProfilePage() {
   }
 
   if (!profile) {
-    const itWithoutEmp = isIt(user);
+    const itWithoutEmp = isItOnly(user) || isIt(user);
     return (
       <div className="card stack">
         <h2>{itWithoutEmp ? "Tài khoản IT" : "Hồ sơ của tôi"}</h2>

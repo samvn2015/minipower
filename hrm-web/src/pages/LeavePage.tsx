@@ -34,7 +34,7 @@ export function LeavePage({ channel = "web" }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const [balResult, typeRows, myRequests, profile] = await Promise.all([
+      const [balResult, typeRows, myRequests, profileResult] = await Promise.all([
         fetchMyLeaveBalance(year).then(
           (bal) => ({ ok: true as const, bal }),
           (err: unknown) => ({
@@ -43,21 +43,43 @@ export function LeavePage({ channel = "web" }: Props) {
           }),
         ),
         fetchLeaveTypes(),
-        fetchMyLeaveRequests(),
-        fetchMyEmployee(),
+        fetchMyLeaveRequests().then(
+          (rows) => ({ ok: true as const, rows }),
+          (err: unknown) => ({
+            ok: false as const,
+            message: err instanceof Error ? err.message : "Không tải danh sách đơn",
+          }),
+        ),
+        fetchMyEmployee().then(
+          (profile) => ({ ok: true as const, profile }),
+          (err: unknown) => ({
+            ok: false as const,
+            message: err instanceof Error ? err.message : "Không tải hồ sơ EMP",
+          }),
+        ),
       ]);
       if (balResult.ok) {
         setBalance(balResult.bal);
       } else {
         setBalance(null);
-        // LEV-FR-015: thiếu quỹ năm → cảnh báo, vẫn cho nộp loại không trừ quỹ / đổi persona
-        setError(balResult.message);
       }
       setTypes(typeRows);
-      setRequests(myRequests);
-      if (profile.lineManagerEmployeeId && !handoverEmployeeId) {
-        setHandoverEmployeeId(profile.lineManagerEmployeeId);
+      if (myRequests.ok) {
+        setRequests(myRequests.rows);
+      } else {
+        setRequests([]);
       }
+      if (profileResult.ok) {
+        if (profileResult.profile.lineManagerEmployeeId && !handoverEmployeeId) {
+          setHandoverEmployeeId(profileResult.profile.lineManagerEmployeeId);
+        }
+      }
+      const softErrors = [
+        !balResult.ok ? balResult.message : null,
+        !myRequests.ok ? myRequests.message : null,
+        !profileResult.ok ? profileResult.message : null,
+      ].filter(Boolean);
+      if (softErrors.length) setError(softErrors.join(" · "));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tải dữ liệu nghỉ phép thất bại");
     } finally {

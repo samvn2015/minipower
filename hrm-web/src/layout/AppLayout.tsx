@@ -2,6 +2,7 @@ import { Link, Navigate, Outlet, useNavigate } from "react-router-dom";
 import { clearStoredToken, fetchCurrentUser } from "../api/client";
 import type { CurrentUser } from "../api/types";
 import { useEffect, useState, type ReactNode } from "react";
+import { isItOnly } from "../hooks/useCurrentUser";
 
 export function AppLayout() {
   const navigate = useNavigate();
@@ -44,30 +45,36 @@ export function AppLayout() {
     );
   }
 
+  const itOnly = isItOnly(user);
+
   return (
     <div className="app-shell">
       <header className="app-header">
         <div className="row">
           <h1>HRM — MVP</h1>
           <nav className="row">
-            <Link className="btn btn-ghost" to="/profile">
-              Hồ sơ tôi
+            <Link className="btn btn-ghost" to={itOnly ? "/iam/accounts" : "/profile"}>
+              {itOnly ? "Tài khoản IT" : "Hồ sơ tôi"}
             </Link>
-            <Link className="btn btn-ghost" to="/leave">
-              Nghỉ phép
-            </Link>
-            <Link className="btn btn-ghost" to="/leave/m">
-              Nghỉ (mobile)
-            </Link>
-            <Link className="btn btn-ghost" to="/pay/payslips">
-              Phiếu lương
-            </Link>
-            <Link className="btn btn-ghost" to="/pay/m/payslips">
-              Phiếu (mobile)
-            </Link>
-            <Link className="btn btn-ghost" to="/prb/me">
-              Mốc TV
-            </Link>
+            {!itOnly && (
+              <>
+                <Link className="btn btn-ghost" to="/leave">
+                  Nghỉ phép
+                </Link>
+                <Link className="btn btn-ghost" to="/leave/m">
+                  Nghỉ (mobile)
+                </Link>
+                <Link className="btn btn-ghost" to="/pay/payslips">
+                  Phiếu lương
+                </Link>
+                <Link className="btn btn-ghost" to="/pay/m/payslips">
+                  Phiếu (mobile)
+                </Link>
+                <Link className="btn btn-ghost" to="/prb/me">
+                  Mốc TV
+                </Link>
+              </>
+            )}
             {(user.roles.includes("IAM-ROLE-HR") ||
               user.roles.includes("IAM-ROLE-PGD")) && (
               <Link className="btn btn-ghost" to="/prb/cases">
