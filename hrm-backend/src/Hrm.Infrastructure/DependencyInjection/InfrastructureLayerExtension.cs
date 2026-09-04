@@ -55,6 +55,7 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IProbationMasterReadRepository, ProbationMasterReadRepository>();
         builder.Services.AddScoped<IProbationEvaluationRepository, ProbationEvaluationRepository>();
         builder.Services.AddScoped<ILifOffboardingRepository, LifOffboardingRepository>();
+        builder.Services.AddScoped<ILifOffChecklistRepository, LifOffChecklistRepository>();
 
         // Credentials: User Secrets / env (ConnectionStrings__AppDbContext). Không hard-code password.
         // Placeholder chỉ để đăng ký DI khi chưa có secret — ping/swagger vẫn chạy; mở DB thật cần OQ-DLV-003.

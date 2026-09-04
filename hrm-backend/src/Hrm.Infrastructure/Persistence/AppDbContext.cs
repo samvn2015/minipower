@@ -81,6 +81,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<LifOffboardingCase> LifOffboardingCases => Set<LifOffboardingCase>();
 
+    public DbSet<LifOffChecklistItem> LifOffChecklistItems => Set<LifOffChecklistItem>();
+
+    public DbSet<LifOffChecklistTick> LifOffChecklistTicks => Set<LifOffChecklistTick>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

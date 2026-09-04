@@ -111,6 +111,9 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<GetLifOffboardingQuery, LifOffboardingDto>, GetLifOffboardingQueryHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CreateLifOffboardingCommand, LifOffboardingDto>, CreateLifOffboardingCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<ConfirmLifOffboardingNCommand, LifOffboardingDto>, ConfirmLifOffboardingNCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<GetLifOffChecklistQuery, LifOffChecklistBoardDto>, GetLifOffChecklistQueryHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<UpsertLifOffChecklistTickCommand, LifOffChecklistBoardDto>, UpsertLifOffChecklistTickCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<CloseLifOffboardingCommand, LifOffboardingDto>, CloseLifOffboardingCommandHandler>();
 
         return builder;
     }

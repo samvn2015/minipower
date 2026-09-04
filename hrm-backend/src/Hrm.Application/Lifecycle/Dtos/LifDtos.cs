@@ -15,3 +15,18 @@ public sealed record LifOffboardingDto(
     DateTime CreatedAtUtc,
     string CreatedByIdpSubject,
     string? Note);
+
+public sealed record LifOffChecklistItemDto(
+    string Code,
+    string Name,
+    bool IsMust,
+    int SortOrder,
+    bool IsChecked,
+    string? CheckedByIdpSubject,
+    DateTime? CheckedAtUtc);
+
+public sealed record LifOffChecklistBoardDto(
+    Guid CaseId,
+    string Status,
+    bool CanClose,
+    IReadOnlyList<LifOffChecklistItemDto> Items);

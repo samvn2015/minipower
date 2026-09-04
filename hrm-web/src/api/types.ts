@@ -434,3 +434,20 @@ export type LifOffboarding = {
   confirmedAtUtc?: string | null;
   note?: string | null;
 };
+
+export type LifOffChecklistItem = {
+  code: string;
+  name: string;
+  isMust: boolean;
+  sortOrder: number;
+  isChecked: boolean;
+  checkedByIdpSubject?: string | null;
+  checkedAtUtc?: string | null;
+};
+
+export type LifOffChecklistBoard = {
+  caseId: string;
+  status: string;
+  canClose: boolean;
+  items: LifOffChecklistItem[];
+};

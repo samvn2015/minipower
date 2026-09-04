@@ -1,3 +1,4 @@
+using Hrm.Application.Lifecycle.Commands;
 using Hrm.Application.Lifecycle.Dtos;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Lifecycle.Repositories;
@@ -46,5 +47,28 @@ public sealed class GetLifOffboardingQueryHandler(
         var row = await offboardings.FindByIdAsync(request.CaseId, cancellationToken)
             ?? throw new NotFoundException(HrmErrorCodes.NotFound, "Không tìm thấy case offboarding.");
         return LifOffboardingMapper.ToDto(row);
+    }
+}
+
+public sealed record GetLifOffChecklistQuery(string ActorIdpSubject, Guid CaseId) : IQuery;
+
+public sealed class GetLifOffChecklistQueryHandler(
+    IIdentityAccountReadRepository accounts,
+    ILifOffboardingRepository offboardings,
+    ILifOffChecklistRepository checklist)
+    : IAsyncQueryHandler<GetLifOffChecklistQuery, LifOffChecklistBoardDto>
+{
+    public async Task<LifOffChecklistBoardDto> HandleAsync(
+        GetLifOffChecklistQuery request,
+        CancellationToken cancellationToken = default)
+    {
+        var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
+            ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
+        LifAccessGuard.RequireHrOrPgd(actor);
+
+        var row = await offboardings.FindByIdAsync(request.CaseId, cancellationToken)
+            ?? throw new NotFoundException(HrmErrorCodes.NotFound, "Không tìm thấy case offboarding.");
+
+        return await LifOffChecklistBoardBuilder.BuildAsync(checklist, row, cancellationToken);
     }
 }

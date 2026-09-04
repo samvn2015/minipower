@@ -33,6 +33,7 @@ import type {
   ProbationMasterItem,
   ProbationEvaluation,
   LifOffboarding,
+  LifOffChecklistBoard,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -606,6 +607,36 @@ export async function confirmLifOffboardingN(
   const body = await apiFetch<LifOffboarding | ApiEnvelope<LifOffboarding>>(
     `/v1/lif/offboarding/${caseId}/confirm-n`,
     { method: "POST", body: JSON.stringify({ lastWorkingDayN }) },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffboarding>);
+}
+
+export async function fetchLifOffboardingChecklist(caseId: string): Promise<LifOffChecklistBoard> {
+  const body = await apiFetch<LifOffChecklistBoard | ApiEnvelope<LifOffChecklistBoard>>(
+    `/v1/lif/offboarding/${caseId}/checklist`,
+  );
+  if ("caseId" in body && typeof body.caseId === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffChecklistBoard>);
+}
+
+export async function upsertLifOffChecklistTick(
+  caseId: string,
+  itemCode: string,
+  isChecked: boolean,
+): Promise<LifOffChecklistBoard> {
+  const body = await apiFetch<LifOffChecklistBoard | ApiEnvelope<LifOffChecklistBoard>>(
+    `/v1/lif/offboarding/${caseId}/checklist/${encodeURIComponent(itemCode)}`,
+    { method: "PUT", body: JSON.stringify({ isChecked }) },
+  );
+  if ("caseId" in body && typeof body.caseId === "string") return body;
+  return unwrap(body as ApiEnvelope<LifOffChecklistBoard>);
+}
+
+export async function closeLifOffboarding(caseId: string): Promise<LifOffboarding> {
+  const body = await apiFetch<LifOffboarding | ApiEnvelope<LifOffboarding>>(
+    `/v1/lif/offboarding/${caseId}/close`,
+    { method: "POST", body: "{}" },
   );
   if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
   return unwrap(body as ApiEnvelope<LifOffboarding>);
