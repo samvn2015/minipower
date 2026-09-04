@@ -8,6 +8,8 @@ public sealed record SeniorityDto(
 
 public sealed record EducationLevelDto(string Code, string Name);
 
+public sealed record EmpCatalogItemDto(string Code, string Name);
+
 public sealed record EmpAuditLogDto(
     Guid Id,
     string Action,

@@ -47,6 +47,7 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<GetMyEmployeeQuery, EmployeeDto>, GetMyEmployeeQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeesQuery, IReadOnlyList<EmployeeListItemDto>>, ListEmployeesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEducationLevelsQuery, IReadOnlyList<EducationLevelDto>>, ListEducationLevelsQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListContractTypesQuery, IReadOnlyList<EmpCatalogItemDto>>, ListContractTypesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeeAuditLogsQuery, IReadOnlyList<EmpAuditLogDto>>, ListEmployeeAuditLogsQueryHandler>();
 
         builder.Services.AddScoped<IAsyncCommandHandler<AssignAccountRoleCommand, IdentityAccountAdminResult>, AssignAccountRoleCommandHandler>();

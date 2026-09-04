@@ -21,6 +21,17 @@ public sealed class EmpCatalogController(IAsyncQueryDispatcher queries) : Contro
         return Ok(items);
     }
 
+    /// <summary>Master loại HĐ — EMP-FR-014 (UI lấy từ đây, không hardcode URD).</summary>
+    [HttpGet("contract-types")]
+    [Authorize]
+    public async Task<IActionResult> ListContractTypes(CancellationToken cancellationToken)
+    {
+        var items = await queries.DispatchAsync<ListContractTypesQuery, IReadOnlyList<EmpCatalogItemDto>>(
+            new ListContractTypesQuery(),
+            cancellationToken);
+        return Ok(items);
+    }
+
     [HttpGet("employees/{employeeId:guid}/audit-logs")]
     [Authorize]
     public async Task<IActionResult> ListAuditLogs(Guid employeeId, CancellationToken cancellationToken)

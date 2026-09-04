@@ -39,6 +39,11 @@ export type EducationLevel = {
   name: string;
 };
 
+export type EmpCatalogItem = {
+  code: string;
+  name: string;
+};
+
 export type EmployeeDetail = {
   id: string;
   employeeCode: string;
