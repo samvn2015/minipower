@@ -90,6 +90,11 @@ public sealed class CloseLifOffboardingCommandHandlerTests
             return Task.FromResult(Snap(LifOffboardingStatus.Closed));
         }
 
+        public Task<LifOffboardingSnapshot> ApplyAccessLocksAsync(
+            LifAccessLockApplyModel model,
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
+
         private static LifOffboardingSnapshot Snap(LifOffboardingStatus s) =>
             new(CaseId, Guid.NewGuid(), "MNV-X", "HR-MANUAL", s, new DateOnly(2026, 9, 30),
                 null, "hr", DateTime.UtcNow, DateTime.UtcNow, "hr", null);

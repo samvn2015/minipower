@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
 
-/// <summary>LIF — offboarding N/N+3 + checklist off (FR-003/009).</summary>
+/// <summary>LIF — offboarding N/N+3, checklist, khóa Git+CRM SP (FR-003/005–010/009).</summary>
 [ApiController]
 [Route("v1/lif")]
 [Authorize]
@@ -97,6 +97,45 @@ public sealed class LifecycleController(
             cancellationToken);
         return Ok(dto);
     }
+
+    /// <summary>IT khóa Git+CRM SP một case — HR 403 (LIF-FR-005…008/014).</summary>
+    [HttpPost("offboarding/{id:guid}/locks")]
+    public async Task<IActionResult> ApplyLocks(
+        Guid id,
+        [FromBody] ApplyLifOffboardingLocksRequest? body,
+        CancellationToken cancellationToken)
+    {
+        DateOnly? asOf = null;
+        if (!string.IsNullOrWhiteSpace(body?.AsOfDate)
+            && DateOnly.TryParse(body.AsOfDate, out var d))
+            asOf = d;
+
+        var dto = await commands.DispatchAsync<ApplyLifOffboardingLocksCommand, LifOffboardingDto>(
+            new ApplyLifOffboardingLocksCommand(
+                User.GetIdpSubject(),
+                id,
+                asOf,
+                body?.EarlyCrReason),
+            cancellationToken);
+        return Ok(dto);
+    }
+
+    /// <summary>Job N+3 — khóa hàng loạt khi ≥ N+3; không early không CR.</summary>
+    [HttpPost("offboarding/jobs/nplus3-locks")]
+    public async Task<IActionResult> RunNPlus3Locks(
+        [FromBody] RunLifNPlus3LocksRequest? body,
+        CancellationToken cancellationToken)
+    {
+        DateOnly? asOf = null;
+        if (!string.IsNullOrWhiteSpace(body?.AsOfDate)
+            && DateOnly.TryParse(body.AsOfDate, out var d))
+            asOf = d;
+
+        var result = await commands.DispatchAsync<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>(
+            new RunLifNPlus3LocksCommand(User.GetIdpSubject(), asOf),
+            cancellationToken);
+        return Ok(result);
+    }
 }
 
 public sealed record CreateLifOffboardingRequest(
@@ -107,3 +146,7 @@ public sealed record CreateLifOffboardingRequest(
 public sealed record ConfirmLifOffboardingNRequest(DateOnly LastWorkingDayN);
 
 public sealed record UpsertLifOffChecklistTickRequest(bool IsChecked);
+
+public sealed record ApplyLifOffboardingLocksRequest(string? AsOfDate, string? EarlyCrReason);
+
+public sealed record RunLifNPlus3LocksRequest(string? AsOfDate);

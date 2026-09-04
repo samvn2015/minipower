@@ -34,6 +34,7 @@ import type {
   ProbationEvaluation,
   LifOffboarding,
   LifOffChecklistBoard,
+  LifNPlus3LockRunResult,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -640,4 +641,13 @@ export async function closeLifOffboarding(caseId: string): Promise<LifOffboardin
   );
   if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
   return unwrap(body as ApiEnvelope<LifOffboarding>);
+}
+
+export async function runLifNPlus3Locks(asOfDate?: string): Promise<LifNPlus3LockRunResult> {
+  const body = await apiFetch<LifNPlus3LockRunResult | ApiEnvelope<LifNPlus3LockRunResult>>(
+    "/v1/lif/offboarding/jobs/nplus3-locks",
+    { method: "POST", body: JSON.stringify({ asOfDate: asOfDate ?? null }) },
+  );
+  if ("locked" in body && typeof body.locked === "number") return body;
+  return unwrap(body as ApiEnvelope<LifNPlus3LockRunResult>);
 }

@@ -87,8 +87,8 @@ export function LifOffboardingPage() {
       <div>
         <h2>Offboarding</h2>
         <p className="muted">
-          LIF-SCR-001/003/005 — N = ngày LV cuối; checklist off từ master; thiếu Must không đóng
-          (FR-003/009).
+          LIF-SCR-001/003/004/005 — N = ngày LV cuối; checklist Must; khóa Git+CRM SP tại N+3 (IT/job;
+          HR không khóa — FR-003/005–009).
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
@@ -133,6 +133,8 @@ export function LifOffboardingPage() {
                 <th>Status</th>
                 <th>N</th>
                 <th>N+3</th>
+                <th>Git</th>
+                <th>CRM SP</th>
                 <th>Job?</th>
               </tr>
             </thead>
@@ -144,6 +146,8 @@ export function LifOffboardingPage() {
                   <td>{r.status}</td>
                   <td>{r.lastWorkingDayN ?? "—"}</td>
                   <td>{r.nPlus3Expected ?? "—"}</td>
+                  <td>{r.gitLocked ? "Đã khóa" : "Mở"}</td>
+                  <td>{r.crmSpLocked ? "Đã khóa" : "Mở"}</td>
                   <td>{r.jobNPlus3Eligible ? "Eligible" : "No"}</td>
                 </tr>
               ))}
@@ -184,6 +188,10 @@ export function LifOffboardingPage() {
             </table>
           </div>
           <p className="muted">canClose = {board.canClose ? "true" : "false"}</p>
+          <p className="muted">
+            SCR-004: HR chỉ xem trạng thái Git/CRM SP — không nút khóa / không credential Git. Job IT:{" "}
+            <code>POST /v1/lif/offboarding/jobs/nplus3-locks</code>.
+          </p>
         </div>
       )}
     </div>

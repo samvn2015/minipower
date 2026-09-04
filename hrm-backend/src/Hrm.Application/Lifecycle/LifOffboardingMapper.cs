@@ -11,7 +11,10 @@ internal static class LifOffboardingMapper
         DateOnly? nPlus3 = s.LastWorkingDayN is { } n
             ? LifOffboardingFacts.ComputeNPlus3(n)
             : null;
-        var eligible = s.Status == LifOffboardingStatus.ConfirmedN && s.LastWorkingDayN.HasValue;
+        var locked = s.GitLockedAtUtc.HasValue && s.CrmSpLockedAtUtc.HasValue;
+        var eligible = s.Status == LifOffboardingStatus.ConfirmedN
+            && s.LastWorkingDayN.HasValue
+            && !locked;
         return new LifOffboardingDto(
             s.Id,
             s.EmployeeId,
@@ -26,6 +29,13 @@ internal static class LifOffboardingMapper
             s.ConfirmedAtUtc,
             s.CreatedAtUtc,
             s.CreatedByIdpSubject,
-            s.Note);
+            s.Note,
+            s.GitLockedAtUtc.HasValue,
+            s.CrmSpLockedAtUtc.HasValue,
+            s.GitLockedAtUtc,
+            s.LockAsOfDate,
+            s.IsEarlySecurityCr,
+            s.EarlyCrReason,
+            s.LockedByIdpSubject);
     }
 }
