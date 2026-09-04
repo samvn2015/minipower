@@ -34,7 +34,9 @@ export function PayPeriodPage() {
     setMessage(null);
     try {
       const result = await runPayrollPeriod(periodYm);
-      setMessage(`Đã tính kỳ ${result.periodYm} → ${result.status} (${result.lineCount} dòng).`);
+      const warn =
+        result.warnings?.length > 0 ? ` · cảnh báo: ${result.warnings.length}` : "";
+      setMessage(`Đã tính kỳ ${result.periodYm} → ${result.status} (${result.lineCount} dòng)${warn}.`);
       await load(periodYm);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tính kỳ thất bại");
@@ -160,6 +162,13 @@ export function PayPeriodPage() {
           {period.hasNTinhOverCap && (
             <div className="error-box">
               N_tính vượt chuẩn: {period.overCapEmployeeCodes.join(", ")} — cấm chốt (PAY-FR-007).
+            </div>
+          )}
+          {period.warnings?.length > 0 && (
+            <div className="error-box">
+              {period.warnings.map((w) => (
+                <div key={w}>{w}</div>
+              ))}
             </div>
           )}
           <div className="table-wrap">

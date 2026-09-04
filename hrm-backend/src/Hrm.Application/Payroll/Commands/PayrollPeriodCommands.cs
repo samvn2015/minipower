@@ -84,7 +84,8 @@ public sealed class RunPayrollPeriodCommandHandler(
         {
             contracts.TryGetValue(l.EmployeeId, out var contract);
             var factor = PayrollTimeWageFactor.Resolve(contract, ym, probationReg.DecimalValue);
-            var nTinh = PayrollDayCalculator.ComputeNTinh(l.WorkDays, l.LeaveDaysUnpaid);
+            // Không cộng phép hưởng vào N_tính — PAY-FR-002/013.
+            var nTinh = PayrollA001Guard.ComputeNTinh(l.WorkDays, l.LeaveDaysUnpaid, l.LeaveDaysPaid);
             var contractPc = await allowances
                 .SumContractAsync(l.EmployeeId, cancellationToken)
                 .ConfigureAwait(false);
@@ -122,6 +123,9 @@ public sealed class RunPayrollPeriodCommandHandler(
                 statutory.NetPay));
         }
 
+        var warnings = PayrollA001Guard.CollectWarnings(
+            lines.Select(l => (l.EmployeeCode, l.LeaveDaysPaid)));
+
         var period = await payPeriods
             .RunDraftAsync(ym, command.ActorIdpSubject!, lines, cancellationToken)
             .ConfigureAwait(false)
@@ -129,7 +133,12 @@ public sealed class RunPayrollPeriodCommandHandler(
                 HrmErrorCodes.Conflict,
                 $"Kỳ PAY {ym} đã chốt — không chạy lại Draft (PAY-FR-016).");
 
-        return new PayRunResult(period.Id, period.PeriodYm, period.Status.ToString(), period.LineCount);
+        return new PayRunResult(
+            period.Id,
+            period.PeriodYm,
+            period.Status.ToString(),
+            period.LineCount,
+            warnings);
     }
 }
 
@@ -199,7 +208,13 @@ public sealed class ClosePayrollPeriodCommandHandler(
         var period = await payPeriods.FindByYmAsync(ym, cancellationToken).ConfigureAwait(false)
             ?? throw new InvalidOperationException("Pay period missing after close.");
 
-        return new PayRunResult(period.Id, period.PeriodYm, period.Status.ToString(), period.LineCount);
+        return new PayRunResult(
+            period.Id,
+            period.PeriodYm,
+            period.Status.ToString(),
+            period.LineCount,
+            PayrollA001Guard.CollectWarnings(
+                period.Lines.Select(l => (l.EmployeeCode, l.LeaveDaysPaid))));
     }
 }
 

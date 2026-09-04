@@ -28,13 +28,15 @@ public sealed record PayPeriodDto(
     decimal StandardWorkDays,
     bool HasNTinhOverCap,
     IReadOnlyList<string> OverCapEmployeeCodes,
-    IReadOnlyList<PayLineDto> Lines);
+    IReadOnlyList<PayLineDto> Lines,
+    IReadOnlyList<string> Warnings);
 
 public sealed record PayRunResult(
     Guid PeriodId,
     string PeriodYm,
     string Status,
-    int LineCount);
+    int LineCount,
+    IReadOnlyList<string> Warnings);
 
 public sealed record PayWorkdayCalendarResult(string PeriodYm, decimal StandardWorkDays);
 
