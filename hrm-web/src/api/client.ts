@@ -30,6 +30,8 @@ import type {
   ProbationMilestone,
   ProbationReminder,
   ProbationReminderRunResult,
+  ProbationMasterItem,
+  ProbationEvaluation,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -568,4 +570,24 @@ export async function fetchProbationReminders(kind?: string): Promise<ProbationR
   );
   if (Array.isArray(body)) return body;
   return unwrap(body as ApiEnvelope<ProbationReminder[]>);
+}
+
+export async function fetchProbationOutcomes(): Promise<ProbationMasterItem[]> {
+  const body = await apiFetch<ProbationMasterItem[] | ApiEnvelope<ProbationMasterItem[]>>(
+    "/v1/prb/masters/outcomes",
+  );
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<ProbationMasterItem[]>);
+}
+
+export async function decideProbationEvaluation(
+  employeeId: string,
+  payload: { outcomeCode: string; note?: string; extendDurationCode?: string },
+): Promise<ProbationEvaluation> {
+  const body = await apiFetch<ProbationEvaluation | ApiEnvelope<ProbationEvaluation>>(
+    `/v1/prb/evaluations/${employeeId}/decide`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<ProbationEvaluation>);
 }

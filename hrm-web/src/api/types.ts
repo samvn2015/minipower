@@ -400,3 +400,22 @@ export type ProbationReminderRunResult = {
   skippedIncompleteMilestone: number;
   skippedAlreadyExists: number;
 };
+
+export type ProbationMasterItem = {
+  code: string;
+  name: string;
+  sortOrder: number;
+};
+
+export type ProbationEvaluation = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  probationEndDate: string;
+  status: string;
+  proposedOutcomeCode?: string | null;
+  decidedOutcomeCode?: string | null;
+  decidedByIdpSubject?: string | null;
+  decidedAtUtc?: string | null;
+  extendDurationCode?: string | null;
+};

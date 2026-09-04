@@ -38,3 +38,24 @@ public sealed record ProbationReminderDto(
     string EmailTo,
     string Channel,
     DateTime CreatedAtUtc);
+
+public sealed record ProbationMasterItemDto(string Code, string Name, int SortOrder);
+
+public sealed record ProbationExtendDurationDto(string Code, string Name, int Months, int SortOrder);
+
+public sealed record ProbationEvaluationDto(
+    Guid Id,
+    Guid EmployeeId,
+    string EmployeeCode,
+    DateOnly ProbationEndDate,
+    string Status,
+    string? ProposedOutcomeCode,
+    string? ProposedByIdpSubject,
+    DateTime? ProposedAtUtc,
+    string? ProposedNote,
+    string? CriteriaPayloadJson,
+    string? DecidedOutcomeCode,
+    string? DecidedByIdpSubject,
+    DateTime? DecidedAtUtc,
+    string? DecisionNote,
+    string? ExtendDurationCode);

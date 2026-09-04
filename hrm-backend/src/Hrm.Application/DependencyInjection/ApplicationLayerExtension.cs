@@ -97,6 +97,12 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncQueryHandler<GetMyProbationMilestonesQuery, ProbationMilestoneDto>, GetMyProbationMilestonesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>, ListProbationRemindersQueryHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RunProbationRemindersCommand, ProbationReminderRunResult>, RunProbationRemindersCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<ProposeProbationEvaluationCommand, ProbationEvaluationDto>, ProposeProbationEvaluationCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<DecideProbationEvaluationCommand, ProbationEvaluationDto>, DecideProbationEvaluationCommandHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationOutcomesQuery, IReadOnlyList<ProbationMasterItemDto>>, ListProbationOutcomesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationCriteriaQuery, IReadOnlyList<ProbationMasterItemDto>>, ListProbationCriteriaQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationExtendDurationsQuery, IReadOnlyList<ProbationExtendDurationDto>>, ListProbationExtendDurationsQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>, ListProbationEvaluationsQueryHandler>();
 
         return builder;
     }
