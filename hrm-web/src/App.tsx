@@ -40,7 +40,8 @@ export default function App() {
           <Route path="/" element={<Navigate to="/profile" replace />} />
           <Route path="/profile" element={<MyProfilePage />} />
           <Route path="/leave" element={<LeavePage />} />
-          <Route path="/pay/payslips" element={<PayPayslipPage />} />
+          <Route path="/pay/payslips" element={<PayPayslipPage channel="web" />} />
+          <Route path="/pay/m/payslips" element={<PayPayslipPage channel="mobile" />} />
           <Route path="/leave/c1" element={<LeaveC1QueuePage />} />
           <Route path="/leave/c2" element={<LeaveC2QueuePage />} />
           <Route path="/tim/templates" element={<TimTemplatePage />} />

@@ -1,12 +1,20 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchMyPayslips, fetchPayslip } from "../api/client";
 import type { PayPayslip } from "../api/types";
 
-export function PayPayslipPage() {
+type Channel = "web" | "mobile";
+
+type Props = {
+  channel?: Channel;
+};
+
+export function PayPayslipPage({ channel = "web" }: Props) {
   const [items, setItems] = useState<PayPayslip[]>([]);
   const [selected, setSelected] = useState<PayPayslip | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const isMobile = channel === "mobile";
 
   useEffect(() => {
     setLoading(true);
@@ -30,10 +38,23 @@ export function PayPayslipPage() {
   }
 
   return (
-    <div className="card stack">
+    <div className={`card stack${isMobile ? " pay-mobile" : ""}`}>
       <div>
-        <h2>Phiếu lương của tôi</h2>
-        <p className="muted">PAY-SCR-005 — chỉ kỳ đã chốt; không xem phiếu người khác (PAY-FR-010).</p>
+        <h2>{isMobile ? "Phiếu lương (mobile)" : "Phiếu lương của tôi"}</h2>
+        <p className="muted">
+          {isMobile
+            ? "PAY-SCR-006 — cùng API/IAM với web (PAY-FR-011); chỉ kỳ Closed của mình."
+            : "PAY-SCR-005 — chỉ kỳ đã chốt; không xem phiếu người khác (PAY-FR-010)."}
+        </p>
+        {isMobile ? (
+          <p className="muted" style={{ fontSize: 13 }}>
+            <Link to="/pay/payslips">Mở bản web (SCR-005)</Link>
+          </p>
+        ) : (
+          <p className="muted" style={{ fontSize: 13 }}>
+            <Link to="/pay/m/payslips">Mở bản mobile (SCR-006)</Link>
+          </p>
+        )}
       </div>
 
       {error && <div className="error-box">{error}</div>}

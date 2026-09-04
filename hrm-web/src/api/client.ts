@@ -24,6 +24,7 @@ import type {
   PayAllowanceCatalogItem,
   PayMonthlyAllowance,
   PayMonthlyAllowanceResult,
+  PayExportResult,
   PayPayslip,
 } from "./types";
 

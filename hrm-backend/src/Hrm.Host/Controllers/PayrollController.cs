@@ -107,7 +107,7 @@ public sealed class PayrollController(
         return Ok(result);
     }
 
-    /// <summary>Phiếu của tôi (kỳ Closed) — PAY-FR-010 · SCR-005.</summary>
+    /// <summary>Phiếu của tôi (kỳ Closed) — PAY-FR-010 · SCR-005; SCR-006 mobile dùng cùng API (FR-011).</summary>
     [HttpGet("payslips/me")]
     public async Task<IActionResult> ListMyPayslips(CancellationToken cancellationToken)
     {

@@ -229,3 +229,19 @@ th {
   text-align: center;
   color: #5c6670;
 }
+
+/* PAY-SCR-006 — touch-friendly layout; same fields as SCR-005 */
+.pay-mobile .btn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+
+.pay-mobile table th,
+.pay-mobile table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 1rem;
+}
+
+.pay-mobile h2 {
+  font-size: 1.35rem;
+}
