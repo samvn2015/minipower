@@ -160,6 +160,18 @@ public sealed class UpsertPayMonthlyAllowanceCommandHandlerTests
             CancellationToken cancellationToken = default) =>
             Task.FromResult(0m);
 
+        public Task<decimal> SumMealTaxExemptAsync(
+            string periodYm,
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(0m);
+
+        public Task<decimal> SumAdvanceAsync(
+            string periodYm,
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(0m);
+
         public Task<IReadOnlyList<string>> ListUnknownMonthlyCodesAsync(
             string periodYm,
             CancellationToken cancellationToken = default) =>

@@ -93,3 +93,8 @@ public sealed record PayExportResult(
     int PdfCount,
     int EmailCount,
     IReadOnlyList<PayExportItemDto> Items);
+
+public sealed record PayContractSalaryResult(
+    string EmployeeCode,
+    decimal Amount,
+    int DependentCount);

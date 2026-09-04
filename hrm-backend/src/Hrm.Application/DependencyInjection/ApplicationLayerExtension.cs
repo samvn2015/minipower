@@ -87,6 +87,7 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<ClosePayrollPeriodCommand, PayRunResult>, ClosePayrollPeriodCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<UpsertPayWorkdayCalendarCommand, PayWorkdayCalendarResult>, UpsertPayWorkdayCalendarCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<UpsertPayMonthlyAllowanceCommand, PayMonthlyAllowanceResult>, UpsertPayMonthlyAllowanceCommandHandler>();
+        builder.Services.AddScoped<IAsyncCommandHandler<UpsertPayContractSalaryCommand, PayContractSalaryResult>, UpsertPayContractSalaryCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RejectPayLineEditCommand, PayLineEditRejectedResult>, RejectPayLineEditCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<ExportPayrollPeriodCommand, PayExportResult>, ExportPayrollPeriodCommandHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetPayrollPeriodQuery, PayPeriodDto>, GetPayrollPeriodQueryHandler>();

@@ -31,6 +31,27 @@ internal sealed class PayAllowanceCatalogConfiguration : IEntityTypeConfiguratio
                 Code = PayAllowanceCodes.Fuel,
                 Name = "Phụ cấp xăng xe",
                 IsActive = true
+            },
+            new PayAllowanceCatalog
+            {
+                Id = PaySeed.CatalogResponsibilityId,
+                Code = PayAllowanceCodes.Responsibility,
+                Name = "Phụ cấp trách nhiệm",
+                IsActive = true
+            },
+            new PayAllowanceCatalog
+            {
+                Id = PaySeed.CatalogPhoneId,
+                Code = PayAllowanceCodes.Phone,
+                Name = "Phụ cấp điện thoại",
+                IsActive = true
+            },
+            new PayAllowanceCatalog
+            {
+                Id = PaySeed.CatalogAdvanceId,
+                Code = PayAllowanceCodes.Advance,
+                Name = "Tạm ứng (trừ thực lĩnh)",
+                IsActive = true
             });
     }
 }
@@ -88,7 +109,8 @@ internal sealed class PayContractSalaryConfiguration : IEntityTypeConfiguration<
                 Id = PaySeed.DevContractSalaryId,
                 EmployeeId = EmpSeed.DevEmployeeId,
                 EmployeeCode = EmpSeed.DevEmployeeCode,
-                Amount = 10_000_000m
+                Amount = 10_000_000m,
+                DependentCount = 0
             });
     }
 }

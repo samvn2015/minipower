@@ -21,6 +21,7 @@ public sealed class RunPayrollPeriodCommandHandler(
     IPayPeriodRepository payPeriods,
     IEmployeeReadRepository employees,
     IPayRegulationReadRepository regulations,
+    IPayWorkdayCalendarRepository calendar,
     IPayAllowanceRepository allowances,
     IPayContractSalaryRepository salaries)
     : IAsyncCommandHandler<RunPayrollPeriodCommand, PayRunResult>
@@ -60,16 +61,40 @@ public sealed class RunPayrollPeriodCommandHandler(
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
                 $"Thiếu master {PayRegulationCodes.ProbationTimeWageFactor}.");
-        var bhReg = await regulations
-            .FindByCodeAsync(PayRegulationCodes.BhEmployeeRate, cancellationToken)
+        var bhxhReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.BhxhEmployeeRate, cancellationToken)
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
-                $"Thiếu master {PayRegulationCodes.BhEmployeeRate}.");
-        var tncnReg = await regulations
-            .FindByCodeAsync(PayRegulationCodes.TncnTempRate, cancellationToken)
+                $"Thiếu master {PayRegulationCodes.BhxhEmployeeRate}.");
+        var bhytReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.BhytEmployeeRate, cancellationToken)
             .ConfigureAwait(false)
             ?? throw new InvalidOperationException(
-                $"Thiếu master {PayRegulationCodes.TncnTempRate}.");
+                $"Thiếu master {PayRegulationCodes.BhytEmployeeRate}.");
+        var bhtnReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.BhtnEmployeeRate, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Thiếu master {PayRegulationCodes.BhtnEmployeeRate}.");
+        var personalReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.TncnPersonalDeduction, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Thiếu master {PayRegulationCodes.TncnPersonalDeduction}.");
+        var dependentUnitReg = await regulations
+            .FindByCodeAsync(PayRegulationCodes.TncnDependentUnit, cancellationToken)
+            .ConfigureAwait(false)
+            ?? throw new InvalidOperationException(
+                $"Thiếu master {PayRegulationCodes.TncnDependentUnit}.");
+        var standardFallback = await regulations
+            .FindByCodeAsync(PayRegulationCodes.StandardWorkDaysDefault, cancellationToken)
+            .ConfigureAwait(false);
+        var standardWorkDays = await calendar
+            .ResolveStandardWorkDaysAsync(
+                ym,
+                standardFallback?.DecimalValue ?? 26m,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         var employeeIds = tim.Lines.Select(l => l.EmployeeId).Distinct().ToList();
         var contracts = new Dictionary<Guid, EmployeeContractSnapshot?>();
@@ -92,16 +117,31 @@ public sealed class RunPayrollPeriodCommandHandler(
             var monthlyPc = await allowances
                 .SumMonthlyAsync(ym, l.EmployeeId, cancellationToken)
                 .ConfigureAwait(false);
-            var salary = await salaries
-                .GetAmountAsync(l.EmployeeId, cancellationToken)
+            var mealExempt = await allowances
+                .SumMealTaxExemptAsync(ym, l.EmployeeId, cancellationToken)
                 .ConfigureAwait(false);
+            var advance = await allowances
+                .SumAdvanceAsync(ym, l.EmployeeId, cancellationToken)
+                .ConfigureAwait(false);
+            var salarySnap = await salaries
+                .FindAsync(l.EmployeeId, cancellationToken)
+                .ConfigureAwait(false);
+            var salary = salarySnap?.Amount ?? 0m;
+            var dependents = salarySnap?.DependentCount ?? 0;
             var statutory = PayrollStatutoryCalculator.Compute(
                 salary,
                 factor,
-                contractPc,
-                monthlyPc,
-                bhReg.DecimalValue,
-                tncnReg.DecimalValue);
+                standardWorkDays,
+                nTinh,
+                contractPc + monthlyPc,
+                mealExempt,
+                bhxhReg.DecimalValue,
+                bhytReg.DecimalValue,
+                bhtnReg.DecimalValue,
+                personalReg.DecimalValue,
+                dependents,
+                dependentUnitReg.DecimalValue,
+                advance);
             // OT chỉ từ TIM Closed — PAY-FR-004 (không nhập tay).
             lines.Add(new PayLineCreateModel(
                 l.EmployeeId,
@@ -187,7 +227,7 @@ public sealed class ClosePayrollPeriodCommandHandler(
                 .FindByCodeAsync(PayRegulationCodes.StandardWorkDaysDefault, cancellationToken)
                 .ConfigureAwait(false);
             var standard = await calendar
-                .ResolveStandardWorkDaysAsync(ym, fallback?.DecimalValue ?? 22m, cancellationToken)
+                .ResolveStandardWorkDaysAsync(ym, fallback?.DecimalValue ?? 26m, cancellationToken)
                 .ConfigureAwait(false);
 
             var over = existing.Lines
