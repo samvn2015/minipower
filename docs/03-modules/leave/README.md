@@ -15,4 +15,4 @@
 | `DOC-19-prototype.md` | 19 | **Chốt khung** — DEC-REQ-006 |
 | `DOC-06-srs.md` | 06 | **Chốt** v0.2 — DEC-REQ-007 |
 | `DOC-07-acceptance-criteria.md` | 07 | **Chốt** v0.1 — DEC-REQ-008 |
-| `DOC-16-test-strategy.md` | 16 | **Draft** v0.1 — DEC-DLV-002 |
+| `DOC-16-test-strategy.md` | 16 | **Chốt** v0.2 execute St — DEC-DLV-016 |

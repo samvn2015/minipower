@@ -181,3 +181,15 @@
 - Affects: timekeeping DOC-16
 - Trace: e2e-api-tim-slice-a…f · DEC-DLV-014
 - Confidence: cao
+
+### DEC-DLV-016 — Execute St leave DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: LEV slices B–F e2e; tiếp sau TIM DOC-16.
+- Options: A Để trống · B **St theo e2e B–F** · C Pass đủ mobile TC-002 / Should-016
+- Decision: chọn **B**
+- Why (loại C vì mobile UI và Should còn Partial)
+- Consequences:
+  - `docs/03-modules/leave/DOC-16` v0.2: Pass Must hầu hết; **Partial** TC-002/016; **Skip** TC-019.
+- Affects: leave DOC-16
+- Trace: e2e-api-lev-slice-b…f · DEC-DLV-015
+- Confidence: cao
