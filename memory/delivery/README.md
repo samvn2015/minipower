@@ -24,6 +24,7 @@
 | Docs | [DOC-16 CT](../../docs/04-platform/DOC-16-test-strategy.md) · [DOC-17](../../docs/04-platform/DOC-17-deployment-guide.md) |
 | Decision | DEC-DLV-001…**011** |
 | TC run | [2026-08-29](tc-run-2026-08-29.md) · [2026-09-04](tc-run-2026-09-04.md) |
+| UAT DEV | [uat-checklist-must-2026-09-04](uat-checklist-must-2026-09-04.md) |
 
 ## Lịch sử ngắn
 
