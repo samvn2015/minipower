@@ -520,3 +520,15 @@ export async function fetchPayslip(id: string): Promise<PayPayslip> {
   if ("id" in body && typeof body.id === "string") return body;
   return unwrap(body as ApiEnvelope<PayPayslip>);
 }
+
+export async function exportPayrollPeriod(
+  ym: string,
+  payload: { includePdf: boolean; includeEmail: boolean; ccAddresses?: string[] },
+): Promise<PayExportResult> {
+  const body = await apiFetch<PayExportResult | ApiEnvelope<PayExportResult>>(
+    `/v1/pay/periods/${ym}/export`,
+    { method: "POST", body: JSON.stringify(payload) },
+  );
+  if ("periodYm" in body && typeof body.periodYm === "string") return body;
+  return unwrap(body as ApiEnvelope<PayExportResult>);
+}

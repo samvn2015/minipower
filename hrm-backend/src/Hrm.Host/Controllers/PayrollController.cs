@@ -127,6 +127,37 @@ public sealed class PayrollController(
         return Ok(dto);
     }
 
+    /// <summary>Cấm sửa công trên PAY — luôn 400 (PAY-FR-008).</summary>
+    [HttpPut("periods/{ym}/lines/{lineId:guid}")]
+    public async Task<IActionResult> RejectLineEdit(
+        string ym,
+        Guid lineId,
+        CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<RejectPayLineEditCommand, PayLineEditRejectedResult>(
+            new RejectPayLineEditCommand(User.GetIdpSubject(), ym, lineId),
+            cancellationToken);
+        return Ok(result);
+    }
+
+    /// <summary>Xuất PDF/email hàng loạt — kỳ Closed; cấm CC (PAY-FR-012).</summary>
+    [HttpPost("periods/{ym}/export")]
+    public async Task<IActionResult> Export(
+        string ym,
+        [FromBody] ExportPayrollRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<ExportPayrollPeriodCommand, PayExportResult>(
+            new ExportPayrollPeriodCommand(
+                User.GetIdpSubject(),
+                ym,
+                body.IncludePdf,
+                body.IncludeEmail,
+                body.CcAddresses),
+            cancellationToken);
+        return Ok(result);
+    }
+
     public sealed record UpsertCalendarRequest(decimal StandardWorkDays);
 
     public sealed record UpsertMonthlyAllowanceRequest(
@@ -134,4 +165,9 @@ public sealed class PayrollController(
         string EmployeeCode,
         string Code,
         decimal Amount);
+
+    public sealed record ExportPayrollRequest(
+        bool IncludePdf,
+        bool IncludeEmail,
+        IReadOnlyList<string>? CcAddresses);
 }

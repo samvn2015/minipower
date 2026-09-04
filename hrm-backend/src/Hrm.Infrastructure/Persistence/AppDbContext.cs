@@ -65,6 +65,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<PayContractSalary> PayContractSalaries => Set<PayContractSalary>();
 
+    public DbSet<PayExportOutbox> PayExportOutboxes => Set<PayExportOutbox>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

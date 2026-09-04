@@ -1,5 +1,10 @@
 import { FormEvent, useEffect, useState } from "react";
-import { fetchPayrollPeriod, runPayrollPeriod, closePayrollPeriod } from "../api/client";
+import {
+  fetchPayrollPeriod,
+  runPayrollPeriod,
+  closePayrollPeriod,
+  exportPayrollPeriod,
+} from "../api/client";
 import type { PayPeriod } from "../api/types";
 
 export function PayPeriodPage() {
@@ -53,12 +58,46 @@ export function PayPeriodPage() {
     }
   }
 
+  async function onExport(includeEmail: boolean) {
+    setBusy(true);
+    setError(null);
+    setMessage(null);
+    try {
+      const result = await exportPayrollPeriod(periodYm, {
+        includePdf: true,
+        includeEmail,
+      });
+      setMessage(
+        `Xuất ${result.periodYm}: ${result.pdfCount} PDF` +
+          (includeEmail ? `, ${result.emailCount} email (outbox)` : "") +
+          ".",
+      );
+      const first = result.items.find((i) => i.pdfBase64 && i.pdfFileName);
+      if (first?.pdfBase64 && first.pdfFileName) {
+        const bin = atob(first.pdfBase64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        const blob = new Blob([bytes], { type: "application/pdf" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = first.pdfFileName;
+        a.click();
+        URL.revokeObjectURL(url);
+      }
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Xuất thất bại");
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <div className="card stack">
       <div>
         <h2>Tính kỳ lương</h2>
         <p className="muted">
-          PAY-SCR-002/003 — TIM đã chốt; N_tính ≤ ngày công chuẩn mới được chốt kỳ.
+          PAY-SCR-002/003/007 — TIM đã chốt; bảng công chỉ đọc (sửa trên TIM rồi chạy lại). Xuất PDF/email khi Closed.
         </p>
       </div>
 
@@ -84,6 +123,26 @@ export function PayPeriodPage() {
             Chốt kỳ
           </button>
         )}
+        {period && period.status === "Closed" && (
+          <>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={busy}
+              onClick={() => onExport(false)}
+            >
+              Xuất PDF
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              disabled={busy}
+              onClick={() => onExport(true)}
+            >
+              Xuất PDF + email
+            </button>
+          </>
+        )}
       </form>
 
       {period && (
@@ -92,6 +151,9 @@ export function PayPeriodPage() {
             Kỳ <strong>{period.periodYm}</strong> · {period.status} · {period.lineCount} dòng · chuẩn{" "}
             {period.standardWorkDays} ngày
           </p>
+          <div className="muted" style={{ fontSize: 13 }}>
+            PAY-FR-008: không sửa N_thực / OT / phép trên màn này — chỉnh TIM rồi tính/chốt lại.
+          </div>
           {period.hasNTinhOverCap && (
             <div className="error-box">
               N_tính vượt chuẩn: {period.overCapEmployeeCodes.join(", ")} — cấm chốt (PAY-FR-007).

@@ -18,7 +18,7 @@ public static class PayHrGuard
         {
             throw new ForbiddenException(
                 HrmErrorCodes.Forbidden,
-                "Chỉ HR tính/chốt kỳ hoặc nhập PC tháng (PAY-FR-009).");
+                "Chỉ HR tính/chốt kỳ, nhập PC tháng hoặc xuất phiếu (PAY-FR-009).");
         }
     }
 }
