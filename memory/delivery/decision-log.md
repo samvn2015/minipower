@@ -143,3 +143,16 @@
 - Affects: identity DOC-16 · memory/delivery
 - Trace: DEC-DLV-011 · tc-run-2026-09-04
 - Confidence: cao *(API e2e)* · vừa *(Partial OIDC)*
+
+### DEC-DLV-013 — Execute St probation DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: Sau identity DOC-16 v0.2; PRB A–E e2e đã land.
+- Options: A Để trống · B **Cập nhật St theo e2e A–E** · C Pass HA Standby khi chưa code
+- Decision: chọn **B**
+- Why (loại C vì job PRB chưa `IHostRoleGate`)
+- Consequences:
+  - `docs/03-modules/probation/DOC-16` v0.2: Pass hầu hết Must; **Partial** TC-013 (SCR chưa đủ 4 màn); **Open** TC-HA-001.
+  - Không baseline. Module DOC-16 khác chưa trong DEC này.
+- Affects: probation DOC-16
+- Trace: e2e-api-prb-slice-a…e · DEC-DLV-012
+- Confidence: cao
