@@ -85,6 +85,6 @@ public sealed class ListProbationEvaluationsQueryHandler(
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
         PrbAccessGuard.RequireHrOrPgd(actor);
         var rows = await evaluations.ListAsync(cancellationToken);
-        return rows.Select(ProbationEvaluationMapper.ToDto).ToList();
+        return rows.Select(s => ProbationEvaluationMapper.ToDto(s)).ToList();
     }
 }

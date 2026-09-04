@@ -1,6 +1,7 @@
 using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Identity.Entities;
 using Hrm.Domain.Leave.Entities;
+using Hrm.Domain.Lifecycle.Entities;
 using Hrm.Domain.Payroll.Entities;
 using Hrm.Domain.Probation.Entities;
 using Hrm.Domain.Timekeeping.Entities;
@@ -77,6 +78,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
     public DbSet<ProbationExtendDuration> ProbationExtendDurations => Set<ProbationExtendDuration>();
 
     public DbSet<ProbationEvaluation> ProbationEvaluations => Set<ProbationEvaluation>();
+
+    public DbSet<LifOffboardingCase> LifOffboardingCases => Set<LifOffboardingCase>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {

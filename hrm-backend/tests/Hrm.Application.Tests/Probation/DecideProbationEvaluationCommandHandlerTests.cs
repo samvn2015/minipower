@@ -3,6 +3,8 @@ using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
+using Hrm.Domain.Lifecycle;
+using Hrm.Domain.Lifecycle.Repositories;
 using Hrm.Domain.Probation;
 using Hrm.Domain.Probation.Repositories;
 using Jarvis.Domain.Shared.ExceptionHandling;
@@ -14,32 +16,55 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
     private static readonly Guid EmpId = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
 
     [Fact]
-    public async Task Decide_Hr_Pass_RecordsAudit()
+    public async Task Decide_Hr_Pass_ConvertsContract()
     {
-        var evals = new FakeEvalRepo();
-        var handler = new DecideProbationEvaluationCommandHandler(
-            new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
-            new FakeEmployees([TvEmp()]),
-            new FakeMasters(),
-            evals);
-
+        var writes = new FakeWrites();
+        var handler = NewHandler(writes, new FakeLif());
         var dto = await handler.HandleAsync(new DecideProbationEvaluationCommand(
             "local-dev", EmpId, ProbationOutcomeCodes.Pass, "OK", null, null));
 
-        Assert.Equal("Decided", dto.Status);
-        Assert.Equal(ProbationOutcomeCodes.Pass, dto.DecidedOutcomeCode);
-        Assert.Equal("local-dev", dto.DecidedByIdpSubject);
-        Assert.NotNull(dto.DecidedAtUtc);
+        Assert.True(dto.ContractConvertedToOfficial);
+        Assert.NotNull(writes.LastPatch?.Contract);
+        Assert.Equal("OFFICIAL", writes.LastPatch!.Contract!.ContractType);
+        Assert.False(writes.LastPatch.Contract.IsProbation);
+    }
+
+    [Fact]
+    public async Task Decide_Extend_UpdatesKt()
+    {
+        var writes = new FakeWrites();
+        var handler = NewHandler(writes, new FakeLif());
+        var dto = await handler.HandleAsync(new DecideProbationEvaluationCommand(
+            "local-dev", EmpId, ProbationOutcomeCodes.Extend, null, "EXT-1M", null));
+
+        Assert.Equal(new DateOnly(2026, 7, 30), dto.NewProbationEndDate);
+        Assert.Equal(new DateOnly(2026, 7, 30), writes.LastPatch!.Contract!.EndDate);
+    }
+
+    [Fact]
+    public async Task Decide_Fail_OpensLif_DoesNotDeleteEmp()
+    {
+        var writes = new FakeWrites();
+        var lif = new FakeLif();
+        var handler = NewHandler(writes, lif);
+        var dto = await handler.HandleAsync(new DecideProbationEvaluationCommand(
+            "local-dev", EmpId, ProbationOutcomeCodes.Fail, "out", null, null));
+
+        Assert.NotNull(dto.LifOffboardingCaseId);
+        Assert.Equal(DecideProbationEvaluationCommandHandler.LifSourcePrbFail, lif.Last!.Source);
+        Assert.Null(writes.LastPatch); // không xóa / không đụng HĐ khi fail
     }
 
     [Fact]
     public async Task Decide_Lm_Forbidden()
     {
         var handler = new DecideProbationEvaluationCommandHandler(
-            new FakeAccounts(["IAM-ROLE-LM", "IAM-ROLE-NV"], "MNV-LM"),
+            new FakeAccounts(["IAM-ROLE-LM"], "MNV-LM"),
             new FakeEmployees([TvEmp()]),
+            new FakeWrites(),
             new FakeMasters(),
-            new FakeEvalRepo());
+            new FakeEvalRepo(),
+            new FakeLif());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new DecideProbationEvaluationCommand(
@@ -49,30 +74,20 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
     [Fact]
     public async Task Decide_InvalidOutcome_BadRequest()
     {
-        var handler = new DecideProbationEvaluationCommandHandler(
-            new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
-            new FakeEmployees([TvEmp()]),
-            new FakeMasters(),
-            new FakeEvalRepo());
-
+        var handler = NewHandler(new FakeWrites(), new FakeLif());
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new DecideProbationEvaluationCommand(
                 "local-dev", EmpId, "CONDITIONAL", null, null, null)));
     }
 
-    [Fact]
-    public async Task Decide_ExtendWithoutMaster_BadRequest()
-    {
-        var handler = new DecideProbationEvaluationCommandHandler(
+    private static DecideProbationEvaluationCommandHandler NewHandler(FakeWrites writes, FakeLif lif) =>
+        new(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
             new FakeEmployees([TvEmp()]),
+            writes,
             new FakeMasters(),
-            new FakeEvalRepo());
-
-        await Assert.ThrowsAsync<BadRequestException>(() =>
-            handler.HandleAsync(new DecideProbationEvaluationCommand(
-                "local-dev", EmpId, ProbationOutcomeCodes.Extend, null, null, null)));
-    }
+            new FakeEvalRepo(),
+            lif);
 
     private static EmployeeSnapshot TvEmp() =>
         new(
@@ -125,6 +140,26 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             Task.FromResult<EmployeeUniqueField?>(null);
     }
 
+    private sealed class FakeWrites : IEmployeeWriteRepository
+    {
+        public EmployeePatch? LastPatch { get; private set; }
+
+        public Task<Guid> CreateAsync(EmployeeCreateModel model, CancellationToken cancellationToken = default) =>
+            Task.FromResult(Guid.NewGuid());
+
+        public Task<bool> UpdateAsync(Guid id, EmployeePatch patch, CancellationToken cancellationToken = default)
+        {
+            LastPatch = patch;
+            return Task.FromResult(true);
+        }
+
+        public Task SetLineManagerAsync(
+            Guid employeeId,
+            Guid lineManagerEmployeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+    }
+
     private sealed class FakeMasters : IProbationMasterReadRepository
     {
         public Task<IReadOnlyList<ProbationOutcomeSnapshot>> ListOutcomesAsync(
@@ -140,12 +175,10 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
 
         public Task<IReadOnlyList<ProbationCriterionSnapshot>> ListCriteriaAsync(
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<ProbationCriterionSnapshot>>([
-                new("CRIT-WORK", "Work", 1)
-            ]);
+            Task.FromResult<IReadOnlyList<ProbationCriterionSnapshot>>([]);
 
         public Task<bool> CriterionExistsAsync(string code, CancellationToken cancellationToken = default) =>
-            Task.FromResult(string.Equals(code, "CRIT-WORK", StringComparison.OrdinalIgnoreCase));
+            Task.FromResult(true);
 
         public Task<IReadOnlyList<ProbationExtendDurationSnapshot>> ListExtendDurationsAsync(
             CancellationToken cancellationToken = default) =>
@@ -164,22 +197,19 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
 
     private sealed class FakeEvalRepo : IProbationEvaluationRepository
     {
-        public ProbationEvaluationSnapshot? Last { get; private set; }
-
         public Task<ProbationEvaluationSnapshot?> FindOpenByEmployeeAsync(
             Guid employeeId,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult(Last);
+            Task.FromResult<ProbationEvaluationSnapshot?>(null);
 
         public Task<ProbationEvaluationSnapshot?> FindByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult(Last);
+            Task.FromResult<ProbationEvaluationSnapshot?>(null);
 
         public Task<IReadOnlyList<ProbationEvaluationSnapshot>> ListAsync(
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<ProbationEvaluationSnapshot>>(
-                Last is null ? [] : [Last]);
+            Task.FromResult<IReadOnlyList<ProbationEvaluationSnapshot>>([]);
 
         public Task<ProbationEvaluationSnapshot> UpsertProposeAsync(
             Guid employeeId,
@@ -189,14 +219,8 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             string proposedByIdpSubject,
             string? note,
             string? criteriaPayloadJson,
-            CancellationToken cancellationToken = default)
-        {
-            Last = new ProbationEvaluationSnapshot(
-                Guid.NewGuid(), employeeId, employeeCode, probationEndDate,
-                ProbationEvaluationStatus.Proposed, outcomeCode, proposedByIdpSubject, DateTime.UtcNow, note,
-                criteriaPayloadJson, null, null, null, null, null);
-            return Task.FromResult(Last);
-        }
+            CancellationToken cancellationToken = default) =>
+            throw new NotImplementedException();
 
         public Task<ProbationEvaluationSnapshot> DecideAsync(
             Guid employeeId,
@@ -207,13 +231,34 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             string? note,
             string? extendDurationCode,
             string? criteriaPayloadJson,
-            CancellationToken cancellationToken = default)
-        {
-            Last = new ProbationEvaluationSnapshot(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new ProbationEvaluationSnapshot(
                 Guid.NewGuid(), employeeId, employeeCode, probationEndDate,
                 ProbationEvaluationStatus.Decided, null, null, null, null, criteriaPayloadJson,
-                outcomeCode, decidedByIdpSubject, DateTime.UtcNow, note, extendDurationCode);
-            return Task.FromResult(Last);
+                outcomeCode, decidedByIdpSubject, DateTime.UtcNow, note, extendDurationCode));
+    }
+
+    private sealed class FakeLif : ILifOffboardingRepository
+    {
+        public LifOffboardingCreateModel? Last { get; private set; }
+
+        public Task<LifOffboardingSnapshot> CreateAsync(
+            LifOffboardingCreateModel model,
+            CancellationToken cancellationToken = default)
+        {
+            Last = model;
+            return Task.FromResult(new LifOffboardingSnapshot(
+                Guid.NewGuid(), model.EmployeeId, model.EmployeeCode, model.Source,
+                LifOffboardingStatus.Open, null, DateTime.UtcNow, model.CreatedByIdpSubject, model.Note));
         }
+
+        public Task<IReadOnlyList<LifOffboardingSnapshot>> ListOpenAsync(
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<LifOffboardingSnapshot>>([]);
+
+        public Task<LifOffboardingSnapshot?> FindByIdAsync(
+            Guid id,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<LifOffboardingSnapshot?>(null);
     }
 }

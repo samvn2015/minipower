@@ -58,4 +58,7 @@ public sealed record ProbationEvaluationDto(
     string? DecidedByIdpSubject,
     DateTime? DecidedAtUtc,
     string? DecisionNote,
-    string? ExtendDurationCode);
+    string? ExtendDurationCode,
+    bool ContractConvertedToOfficial = false,
+    DateOnly? NewProbationEndDate = null,
+    Guid? LifOffboardingCaseId = null);
