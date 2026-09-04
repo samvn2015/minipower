@@ -350,3 +350,29 @@ export type PayExportResult = {
   emailCount: number;
   items: PayExportItem[];
 };
+
+export type ProbationCase = {
+  employeeId: string;
+  employeeCode: string;
+  fullName?: string | null;
+  contractType: string;
+  probationStartDate: string;
+  probationEndDate?: string | null;
+  hasCompleteMilestone: boolean;
+  t15DueDate?: string | null;
+  t7DueDate?: string | null;
+};
+
+export type ProbationMilestone = {
+  employeeId: string;
+  employeeCode: string;
+  fullName?: string | null;
+  contractType?: string | null;
+  probationStartDate?: string | null;
+  probationEndDate?: string | null;
+  isOnProbation: boolean;
+  hasCompleteMilestone: boolean;
+  t15DueDate?: string | null;
+  t7DueDate?: string | null;
+  source: string;
+};

@@ -17,11 +17,20 @@ import { TimImportPage } from "./pages/TimImportPage";
 import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
 import { isHr, useCurrentUser } from "./hooks/useCurrentUser";
+import { PrbCasesPage } from "./pages/PrbCasesPage";
+import { PrbMyMilestonesPage } from "./pages/PrbMyMilestonesPage";
 import type { ReactNode } from "react";
 
 function RequirePayHr({ children }: { children: ReactNode }) {
   const user = useCurrentUser();
   if (!isHr(user)) return <Navigate to="/pay/payslips" replace />;
+  return <>{children}</>;
+}
+
+function RequirePrbHr({ children }: { children: ReactNode }) {
+  const user = useCurrentUser();
+  const ok = user.roles.some((r) => r === "IAM-ROLE-HR" || r === "IAM-ROLE-PGD");
+  if (!ok) return <Navigate to="/prb/me" replace />;
   return <>{children}</>;
 }
 
@@ -61,6 +70,15 @@ export default function App() {
               <RequirePayHr>
                 <PayAllowancePage />
               </RequirePayHr>
+            }
+          />
+          <Route path="/prb/me" element={<PrbMyMilestonesPage />} />
+          <Route
+            path="/prb/cases"
+            element={
+              <RequirePrbHr>
+                <PrbCasesPage />
+              </RequirePrbHr>
             }
           />
           <Route path="/employees" element={<EmployeeListPage />} />

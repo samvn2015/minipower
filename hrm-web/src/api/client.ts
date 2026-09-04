@@ -26,6 +26,8 @@ import type {
   PayMonthlyAllowanceResult,
   PayExportResult,
   PayPayslip,
+  ProbationCase,
+  ProbationMilestone,
 } from "./types";
 
 const TOKEN_KEY = "hrm.accessToken";
@@ -532,4 +534,18 @@ export async function exportPayrollPeriod(
   );
   if ("periodYm" in body && typeof body.periodYm === "string") return body;
   return unwrap(body as ApiEnvelope<PayExportResult>);
+}
+
+export async function fetchProbationCases(): Promise<ProbationCase[]> {
+  const body = await apiFetch<ProbationCase[] | ApiEnvelope<ProbationCase[]>>("/v1/prb/cases");
+  if (Array.isArray(body)) return body;
+  return unwrap(body as ApiEnvelope<ProbationCase[]>);
+}
+
+export async function fetchMyProbationMilestones(): Promise<ProbationMilestone> {
+  const body = await apiFetch<ProbationMilestone | ApiEnvelope<ProbationMilestone>>(
+    "/v1/prb/milestones/me",
+  );
+  if ("employeeCode" in body && typeof body.employeeCode === "string") return body;
+  return unwrap(body as ApiEnvelope<ProbationMilestone>);
 }
