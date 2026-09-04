@@ -36,6 +36,11 @@ internal sealed class PayLineConfiguration : IEntityTypeConfiguration<PayLine>
         builder.Property(x => x.Ot30).HasPrecision(5, 2);
         builder.Property(x => x.ContractAllowance).HasPrecision(18, 2);
         builder.Property(x => x.MonthlyAllowance).HasPrecision(18, 2);
+        builder.Property(x => x.BhRate).HasPrecision(8, 4);
+        builder.Property(x => x.TncnRate).HasPrecision(8, 4);
+        builder.Property(x => x.BhAmount).HasPrecision(18, 2);
+        builder.Property(x => x.TncnAmount).HasPrecision(18, 2);
+        builder.Property(x => x.NetPay).HasPrecision(18, 2);
         builder.HasOne(x => x.Period)
             .WithMany(x => x.Lines)
             .HasForeignKey(x => x.PeriodId)

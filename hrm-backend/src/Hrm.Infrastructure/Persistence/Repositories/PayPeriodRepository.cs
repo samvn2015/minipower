@@ -87,7 +87,12 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
                 Ot20 = line.Ot20,
                 Ot30 = line.Ot30,
                 ContractAllowance = line.ContractAllowance,
-                MonthlyAllowance = line.MonthlyAllowance
+                MonthlyAllowance = line.MonthlyAllowance,
+                BhRate = line.BhRate,
+                TncnRate = line.TncnRate,
+                BhAmount = line.BhAmount,
+                TncnAmount = line.TncnAmount,
+                NetPay = line.NetPay
             });
         }
 
@@ -151,5 +156,10 @@ internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepositor
                 l.Ot20,
                 l.Ot30,
                 l.ContractAllowance,
-                l.MonthlyAllowance)).ToList());
+                l.MonthlyAllowance,
+                l.BhRate,
+                l.TncnRate,
+                l.BhAmount,
+                l.TncnAmount,
+                l.NetPay)).ToList());
 }

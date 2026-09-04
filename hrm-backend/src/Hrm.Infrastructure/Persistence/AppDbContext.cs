@@ -63,6 +63,8 @@ public class AppDbContext(DbContextOptions<AppDbContext> options)
 
     public DbSet<PayMonthlyAllowance> PayMonthlyAllowances => Set<PayMonthlyAllowance>();
 
+    public DbSet<PayContractSalary> PayContractSalaries => Set<PayContractSalary>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);

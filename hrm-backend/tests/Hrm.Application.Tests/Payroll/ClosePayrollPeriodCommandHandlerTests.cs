@@ -130,7 +130,7 @@ public sealed class ClosePayrollPeriodCommandHandlerTests
             var lines = lineCount > 0
                 ? new PayLineSnapshot[]
                 {
-                    new(Guid.NewGuid(), EmpId, "MNV-DEV", nTinh, 0, 0, nTinh, 1, 0, 0, 0, 0, 0)
+                    new(Guid.NewGuid(), EmpId, "MNV-DEV", nTinh, 0, 0, nTinh, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
                 }
                 : [];
             return Task.FromResult<PayPeriodSnapshot?>(new PayPeriodSnapshot(

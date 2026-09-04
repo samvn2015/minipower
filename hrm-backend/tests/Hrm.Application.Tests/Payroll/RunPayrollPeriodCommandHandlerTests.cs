@@ -25,8 +25,9 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, workDays: 22, unpaid: 2, paid: 2, ot15: 1),
             pay,
             new FakeEmployeeRepo(probation: false),
-            new FakeRegRepo(0.85m),
-            new FakeAllowance());
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
 
         var result = await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
@@ -49,13 +50,38 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             pay,
             new FakeEmployeeRepo(probation: false),
-            new FakeRegRepo(0.85m),
-            new FakeAllowance(contract: 730_000m, monthly: 200_000m));
+            new FakeRegRepo(),
+            new FakeAllowance(contract: 730_000m, monthly: 200_000m),
+            new FakeSalary());
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-12"));
 
         Assert.Equal(730_000m, pay.LastLines![0].ContractAllowance);
         Assert.Equal(200_000m, pay.LastLines[0].MonthlyAllowance);
+    }
+
+    [Fact]
+    public async Task HandleAsync_UsesMasterBhTncnRatesNotHardcoded()
+    {
+        var pay = new FakePayRepo();
+        var handler = new RunPayrollPeriodCommandHandler(
+            new FakeAccountRepo(["IAM-ROLE-HR"]),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            pay,
+            new FakeEmployeeRepo(probation: false),
+            new FakeRegRepo(bh: 0.10m, tncn: 0.05m),
+            new FakeAllowance(),
+            new FakeSalary(10_000_000m));
+
+        await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-01"));
+
+        var line = pay.LastLines![0];
+        Assert.Equal(0.10m, line.BhRate);
+        Assert.Equal(0.05m, line.TncnRate);
+        var expected = PayrollStatutoryCalculator.Compute(10_000_000m, 1m, 0m, 0m, 0.10m, 0.05m);
+        Assert.Equal(expected.BhAmount, line.BhAmount);
+        Assert.Equal(expected.TncnAmount, line.TncnAmount);
+        Assert.Equal(expected.NetPay, line.NetPay);
     }
 
     [Fact]
@@ -67,8 +93,9 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             pay,
             new FakeEmployeeRepo(probation: true),
-            new FakeRegRepo(0.85m),
-            new FakeAllowance());
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
@@ -83,8 +110,9 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Draft, 20, 0, 0, 0),
             new FakePayRepo(),
             new FakeEmployeeRepo(false),
-            new FakeRegRepo(0.85m),
-            new FakeAllowance());
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07")));
@@ -98,8 +126,9 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             new FakePayRepo(),
             new FakeEmployeeRepo(false),
-            new FakeRegRepo(0.85m),
-            new FakeAllowance());
+            new FakeRegRepo(),
+            new FakeAllowance(),
+            new FakeSalary());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-lm", "2027-07")));
@@ -119,13 +148,25 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Task.FromResult<IdentityAccountSnapshot?>(null);
     }
 
-    private sealed class FakeRegRepo(decimal factor) : IPayRegulationReadRepository
+    private sealed class FakeRegRepo(
+        decimal probation = 0.85m,
+        decimal bh = 0.10m,
+        decimal tncn = 0.05m) : IPayRegulationReadRepository
     {
         public Task<PayRegulationSnapshot?> FindByCodeAsync(
             string code,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult<PayRegulationSnapshot?>(
-                new PayRegulationSnapshot(code, "TV", factor));
+            CancellationToken cancellationToken = default)
+        {
+            var value = code switch
+            {
+                PayRegulationCodes.ProbationTimeWageFactor => probation,
+                PayRegulationCodes.BhEmployeeRate => bh,
+                PayRegulationCodes.TncnTempRate => tncn,
+                PayRegulationCodes.StandardWorkDaysDefault => 22m,
+                _ => 0m
+            };
+            return Task.FromResult<PayRegulationSnapshot?>(new PayRegulationSnapshot(code, code, value));
+        }
     }
 
     private sealed class FakeEmployeeRepo(bool probation) : IEmployeeReadRepository
@@ -257,7 +298,12 @@ public sealed class RunPayrollPeriodCommandHandlerTests
                     l.Ot20,
                     l.Ot30,
                     l.ContractAllowance,
-                    l.MonthlyAllowance)).ToList()));
+                    l.MonthlyAllowance,
+                    l.BhRate,
+                    l.TncnRate,
+                    l.BhAmount,
+                    l.TncnAmount,
+                    l.NetPay)).ToList()));
         }
 
         public Task MarkClosedAsync(
@@ -303,5 +349,11 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             decimal amount,
             CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
+    }
+
+    private sealed class FakeSalary(decimal amount = 0) : IPayContractSalaryRepository
+    {
+        public Task<decimal> GetAmountAsync(Guid employeeId, CancellationToken cancellationToken = default) =>
+            Task.FromResult(amount);
     }
 }

@@ -57,4 +57,17 @@ public class PayLine : BaseEntity<Guid>
 
     /// <summary>Tổng PC nhập tháng (mã ∈ master Active) — PAY-FR-005/015.</summary>
     public decimal MonthlyAllowance { get; set; }
+
+    /// <summary>Tỷ lệ BH NLĐ snapshot từ master kỳ — PAY-FR-006.</summary>
+    public decimal BhRate { get; set; }
+
+    /// <summary>Tỷ lệ TNCN tạm snapshot từ master kỳ — PAY-FR-006.</summary>
+    public decimal TncnRate { get; set; }
+
+    public decimal BhAmount { get; set; }
+
+    public decimal TncnAmount { get; set; }
+
+    /// <summary>Thực lĩnh tạm = lương thời gian + PC − BH − TNCN.</summary>
+    public decimal NetPay { get; set; }
 }
