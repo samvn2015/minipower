@@ -1,3 +1,4 @@
+using Hrm.Domain.Payroll;
 using Hrm.Domain.Payroll.Entities;
 using Hrm.Domain.Payroll.Repositories;
 using Hrm.Infrastructure.Persistence;
@@ -26,9 +27,9 @@ internal sealed class PayAllowanceRepository(AppDbContext db) : IPayAllowanceRep
 
     public async Task<decimal> SumContractAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {
-        var active = db.PayAllowanceCatalogs.AsNoTracking().Where(c => c.IsActive);
+        var active = IncomeCatalog();
         return await db.PayContractAllowances.AsNoTracking()
-            .Where(x => x.EmployeeId == employeeId)
+            .Where(x => x.EmployeeId == employeeId && x.Code != PayAllowanceCodes.Advance)
             .Join(active, x => x.Code, c => c.Code, (x, _) => x.Amount)
             .SumAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -39,9 +40,47 @@ internal sealed class PayAllowanceRepository(AppDbContext db) : IPayAllowanceRep
         Guid employeeId,
         CancellationToken cancellationToken = default)
     {
+        var active = IncomeCatalog();
+        return await db.PayMonthlyAllowances.AsNoTracking()
+            .Where(x => x.PeriodYm == periodYm
+                && x.EmployeeId == employeeId
+                && x.Code != PayAllowanceCodes.Advance)
+            .Join(active, x => x.Code, c => c.Code, (x, _) => x.Amount)
+            .SumAsync(cancellationToken)
+            .ConfigureAwait(false);
+    }
+
+    public async Task<decimal> SumMealTaxExemptAsync(
+        string periodYm,
+        Guid employeeId,
+        CancellationToken cancellationToken = default)
+    {
+        var active = IncomeCatalog();
+        var contract = await db.PayContractAllowances.AsNoTracking()
+            .Where(x => x.EmployeeId == employeeId && x.Code == PayAllowanceCodes.Meal)
+            .Join(active, x => x.Code, c => c.Code, (x, _) => x.Amount)
+            .SumAsync(cancellationToken)
+            .ConfigureAwait(false);
+        var monthly = await db.PayMonthlyAllowances.AsNoTracking()
+            .Where(x => x.PeriodYm == periodYm
+                && x.EmployeeId == employeeId
+                && x.Code == PayAllowanceCodes.Meal)
+            .Join(active, x => x.Code, c => c.Code, (x, _) => x.Amount)
+            .SumAsync(cancellationToken)
+            .ConfigureAwait(false);
+        return contract + monthly;
+    }
+
+    public async Task<decimal> SumAdvanceAsync(
+        string periodYm,
+        Guid employeeId,
+        CancellationToken cancellationToken = default)
+    {
         var active = db.PayAllowanceCatalogs.AsNoTracking().Where(c => c.IsActive);
         return await db.PayMonthlyAllowances.AsNoTracking()
-            .Where(x => x.PeriodYm == periodYm && x.EmployeeId == employeeId)
+            .Where(x => x.PeriodYm == periodYm
+                && x.EmployeeId == employeeId
+                && x.Code == PayAllowanceCodes.Advance)
             .Join(active, x => x.Code, c => c.Code, (x, _) => x.Amount)
             .SumAsync(cancellationToken)
             .ConfigureAwait(false);
@@ -108,4 +147,8 @@ internal sealed class PayAllowanceRepository(AppDbContext db) : IPayAllowanceRep
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
+
+    private IQueryable<PayAllowanceCatalog> IncomeCatalog() =>
+        db.PayAllowanceCatalogs.AsNoTracking()
+            .Where(c => c.IsActive && c.Code != PayAllowanceCodes.Advance);
 }

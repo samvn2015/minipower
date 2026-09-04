@@ -107,6 +107,22 @@ public sealed class PayrollController(
         return Ok(result);
     }
 
+    /// <summary>Lương thỏa thuận + số NPT (C&amp;B / PAY-FR-018).</summary>
+    [HttpPut("contract-salaries")]
+    public async Task<IActionResult> UpsertContractSalary(
+        [FromBody] UpsertContractSalaryRequest body,
+        CancellationToken cancellationToken)
+    {
+        var result = await commands.DispatchAsync<UpsertPayContractSalaryCommand, PayContractSalaryResult>(
+            new UpsertPayContractSalaryCommand(
+                User.GetIdpSubject(),
+                body.EmployeeCode,
+                body.Amount,
+                body.DependentCount),
+            cancellationToken);
+        return Ok(result);
+    }
+
     /// <summary>Phiếu của tôi (kỳ Closed) — PAY-FR-010 · SCR-005; SCR-006 mobile dùng cùng API (FR-011).</summary>
     [HttpGet("payslips/me")]
     public async Task<IActionResult> ListMyPayslips(CancellationToken cancellationToken)
@@ -165,6 +181,11 @@ public sealed class PayrollController(
         string EmployeeCode,
         string Code,
         decimal Amount);
+
+    public sealed record UpsertContractSalaryRequest(
+        string EmployeeCode,
+        decimal Amount,
+        int DependentCount);
 
     public sealed record ExportPayrollRequest(
         bool IncludePdf,

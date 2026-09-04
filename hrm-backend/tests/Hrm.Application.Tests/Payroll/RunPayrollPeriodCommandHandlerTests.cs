@@ -16,18 +16,33 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     private static readonly Guid EmpId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     private static readonly Guid TimPeriodId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
 
+    private static RunPayrollPeriodCommandHandler CreateHandler(
+        FakePayRepo pay,
+        FakeTimRepo tim,
+        FakeEmployeeRepo emp,
+        FakeRegRepo? reg = null,
+        FakeAllowance? allowance = null,
+        FakeSalary? salary = null,
+        FakeCalendar? calendar = null,
+        FakeAccountRepo? account = null) =>
+        new(
+            account ?? new FakeAccountRepo(["IAM-ROLE-HR"]),
+            tim,
+            pay,
+            emp,
+            reg ?? new FakeRegRepo(),
+            calendar ?? new FakeCalendar(26m),
+            allowance ?? new FakeAllowance(),
+            salary ?? new FakeSalary());
+
     [Fact]
     public async Task HandleAsync_TimClosed_CreatesDraftWithNTinh()
     {
         var pay = new FakePayRepo();
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, workDays: 22, unpaid: 2, paid: 2, ot15: 1),
+        var handler = CreateHandler(
             pay,
-            new FakeEmployeeRepo(probation: false),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, workDays: 22, unpaid: 2, paid: 2, ot15: 1),
+            new FakeEmployeeRepo(probation: false));
 
         var result = await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
@@ -46,14 +61,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     [Fact]
     public async Task HandleAsync_NoPaidLeave_NoA001Warning()
     {
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             new FakePayRepo(),
-            new FakeEmployeeRepo(false),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            new FakeEmployeeRepo(false));
 
         var result = await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2029-03"));
         Assert.Empty(result.Warnings);
@@ -63,14 +74,11 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     public async Task HandleAsync_SumsContractAndMonthlyAllowances()
     {
         var pay = new FakePayRepo();
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             pay,
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             new FakeEmployeeRepo(probation: false),
-            new FakeRegRepo(),
-            new FakeAllowance(contract: 730_000m, monthly: 200_000m),
-            new FakeSalary());
+            allowance: new FakeAllowance(contract: 730_000m, monthly: 200_000m));
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-12"));
 
@@ -79,24 +87,23 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     }
 
     [Fact]
-    public async Task HandleAsync_UsesMasterBhTncnRatesNotHardcoded()
+    public async Task HandleAsync_UsesCbMasterRatesNotLegacyFlat()
     {
         var pay = new FakePayRepo();
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             pay,
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 26, 0, 0, 0),
             new FakeEmployeeRepo(probation: false),
-            new FakeRegRepo(bh: 0.10m, tncn: 0.05m),
-            new FakeAllowance(),
-            new FakeSalary(10_000_000m));
+            salary: new FakeSalary(10_000_000m));
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-01"));
 
         var line = pay.LastLines![0];
-        Assert.Equal(0.10m, line.BhRate);
-        Assert.Equal(0.05m, line.TncnRate);
-        var expected = PayrollStatutoryCalculator.Compute(10_000_000m, 1m, 0m, 0m, 0.10m, 0.05m);
+        var expected = PayrollStatutoryCalculator.Compute(
+            10_000_000m, 1m, 26m, 26m, 0m, 0m,
+            0.08m, 0.015m, 0.01m,
+            11_000_000m, 0, 4_400_000m, 0m);
+        Assert.Equal(expected.BhRate, line.BhRate);
         Assert.Equal(expected.BhAmount, line.BhAmount);
         Assert.Equal(expected.TncnAmount, line.TncnAmount);
         Assert.Equal(expected.NetPay, line.NetPay);
@@ -106,14 +113,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     public async Task HandleAsync_ProbationContract_AppliesMasterFactor()
     {
         var pay = new FakePayRepo();
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             pay,
-            new FakeEmployeeRepo(probation: true),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            new FakeEmployeeRepo(probation: true));
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07"));
 
@@ -123,14 +126,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     [Fact]
     public async Task HandleAsync_TimNotClosed_ThrowsBadRequest()
     {
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Draft, 20, 0, 0, 0),
+        var handler = CreateHandler(
             new FakePayRepo(),
-            new FakeEmployeeRepo(false),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            new FakeTimRepo(TimesheetPeriodStatus.Draft, 20, 0, 0, 0),
+            new FakeEmployeeRepo(false));
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2027-07")));
@@ -139,14 +138,11 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     [Fact]
     public async Task HandleAsync_LmForbidden()
     {
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-LM"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             new FakePayRepo(),
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
             new FakeEmployeeRepo(false),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            account: new FakeAccountRepo(["IAM-ROLE-LM"]));
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-lm", "2027-07")));
@@ -156,14 +152,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     public async Task HandleAsync_ClosedPeriod_ThrowsConflict()
     {
         var pay = new FakePayRepo(closed: true);
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             pay,
-            new FakeEmployeeRepo(false),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            new FakeEmployeeRepo(false));
 
         var ex = await Assert.ThrowsAsync<ConflictException>(() =>
             handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-05")));
@@ -175,14 +167,10 @@ public sealed class RunPayrollPeriodCommandHandlerTests
     public async Task HandleAsync_DraftPeriod_Overwrites()
     {
         var pay = new FakePayRepo();
-        var handler = new RunPayrollPeriodCommandHandler(
-            new FakeAccountRepo(["IAM-ROLE-HR"]),
-            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+        var handler = CreateHandler(
             pay,
-            new FakeEmployeeRepo(false),
-            new FakeRegRepo(),
-            new FakeAllowance(),
-            new FakeSalary());
+            new FakeTimRepo(TimesheetPeriodStatus.Closed, 20, 0, 0, 0),
+            new FakeEmployeeRepo(false));
 
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-05"));
         await handler.HandleAsync(new RunPayrollPeriodCommand("local-dev", "2028-05"));
@@ -204,25 +192,41 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Task.FromResult<IdentityAccountSnapshot?>(null);
     }
 
-    private sealed class FakeRegRepo(
-        decimal probation = 0.85m,
-        decimal bh = 0.10m,
-        decimal tncn = 0.05m) : IPayRegulationReadRepository
+    private sealed class FakeRegRepo(decimal probation = 0.85m) : IPayRegulationReadRepository
     {
         public Task<PayRegulationSnapshot?> FindByCodeAsync(
             string code,
             CancellationToken cancellationToken = default)
         {
-            var value = code switch
+            decimal? value = code switch
             {
                 PayRegulationCodes.ProbationTimeWageFactor => probation,
-                PayRegulationCodes.BhEmployeeRate => bh,
-                PayRegulationCodes.TncnTempRate => tncn,
-                PayRegulationCodes.StandardWorkDaysDefault => 22m,
-                _ => 0m
+                PayRegulationCodes.BhxhEmployeeRate => 0.08m,
+                PayRegulationCodes.BhytEmployeeRate => 0.015m,
+                PayRegulationCodes.BhtnEmployeeRate => 0.01m,
+                PayRegulationCodes.TncnPersonalDeduction => 11_000_000m,
+                PayRegulationCodes.TncnDependentUnit => 4_400_000m,
+                PayRegulationCodes.StandardWorkDaysDefault => 26m,
+                _ => null
             };
-            return Task.FromResult<PayRegulationSnapshot?>(new PayRegulationSnapshot(code, code, value));
+            return Task.FromResult(
+                value is null ? null : new PayRegulationSnapshot(code, code, value.Value));
         }
+    }
+
+    private sealed class FakeCalendar(decimal days) : IPayWorkdayCalendarRepository
+    {
+        public Task<decimal> ResolveStandardWorkDaysAsync(
+            string periodYm,
+            decimal defaultStandardWorkDays,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(days);
+
+        public Task UpsertAsync(
+            string periodYm,
+            decimal standardWorkDays,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 
     private sealed class FakeEmployeeRepo(bool probation) : IEmployeeReadRepository
@@ -389,7 +393,11 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Task.FromResult<IReadOnlyList<PayPayslipSnapshot>>([]);
     }
 
-    private sealed class FakeAllowance(decimal contract = 0, decimal monthly = 0) : IPayAllowanceRepository
+    private sealed class FakeAllowance(
+        decimal contract = 0,
+        decimal monthly = 0,
+        decimal meal = 0,
+        decimal advance = 0) : IPayAllowanceRepository
     {
         public Task<IReadOnlyList<PayAllowanceCatalogSnapshot>> ListCatalogAsync(
             CancellationToken cancellationToken = default) =>
@@ -406,6 +414,18 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Guid employeeId,
             CancellationToken cancellationToken = default) =>
             Task.FromResult(monthly);
+
+        public Task<decimal> SumMealTaxExemptAsync(
+            string periodYm,
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(meal);
+
+        public Task<decimal> SumAdvanceAsync(
+            string periodYm,
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(advance);
 
         public Task<IReadOnlyList<string>> ListUnknownMonthlyCodesAsync(
             string periodYm,
@@ -427,9 +447,25 @@ public sealed class RunPayrollPeriodCommandHandlerTests
             Task.CompletedTask;
     }
 
-    private sealed class FakeSalary(decimal amount = 0) : IPayContractSalaryRepository
+    private sealed class FakeSalary(decimal amount = 0, int dependents = 0) : IPayContractSalaryRepository
     {
         public Task<decimal> GetAmountAsync(Guid employeeId, CancellationToken cancellationToken = default) =>
             Task.FromResult(amount);
+
+        public Task<PayContractSalarySnapshot?> FindAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<PayContractSalarySnapshot?>(
+                amount == 0 && dependents == 0
+                    ? null
+                    : new PayContractSalarySnapshot(employeeId, "MNV-DEV", amount, dependents));
+
+        public Task UpsertAsync(
+            Guid employeeId,
+            string employeeCode,
+            decimal amount,
+            int dependentCount,
+            CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
     }
 }

@@ -22,3 +22,6 @@ TestResults/
 .env.*
 !.env.example
 **/secrets.json
+
+# Local tooling
+.venv-xlsx/

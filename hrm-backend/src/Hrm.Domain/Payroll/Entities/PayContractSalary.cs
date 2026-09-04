@@ -10,4 +10,7 @@ public class PayContractSalary : BaseEntity<Guid>
     public required string EmployeeCode { get; set; }
 
     public decimal Amount { get; set; }
+
+    /// <summary>Số người phụ thuộc TNCN — C&amp;B.</summary>
+    public int DependentCount { get; set; }
 }
