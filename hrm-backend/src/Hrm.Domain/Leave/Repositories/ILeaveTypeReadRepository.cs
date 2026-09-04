@@ -4,6 +4,7 @@ public sealed record LeaveTypeSnapshot(
     string Code,
     string Name,
     bool DeductsAnnualBalance,
+    bool RequiresCompanyTemplateFile,
     LeaveTypeStatus Status);
 
 public interface ILeaveTypeReadRepository

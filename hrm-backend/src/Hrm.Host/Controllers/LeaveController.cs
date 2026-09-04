@@ -64,9 +64,21 @@ public sealed class LeaveController(
                 dayPart,
                 body.Reason,
                 body.HandoverEmployeeId,
-                body.IsEmergency),
+                body.IsEmergency,
+                body.AttachmentFileName,
+                body.AttachmentMatchesCompanyTemplate),
             cancellationToken);
         return CreatedAtAction(nameof(ListMyRequests), result);
+    }
+
+    [HttpGet("notifications/me")]
+    public async Task<IActionResult> ListMyNotifications(CancellationToken cancellationToken)
+    {
+        var items = await queries
+            .DispatchAsync<ListMyLeaveNotificationsQuery, IReadOnlyList<LeaveNotificationDto>>(
+                new ListMyLeaveNotificationsQuery(User.GetIdpSubject()),
+                cancellationToken);
+        return Ok(items);
     }
 
     [HttpGet("leave-requests/pending-c1")]
@@ -153,5 +165,7 @@ public sealed class LeaveController(
         string DayPart,
         string Reason,
         Guid HandoverEmployeeId,
-        bool IsEmergency = false);
+        bool IsEmergency = false,
+        string? AttachmentFileName = null,
+        bool AttachmentMatchesCompanyTemplate = false);
 }

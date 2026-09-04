@@ -27,6 +27,11 @@ public class LeaveRequest : BaseEntity<Guid>
 
     public bool IsEmergency { get; set; }
 
+    /// <summary>Tên file đính kèm (ốm/BHXH) — LEV-FR-008.</summary>
+    public string? AttachmentFileName { get; set; }
+
+    public bool AttachmentMatchesCompanyTemplate { get; set; }
+
     public DateTime SubmittedAtUtc { get; set; }
 
     public string? C1ReviewedByIdpSubject { get; set; }

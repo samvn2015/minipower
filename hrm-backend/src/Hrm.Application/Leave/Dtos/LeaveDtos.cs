@@ -3,7 +3,8 @@ namespace Hrm.Application.Leave.Dtos;
 public sealed record LeaveTypeDto(
     string Code,
     string Name,
-    bool DeductsAnnualBalance);
+    bool DeductsAnnualBalance,
+    bool RequiresCompanyTemplateFile);
 
 public sealed record LeaveBalanceDto(
     int Year,
@@ -42,3 +43,11 @@ public sealed record LeaveRequestPendingC1Dto(
     Guid HandoverEmployeeId,
     bool IsEmergency,
     string SubmittedAtUtc);
+
+public sealed record LeaveNotificationDto(
+    Guid Id,
+    Guid LeaveRequestId,
+    string EventType,
+    string Channel,
+    string Message,
+    string CreatedAtUtc);

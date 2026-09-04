@@ -15,7 +15,8 @@ public sealed record ApproveLeaveRequestC2Command(string? ActorIdpSubject, Guid 
 public sealed class ApproveLeaveRequestC2CommandHandler(
     IIdentityAccountReadRepository accounts,
     ILeaveRequestRepository requests,
-    ILeaveTypeReadRepository leaveTypes)
+    ILeaveTypeReadRepository leaveTypes,
+    ILeaveNotificationOutbox notifications)
     : IAsyncCommandHandler<ApproveLeaveRequestC2Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -41,6 +42,15 @@ public sealed class ApproveLeaveRequestC2CommandHandler(
             .ConfigureAwait(false)
             ?? throw new BadRequestException(HrmErrorCodes.BadRequest, "Loại phép không hợp lệ.");
 
+        if (leaveType.RequiresCompanyTemplateFile
+            && (string.IsNullOrWhiteSpace(request.AttachmentFileName)
+                || !request.AttachmentMatchesCompanyTemplate))
+        {
+            throw new BadRequestException(
+                HrmErrorCodes.BadRequest,
+                "Ốm/BHXH thiếu file đúng mẫu Cty — không C2 (LEV-FR-008).");
+        }
+
         var approved = await requests
             .ApproveC2Async(
                 command.RequestId,
@@ -55,6 +65,14 @@ public sealed class ApproveLeaveRequestC2CommandHandler(
                 HrmErrorCodes.BadRequest,
                 "Không duyệt C2 — quỹ phép không đủ hoặc đơn không hợp lệ (LEV-FR-004).");
         }
+
+        await LeaveNotify.EmitAsync(
+                notifications,
+                request.Id,
+                request.EmployeeId,
+                LeaveNotificationEvents.C2Approved,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Approved.ToString());
     }

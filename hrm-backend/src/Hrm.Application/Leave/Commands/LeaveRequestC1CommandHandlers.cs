@@ -15,7 +15,8 @@ public sealed record ApproveLeaveRequestC1Command(string? ActorIdpSubject, Guid 
 public sealed class ApproveLeaveRequestC1CommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
-    ILeaveRequestRepository requests)
+    ILeaveRequestRepository requests,
+    ILeaveNotificationOutbox notifications)
     : IAsyncCommandHandler<ApproveLeaveRequestC1Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -44,6 +45,14 @@ public sealed class ApproveLeaveRequestC1CommandHandler(
             .ConfigureAwait(false);
         if (!approved)
             throw new NotFoundException(HrmErrorCodes.NotFound, "Không duyệt C1 được đơn.");
+
+        await LeaveNotify.EmitAsync(
+                notifications,
+                request.Id,
+                request.EmployeeId,
+                LeaveNotificationEvents.C1Approved,
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.PendingC2.ToString());
     }

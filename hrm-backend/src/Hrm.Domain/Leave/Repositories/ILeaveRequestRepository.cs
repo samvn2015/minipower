@@ -9,7 +9,9 @@ public sealed record LeaveRequestCreateModel(
     decimal TotalDays,
     string Reason,
     Guid HandoverEmployeeId,
-    bool IsEmergency);
+    bool IsEmergency,
+    string? AttachmentFileName,
+    bool AttachmentMatchesCompanyTemplate);
 
 public sealed record LeaveRequestSnapshot(
     Guid Id,
@@ -24,7 +26,9 @@ public sealed record LeaveRequestSnapshot(
     Guid HandoverEmployeeId,
     LeaveRequestStatus Status,
     bool IsEmergency,
-    DateTime SubmittedAtUtc);
+    DateTime SubmittedAtUtc,
+    string? AttachmentFileName = null,
+    bool AttachmentMatchesCompanyTemplate = false);
 
 public sealed record LeaveRequestPendingC1Snapshot(
     Guid Id,
