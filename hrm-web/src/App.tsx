@@ -16,7 +16,7 @@ import { PayPeriodPage } from "./pages/PayPeriodPage";
 import { TimImportPage } from "./pages/TimImportPage";
 import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
-import { isHr, isHrOrIt, useCurrentUser } from "./hooks/useCurrentUser";
+import { isHr, isHrOrIt, isIt, useCurrentUser } from "./hooks/useCurrentUser";
 import { PrbCasesPage } from "./pages/PrbCasesPage";
 import { PrbMyMilestonesPage } from "./pages/PrbMyMilestonesPage";
 import { LifOffboardingPage } from "./pages/LifOffboardingPage";
@@ -45,6 +45,17 @@ function RequirePrbHr({ children }: { children: ReactNode }) {
   const user = useCurrentUser();
   const ok = user.roles.some((r) => r === "IAM-ROLE-HR" || r === "IAM-ROLE-PGD");
   if (!ok) return <Navigate to="/prb/me" replace />;
+  return <>{children}</>;
+}
+
+/** LIF on/off — HR/PGD + IT (provision / khóa Git·CRM). */
+function RequireLifActor({ children }: { children: ReactNode }) {
+  const user = useCurrentUser();
+  const ok =
+    isHr(user) ||
+    isIt(user) ||
+    user.roles.some((r) => r === "IAM-ROLE-PGD");
+  if (!ok) return <Navigate to="/profile" replace />;
   return <>{children}</>;
 }
 
@@ -120,17 +131,17 @@ export default function App() {
           <Route
             path="/lif/onboarding"
             element={
-              <RequirePrbHr>
+              <RequireLifActor>
                 <LifOnboardingPage />
-              </RequirePrbHr>
+              </RequireLifActor>
             }
           />
           <Route
             path="/lif/offboarding"
             element={
-              <RequirePrbHr>
+              <RequireLifActor>
                 <LifOffboardingPage />
-              </RequirePrbHr>
+              </RequireLifActor>
             }
           />
           <Route path="/employees" element={<EmployeeListPage />} />

@@ -4,9 +4,9 @@
 
 | Meta | Giá trị |
 |------|---------|
-| **Cập nhật** | 2026-08-29 |
+| **Cập nhật** | 2026-09-04 |
 | **Người rollup** | Dư Hùng (PGD) · soạn trợ lý |
-| **Nguồn sync** | DOC-03 · memory · DOC-08–12 Chốt · DOC-14/15 **Chốt** · DOC-16/17 **Chốt** · `hrm-backend` + `hrm-web` MVP · TC run 2026-08-29 · **Lark IdP** (DEC-DLV-010) |
+| **Nguồn sync** | DOC-03 · memory/delivery · DOC-08–17 **Chốt** · 7 Must code · TC-run · DOC-16 St v0.2 execute · **UAT DEV Must §1–§7 Pass** · DEC-DLV-010/011 · PR #34–#41 |
 
 ---
 
@@ -15,14 +15,14 @@
 | Chỉ số | Giá trị |
 |--------|---------|
 | **Phase hiện tại** | delivery |
-| **Baseline** | chưa (`02-baseline/` trống; DOC-01–15 + DOC-16/17 **Chốt**, chưa BL) |
+| **Baseline** | chưa (`02-baseline/` trống; DOC-01–17 **Chốt**, chưa BL) |
 | **Module (in scope)** | 9 (8 Must + RPT Should) |
 | **Module req 04–07 Chốt** | 7 (LEV, PAY, TIM, EMP, LIF, IAM, PRB) |
 | **Module chưa SRS** | EVT, RPT |
 | **FR đã baseline** | 0 |
 | **FR đang phân tích** | 0 |
-| **Blocker / nợ mở** | 6 (xem dưới) |
-| **Code slice (execute)** | IAM ◐ + EMP ◐ + **hrm-web** ◐ — backend: org/HĐ/LM · `GET /emp/employees/me` · IAM admin API · `e2e-full` + `e2e-web` · frontend: SCR-001…006 + IAM SCR-003/004 + NV profile · prod PG template · **Lark JWKS** nợ IT |
+| **Blocker / nợ mở** | 5 (xem dưới) — JWKS **không** chặn DEV/UAT (DEC-DLV-011) |
+| **Code / UAT** | 7 Must trên `main` · e2e · DOC-16 St v0.2 · **UAT DEV Must Pass** (checklist) · **Prod:** Lark JWKS + PG host + RTO còn mở |
 
 ---
 
@@ -32,13 +32,13 @@ Ký hiệu: `—` chưa · `◐` đang · `✓` xong (Chốt, chưa BL) · `BL` 
 
 | Module | Owner | Discovery | Req (04–07) | Arch slice | Plan | Delivery | Sign-off | Ghi chú |
 |--------|-------|-----------|-------------|------------|------|----------|----------|---------|
-| leave | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | OQ-010 Skip MVP; TC chưa chạy |
-| payroll | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | 85% = PAY; TC chưa chạy |
-| timekeeping | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | 1 mẫu Excel; TC chưa chạy |
-| employee-profile | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | code ◐ + web SCR-001…006 · EMP-TC partial Pass |
-| lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | Git/CRM N+3; job không DR |
-| identity | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | web IAM SCR-003/004 · IAM-TC partial Pass · Lark JWKS nợ IT |
-| probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | 85% không PRB; job không DR |
+| leave | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §3 Pass · OQ-010 Skip · lịch lễ MVP |
+| payroll | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §5 Pass · C&B Δ=0 |
+| timekeeping | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §4 Pass · cấm máy CC |
+| employee-profile | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §2 Pass |
+| lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §7 Pass · HA Standby nợ · SCR Partial |
+| identity | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §1 Pass · OIDC Lark Partial (DEV bypass) |
+| probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §6 Pass · HA job Open · SCR Partial |
 | events | BA | ✓ | — | ◐ | — | — | — | chưa SRS |
 | hr-analytics | BA | ✓ | — | ◐ | — | — | — | Should; chưa SRS |
 
@@ -53,7 +53,7 @@ Ký hiệu: `—` chưa · `◐` đang · `✓` xong (Chốt, chưa BL) · `BL` 
 | Delivery | DOC-16 module **Chốt** (catalog + §3); DOC-17 chương trình **Chốt** |
 | Sign-off | `doc-registry` = Baseline hoặc có trong `02-baseline/` manifest |
 
-Arch slice = `✓` khung vì DOC-08/10/11/12 **Chốt**. Delivery 7 Must = `✓` tài liệu (chưa execute TC, chưa BL).
+Arch = `✓` khung. Delivery 7 Must = tài liệu + execute + **UAT DEV** (chưa BL / chưa go-live / chưa ký UAT formal).
 
 ---
 
@@ -67,35 +67,28 @@ Arch slice = `✓` khung vì DOC-08/10/11/12 **Chốt**. Delivery 7 Must = `✓`
 | M2 | Requirements Must (7 module) | DOC-04–07 + khung 19 + DOC-13 | 2026-08-26 | done (chưa BL) |
 | M3 | Architecture khung | DOC-08–12 | 2026-08-26 | **done** Chốt (chưa BL) |
 | M4 | Planning | DOC-14/15 | 2026-08-26 | **done** Chốt (chưa BL) |
-| M4b | Delivery docs | DOC-16 (7 Must) + DOC-17 | 2026-08-26 | **done** Chốt (chưa execute / chưa BL) |
-| M4c | First code slice | IAM `hrm-backend` Host + Application + EF IAM | 2026-08-28 | **done** ◐ |
-| M4d | IAM admin + EMP + dev E2E | Admin API · EMP CRUD slice · dev JWT · smoke script | 2026-08-28 | **done** ◐ (pushed) |
-| M4e | EMP org/HĐ + LM workflow | OrgUnit · Contract · SCR-005/006 API · `e2e-full.sh` · SaveChanges fix | 2026-08-29 | **done** ◐ (local E2E OK) |
-| M4f | Frontend MVP (`hrm-web`) | SCR-001…006 · IAM SCR-003/004 · NV profile | 2026-08-29 | **done** ◐ (pushed) |
-| M4g | TC slice + prod PG template | DOC-16 status · `e2e-web` · `appsettings.Production.json` | 2026-08-29 | **done** ◐ (local) |
-| M5 | Go-live | Prod 24/7 | 2027 | planned |
+| M4b | Delivery docs | DOC-16 (7 Must) + DOC-17 | 2026-08-26 | **done** Chốt |
+| M4c–g | IAM→web + TC early | slices + e2e-web | 2026-08-29 | **done** ◐ |
+| M4h | 7 Must code + Must gaps | LEV…LIF · PR #32–#35 | 2026-09-04 | **done** ◐ (`main`) |
+| M4i | DOC-16 execute St | St v0.2 · TC-run · PR #36–#39 | 2026-09-04 | **done** ◐ |
+| M4j | UAT DEV Must | checklist §1–§7 · PR #40–#41 · persona fixes | 2026-09-04 | **done** ◐ (API+§1 UI; ký formal tuỳ chọn) |
+| M5 | Go-live | Prod 24/7 | 2027 | planned — JWKS · PG host · RTO/RPO |
 
-→ Chi tiết: [`DOC-15`](../00-governance/DOC-15-project-plan.md) **Chốt** · WBS: [`DOC-14`](../04-platform/DOC-14-wbs-estimate.md) **Chốt**
+→ Chi tiết: [`DOC-15`](../00-governance/DOC-15-project-plan.md) **Chốt** · WBS: [`DOC-14`](../04-platform/DOC-14-wbs-estimate.md) **Chốt**  
+→ Evidence: [`tc-run-2026-09-04.md`](../../memory/delivery/tc-run-2026-09-04.md) · [`uat-checklist-must-2026-09-04.md`](../../memory/delivery/uat-checklist-must-2026-09-04.md)
 
 ### Việc 1–2 tuần tới
 
 | Việc | Owner | Module | Due | Trạng thái |
 |------|-------|--------|-----|------------|
-| Chốt DOC-16 + DOC-17 | PGD | platform | 2026-08-26 | **done** (DEC-DLV-004, 007) |
+| UAT DEV Must (checklist) | QC / PGD | all Must | 2026-09-04 | **done** ◐ — §1–§7 Pass; ký formal ☐ |
+| Overview sync | PM | platform | 2026-09-04 | **done** (rollup này) |
 | RTO/RPO phút (không bịa %) | SA / PGD | NFR-012 | | mở |
-| Ban HR ký BO | Ban HR | all | 2026-08-26 | **done** (PGD) |
+| Prod PostgreSQL host (OQ-DLV-003) | IT | platform | | mở |
+| Lark issuer + JWKS Prod | IT / SA | identity | | **mở** — DEV bypass DEC-DLV-011 |
 | EVT/RPT SRS nếu vào Must | BA / PGD | EVT, RPT | | chưa |
-| Slice IAM `hrm-backend` (Jarvis + Application + EF) | DEV | identity | 2026-08-28 | **done** ◐ |
-| IAM admin API (SCR-003/004) | DEV | identity | 2026-08-28 | **done** ◐ (accounts · roles · disable) |
-| IAM persistence PostgreSQL (roles SoT) | DEV | identity | 2026-08-28 | **done** *(local)* · prod OQ-DLV-003 |
-| EMP list/create/get/patch + unique guard | DEV | employee-profile | 2026-08-28 | **done** ◐ |
-| EMP org/HĐ + SCR-005/006 LM workflow | DEV | employee-profile | 2026-08-29 | **done** ◐ (`e2e-full.sh` OK) |
-| Frontend MVP `hrm-web` (SCR-001/002/005/006) | DEV | employee-profile | 2026-08-29 | **done** ◐ *(local)* |
-| Frontend MVP `hrm-web` (EMP + IAM + profile) | DEV | employee-profile / identity | 2026-08-29 | **done** ◐ |
-| TC run EMP/IAM slice + `e2e-web.sh` | QC | platform | 2026-08-29 | **done** ◐ (local · partial AC) |
-| Prod PostgreSQL template (OQ-DLV-003) | DevOps / IT | platform | 2026-08-29 | **done** ◐ (template · host TBD IT) |
-| Lark OIDC Issuer + JWKS (JWT 200 thật) | IT / SA | identity | | **mở** — OQ-DLV-001 · DEC-DLV-010 |
-| **Không** `02-baseline/` / fan-out 6 MS | — | — | — | một slice |
+| `02-baseline/` | PGD | all | | **chưa** |
+| Siết Partial SCR / HA Standby | DEV | PRB · LIF | | nợ mỏng |
 
 ---
 
@@ -103,13 +96,13 @@ Arch slice = `✓` khung vì DOC-08/10/11/12 **Chốt**. Delivery 7 Must = `✓`
 
 | ID | Module / FR | Vấn đề | Owner | ETA | Tham chiếu |
 |----|-------------|--------|-------|-----|------------|
-| BLK-001 | LEV | OQ-010: LM/HR hủy hộ đơn chờ C1/C2? | PGD | | `memory/requirements/open-questions.md` |
-| BLK-002 | NFR-012 | SLA / RTO / RPO — không bịa % | SA / PGD | | DOC-13 · DOC-08 §2 AG-010 |
-| BLK-003 | EVT, RPT | Chưa SRS | BA | | DOC-03 index |
-| BLK-004 | repo | Chưa `02-baseline/` | PGD | | discovery/req |
+| BLK-001 | LEV | OQ-010 hủy hộ → **Skip MVP** | PGD | | DOC-16 LEV-TC-019 |
+| BLK-002 | NFR-012 | SLA / RTO / RPO — không bịa % | SA / PGD | | DOC-13 · DOC-08 |
+| BLK-003 | EVT, RPT | Chưa SRS | BA | | DOC-03 |
+| BLK-004 | repo | Chưa `02-baseline/` | PGD | | |
 | BLK-005 | Ban HR | Đã ký BO (2026-08-26) | Ban HR | | DEC-DLV-008 |
-| BLK-006 | IAM | ~~IdP SSO sản phẩm TBD~~ → **Lark** (DEC-DLV-010); Google/Apple/@lhqglobal.vn qua Lark | IT | | ADR-007 · OQ-ARC-004 |
-| BLK-007 | IAM | Lark **issuer + JWKS + Audience** (JWT thật; tenant/region TBD) | IT | | OQ-DLV-001 · DEC-DLV-010 |
+| BLK-006 | IAM | IdP = **Lark** (DEC-DLV-010) | IT | | ADR-007 |
+| BLK-007 | IAM | Lark JWKS Prod — **không chặn DEV/UAT** (DEC-DLV-011) | IT | | OQ-DLV-001 |
 
 ---
 

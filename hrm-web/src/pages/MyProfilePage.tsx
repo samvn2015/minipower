@@ -1,7 +1,8 @@
 import { FormEvent, useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import { fetchEmployee, fetchMyEmployee, updateEmployee } from "../api/client";
 import type { EmployeeDetail } from "../api/types";
-import { isHrOrIt, useCurrentUser } from "../hooks/useCurrentUser";
+import { isHrOrIt, isIt, isItOnly, useCurrentUser } from "../hooks/useCurrentUser";
 
 export function MyProfilePage() {
   const user = useCurrentUser();
@@ -17,6 +18,13 @@ export function MyProfilePage() {
 
   useEffect(() => {
     let active = true;
+    // IT seed không gắn MNV — bỏ qua /emp/employees/me (IAM-FR-017)
+    if (isItOnly(user)) {
+      setLoading(false);
+      return () => {
+        active = false;
+      };
+    }
     fetchMyEmployee()
       .then((employee) => {
         if (!active) return;
@@ -35,7 +43,7 @@ export function MyProfilePage() {
     return () => {
       active = false;
     };
-  }, []);
+  }, [user]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -68,13 +76,40 @@ export function MyProfilePage() {
   }
 
   if (!profile) {
+    const itWithoutEmp = isItOnly(user) || isIt(user);
     return (
       <div className="card stack">
-        <h2>Hồ sơ của tôi</h2>
-        <div className="error-box">{error ?? "Không tìm thấy hồ sơ liên kết tài khoản."}</div>
-        <p className="muted">
-          Cần IAM account liên kết MNV (IAM-FR-017). Thử đăng nhập bằng email trùng hồ sơ EMP.
-        </p>
+        <h2>{itWithoutEmp ? "Tài khoản IT" : "Hồ sơ của tôi"}</h2>
+        {itWithoutEmp ? (
+          <>
+            <p className="muted">
+              Seed DEV: <code>it-dev</code> / <code>IAM-ROLE-IT</code>{" "}
+              <strong>không</strong> gắn MNV — đúng IAM-FR-017 (không phải lỗi API).
+            </p>
+            <p>
+              {user.name ?? user.sub} · {user.roles.join(", ")}
+            </p>
+            <p className="muted">UAT IT: IAM · provision onboarding · khóa Git/CRM (offboarding).</p>
+            <div className="row">
+              <Link className="btn" to="/iam/accounts">
+                IAM accounts
+              </Link>
+              <Link className="btn btn-secondary" to="/lif/onboarding">
+                Onboarding
+              </Link>
+              <Link className="btn btn-secondary" to="/lif/offboarding">
+                Offboarding / khóa
+              </Link>
+            </div>
+          </>
+        ) : (
+          <>
+            <div className="error-box">{error ?? "Không tìm thấy hồ sơ liên kết tài khoản."}</div>
+            <p className="muted">
+              Cần IAM account liên kết MNV (IAM-FR-017). Thử <code>local-dev</code> / email trùng EMP.
+            </p>
+          </>
+        )}
       </div>
     );
   }

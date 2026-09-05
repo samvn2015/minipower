@@ -53,6 +53,28 @@ export function clearStoredToken(): void {
   localStorage.removeItem(TOKEN_KEY);
 }
 
+function extractApiErrorMessage(body: unknown, fallback: string): string {
+  if (typeof body !== "object" || body === null) return fallback;
+  const record = body as Record<string, unknown>;
+  const nested = record.error;
+  if (typeof nested === "object" && nested !== null) {
+    const err = nested as Record<string, unknown>;
+    if (typeof err.systemMessage === "string" && err.systemMessage.trim()) {
+      return err.systemMessage;
+    }
+    if (typeof err.message === "string" && err.message.trim()) {
+      return err.message;
+    }
+  }
+  if (typeof record.message === "string" && record.message.trim()) {
+    return record.message;
+  }
+  if (typeof record.systemMessage === "string" && record.systemMessage.trim()) {
+    return record.systemMessage;
+  }
+  return fallback;
+}
+
 async function parseJson<T>(response: Response): Promise<T> {
   const text = await response.text();
   if (!text) {
@@ -67,14 +89,7 @@ async function parseJson<T>(response: Response): Promise<T> {
   }
 
   if (!response.ok) {
-    const message =
-      typeof body === "object" &&
-      body !== null &&
-      "message" in body &&
-      typeof (body as { message: unknown }).message === "string"
-        ? (body as { message: string }).message
-        : text;
-    throw new Error(message);
+    throw new Error(extractApiErrorMessage(body, text));
   }
 
   return body as T;

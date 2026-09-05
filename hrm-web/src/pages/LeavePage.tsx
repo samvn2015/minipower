@@ -34,18 +34,52 @@ export function LeavePage({ channel = "web" }: Props) {
     setLoading(true);
     setError(null);
     try {
-      const [bal, typeRows, myRequests, profile] = await Promise.all([
-        fetchMyLeaveBalance(year),
+      const [balResult, typeRows, myRequests, profileResult] = await Promise.all([
+        fetchMyLeaveBalance(year).then(
+          (bal) => ({ ok: true as const, bal }),
+          (err: unknown) => ({
+            ok: false as const,
+            message: err instanceof Error ? err.message : "Không tải được quỹ phép",
+          }),
+        ),
         fetchLeaveTypes(),
-        fetchMyLeaveRequests(),
-        fetchMyEmployee(),
+        fetchMyLeaveRequests().then(
+          (rows) => ({ ok: true as const, rows }),
+          (err: unknown) => ({
+            ok: false as const,
+            message: err instanceof Error ? err.message : "Không tải danh sách đơn",
+          }),
+        ),
+        fetchMyEmployee().then(
+          (profile) => ({ ok: true as const, profile }),
+          (err: unknown) => ({
+            ok: false as const,
+            message: err instanceof Error ? err.message : "Không tải hồ sơ EMP",
+          }),
+        ),
       ]);
-      setBalance(bal);
-      setTypes(typeRows);
-      setRequests(myRequests);
-      if (profile.lineManagerEmployeeId && !handoverEmployeeId) {
-        setHandoverEmployeeId(profile.lineManagerEmployeeId);
+      if (balResult.ok) {
+        setBalance(balResult.bal);
+      } else {
+        setBalance(null);
       }
+      setTypes(typeRows);
+      if (myRequests.ok) {
+        setRequests(myRequests.rows);
+      } else {
+        setRequests([]);
+      }
+      if (profileResult.ok) {
+        if (profileResult.profile.lineManagerEmployeeId && !handoverEmployeeId) {
+          setHandoverEmployeeId(profileResult.profile.lineManagerEmployeeId);
+        }
+      }
+      const softErrors = [
+        !balResult.ok ? balResult.message : null,
+        !myRequests.ok ? myRequests.message : null,
+        !profileResult.ok ? profileResult.message : null,
+      ].filter(Boolean);
+      if (softErrors.length) setError(softErrors.join(" · "));
     } catch (err) {
       setError(err instanceof Error ? err.message : "Tải dữ liệu nghỉ phép thất bại");
     } finally {
@@ -134,12 +168,20 @@ export function LeavePage({ channel = "web" }: Props) {
         <p className="muted">Đang tải…</p>
       ) : (
         <>
-          {balance && (
+          {balance ? (
             <div className="card stack" style={{ background: "var(--surface-2)" }}>
               <h3>Quỹ phép {balance.year}</h3>
               <p>
                 Còn lại: <strong>{balance.remainingDays}</strong> / {balance.entitledDays} ngày
                 (đã dùng {balance.usedDays})
+              </p>
+            </div>
+          ) : (
+            <div className="card stack" style={{ background: "var(--surface-2)" }}>
+              <h3>Quỹ phép {year}</h3>
+              <p className="muted">
+                Chưa có quỹ (LEV-FR-015). UAT nộp phép năm: đăng nhập <strong>HR / NV</strong>{" "}
+                (<code>local-dev</code> (MNV-DEV đã seed). Persona LM chỉ duyệt C1.
               </p>
             </div>
           )}

@@ -518,6 +518,14 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                             EntitledDays = 12m,
                             UsedDays = 0m,
                             Year = 2026
+                        },
+                        new
+                        {
+                            Id = new Guid("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeef"),
+                            EmployeeId = new Guid("dddddddd-dddd-dddd-dddd-dddddddddddd"),
+                            EntitledDays = 12m,
+                            UsedDays = 0m,
+                            Year = 2026
                         });
                 });
 

@@ -26,7 +26,7 @@ public sealed class ListLifOnboardingQueryHandler(
     {
         var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
-        LifAccessGuard.RequireHrOrPgd(actor);
+        LifAccessGuard.RequireHrItOrPgd(actor);
 
         var rows = await onboardings.ListAsync(cancellationToken);
         return rows.Select(LifOnboardingMapper.ToDto).ToList();
@@ -44,7 +44,7 @@ public sealed class GetLifOnboardingQueryHandler(
     {
         var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
-        LifAccessGuard.RequireHrOrPgd(actor);
+        LifAccessGuard.RequireHrItOrPgd(actor);
 
         var row = await onboardings.FindByIdAsync(request.CaseId, cancellationToken)
             ?? throw new NotFoundException(HrmErrorCodes.NotFound, "Không tìm thấy case onboarding.");
@@ -64,7 +64,7 @@ public sealed class GetLifOnChecklistQueryHandler(
     {
         var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
-        LifAccessGuard.RequireHrOrPgd(actor);
+        LifAccessGuard.RequireHrItOrPgd(actor);
 
         var row = await onboardings.FindByIdAsync(request.CaseId, cancellationToken)
             ?? throw new NotFoundException(HrmErrorCodes.NotFound, "Không tìm thấy case onboarding.");

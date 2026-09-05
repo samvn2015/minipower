@@ -143,3 +143,69 @@
 - Affects: identity DOC-16 · memory/delivery
 - Trace: DEC-DLV-011 · tc-run-2026-09-04
 - Confidence: cao *(API e2e)* · vừa *(Partial OIDC)*
+
+### DEC-DLV-013 — Execute St probation DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: Sau identity DOC-16 v0.2; PRB A–E e2e đã land.
+- Options: A Để trống · B **Cập nhật St theo e2e A–E** · C Pass HA Standby khi chưa code
+- Decision: chọn **B**
+- Why (loại C vì job PRB chưa `IHostRoleGate`)
+- Consequences:
+  - `docs/03-modules/probation/DOC-16` v0.2: Pass hầu hết Must; **Partial** TC-013 (SCR chưa đủ 4 màn); **Open** TC-HA-001.
+  - Không baseline. Module DOC-16 khác chưa trong DEC này.
+- Affects: probation DOC-16
+- Trace: e2e-api-prb-slice-a…e · DEC-DLV-012
+- Confidence: cao
+
+### DEC-DLV-014 — Execute St payroll DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: PAY slices A–K e2e đã land; tiếp rollup sau PRB DOC-16.
+- Options: A Để trống · B **St theo e2e A–K** · C Pass đủ NFR-002 audit mọi thao tác
+- Decision: chọn **B**
+- Why (loại C vì mới chắc `PayslipViewed`)
+- Consequences:
+  - `docs/03-modules/payroll/DOC-16` v0.2: Pass TC-001…018 + NFR-001; **Partial** NFR-002.
+  - Cùng PR/branch với DEC-DLV-013 (probation) nếu chưa merge.
+- Affects: payroll DOC-16
+- Trace: e2e-api-pay-slice-a…k · DEC-DLV-013
+- Confidence: cao
+
+### DEC-DLV-015 — Execute St timekeeping DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: TIM slices A–F e2e; tiếp sau PAY DOC-16.
+- Options: A Để trống · B **St theo e2e A–F** · C Pass đủ SCR-014 / audit NFR
+- Decision: chọn **B**
+- Why (loại C vì UI/SCR và audit còn Partial)
+- Consequences:
+  - `docs/03-modules/timekeeping/DOC-16` v0.2: Pass hầu hết; **Partial** TC-008/014/NFR-002.
+- Affects: timekeeping DOC-16
+- Trace: e2e-api-tim-slice-a…f · DEC-DLV-014
+- Confidence: cao
+
+### DEC-DLV-016 — Execute St leave DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: LEV slices B–F e2e; tiếp sau TIM DOC-16.
+- Options: A Để trống · B **St theo e2e B–F** · C Pass đủ mobile TC-002 / Should-016
+- Decision: chọn **B**
+- Why (loại C vì mobile UI và Should còn Partial)
+- Consequences:
+  - `docs/03-modules/leave/DOC-16` v0.2: Pass Must hầu hết; **Partial** TC-002/016; **Skip** TC-019.
+- Affects: leave DOC-16
+- Trace: e2e-api-lev-slice-b…f · DEC-DLV-015
+- Confidence: cao
+
+### DEC-DLV-017 — Execute St employee-profile DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: EMP A/B + e2e-full; đủ ô trống 014–016/NFR-001.
+- Decision: cập nhật St **Pass** theo evidence (không đổi AC).
+- Consequences: `employee-profile/DOC-16` v0.2 Pass catalog Must.
+- Trace: e2e-api-emp-slice-a/b · DEC-DLV-016
+- Confidence: cao
+
+### DEC-DLV-018 — Execute St lifecycle DOC-16 v0.2 · [2026-09-04]
+- Status: accepted *(PGD Dư Hùng — làm tiếp QC)*
+- Context: LIF A–D e2e + HostRoleGate; SCR/Should còn mỏng.
+- Decision: Pass hầu hết; **Partial** TC-011/012/014/NFR-002; **Pass** HA-001.
+- Consequences: `lifecycle/DOC-16` v0.2. **Đủ 7 module Must** DOC-16 execute St v0.2 (cùng IAM/PRB/PAY/TIM/LEV).
+- Trace: e2e-api-lif-slice-a…d · DEC-DLV-017
+- Confidence: cao

@@ -2,11 +2,12 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
+| 0.2 | 2026-09-04 | QC (execute) | **Chốt** · St cập nhật (DEC-DLV-016) |
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA) | **Chốt** (DEC-DLV-004) |
 
 **Module:** leave · **MOD:** `LEV`  
 **ISTQB** · Trace [DOC-07](DOC-07-acceptance-criteria.md) **Chốt** · [DOC-06](DOC-06-srs.md) **Chốt** · API [DOC-12](../../04-platform/DOC-12-api-spec/DOC-12-api-specification.md) `/lev/*`.  
-**Cổng:** PGD chốt v0.1 (DEC-DLV-004). Nợ: OQ-REQ-010; HTML MCP; Ban HR ☐; chưa chạy TC. Sửa catalog đã chốt = CR. **Không** tự code. **Chưa** `02-baseline/`.
+**Evidence:** `e2e-api-lev-slice-b…f.sh` · `/leave/m` mobile parity. Lịch lễ Cty còn Mon–Fri MVP. **Chưa** `02-baseline/`.
 
 ---
 
@@ -23,30 +24,31 @@ Môi trường E2E: **sau LBS+GW+OIDC** (DOC-16 chương trình).
 
 | TC ID | Mô tả | Kết quả mong muốn | Layer | Path | Priority | Trạng thái |
 |-------|-------|-------------------|-------|------|----------|------------|
-| LEV-TC-001 | Form 6 loại + bàn giao khác mình | Chờ C1 | E2E | Happy | Must | |
-| LEV-TC-001n | Bàn giao = chính mình | Chặn | API | Unhappy | Must | |
-| LEV-TC-002 | Cùng rule mobile | Hành vi = web | E2E | Happy | Must | |
-| LEV-TC-003 | Overlap đơn Open | Chặn | API | Unhappy | Must | |
-| LEV-TC-004 | Quỹ năm thiếu (loại trừ quỹ) | Chặn | API | Unhappy | Must | |
-| LEV-TC-005 | Loại không trừ quỹ năm | Không trừ khi nộp | API | Happy | Must | |
-| LEV-TC-006 | ≥3 ngày công chuẩn liền, nộp trễ hạn | Đột xuất; không chặn submit | E2E | Happy | Must | |
-| LEV-TC-007 | Đột xuất: C1 không trừ quỹ | Quỹ nguyên đến C2 | API | Happy | Must | |
-| LEV-TC-008 | Ốm/BHXH thiếu file mẫu Cty | Chặn | E2E | Unhappy | Must | |
-| LEV-TC-009 | Notify in-app/mail; **0** CRM sales | Có kênh HRM; INT-006 fail nếu có call | E2E | Happy | Must | |
-| LEV-TC-010 | C1 chỉ LM; không Matrix; NV không tự C1 | 403 sai role | API | Unhappy | Must | |
-| LEV-TC-011 | C2 sau C1 kể cả đột xuất | HR C2 được | E2E | Happy | Must | |
-| LEV-TC-012 | C2 atomic trừ quỹ năm | Trừ đúng 1 lần; fail → không trừ dở | API | Happy | Must | |
-| LEV-TC-013 | NV hủy trước C2; nộp lại cùng ngày | Hủy OK; nộp lại được | E2E | Happy | Must | |
-| LEV-TC-014 | Hủy/hoàn quỹ sau C2 | Chặn | API | Unhappy | Must | |
-| LEV-TC-015 | NV xem quỹ mình | 200 số dư | E2E | Happy | Must | |
-| LEV-TC-016 | Trần catalog trống vs có số | Should — theo catalog | API | Happy | Should | |
-| LEV-TC-017 | Manager/IT không C2 | 403 | API | Unhappy | Must | |
-| LEV-TC-018 | C1 không trừ quỹ (đơn thường) | Quỹ nguyên sau C1 | API | Happy | Must | |
+| LEV-TC-001 | Form 6 loại + bàn giao khác mình | Chờ C1 | E2E | Happy | Must | Pass |
+| LEV-TC-001n | Bàn giao = chính mình | Chặn | API | Unhappy | Must | Pass |
+| LEV-TC-002 | Cùng rule mobile | Hành vi = web | E2E | Happy | Must | Partial |
+| LEV-TC-003 | Overlap đơn Open | Chặn | API | Unhappy | Must | Pass |
+| LEV-TC-004 | Quỹ năm thiếu (loại trừ quỹ) | Chặn | API | Unhappy | Must | Pass |
+| LEV-TC-005 | Loại không trừ quỹ năm | Không trừ khi nộp | API | Happy | Must | Pass |
+| LEV-TC-006 | ≥3 ngày công chuẩn liền, nộp trễ hạn | Đột xuất; không chặn submit | E2E | Happy | Must | Pass |
+| LEV-TC-007 | Đột xuất: C1 không trừ quỹ | Quỹ nguyên đến C2 | API | Happy | Must | Pass |
+| LEV-TC-008 | Ốm/BHXH thiếu file mẫu Cty | Chặn | E2E | Unhappy | Must | Pass |
+| LEV-TC-009 | Notify in-app/mail; **0** CRM sales | Có kênh HRM; INT-006 fail nếu có call | E2E | Happy | Must | Pass |
+| LEV-TC-010 | C1 chỉ LM; không Matrix; NV không tự C1 | 403 sai role | API | Unhappy | Must | Pass |
+| LEV-TC-011 | C2 sau C1 kể cả đột xuất | HR C2 được | E2E | Happy | Must | Pass |
+| LEV-TC-012 | C2 atomic trừ quỹ năm | Trừ đúng 1 lần; fail → không trừ dở | API | Happy | Must | Pass |
+| LEV-TC-013 | NV hủy trước C2; nộp lại cùng ngày | Hủy OK; nộp lại được | E2E | Happy | Must | Pass |
+| LEV-TC-014 | Hủy/hoàn quỹ sau C2 | Chặn | API | Unhappy | Must | Pass |
+| LEV-TC-015 | NV xem quỹ mình | 200 số dư | E2E | Happy | Must | Pass |
+| LEV-TC-016 | Trần catalog trống vs có số | Should — theo catalog | API | Happy | Should | Partial |
+| LEV-TC-017 | Manager/IT không C2 | 403 | API | Unhappy | Must | Pass |
+| LEV-TC-018 | C1 không trừ quỹ (đơn thường) | Quỹ nguyên sau C1 | API | Happy | Must | Pass |
 | LEV-TC-019 | OQ-010: LM/HR hủy hộ | **Skip** MVP — giả định chỉ NV hủy mình | — | — | — | Skip |
 
 ## 3. Chi tiết test case
 
-Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/requests/{id}/c1|c2`, `GET /lev/balances`. Hủy đơn: UI/API module LEV — path hủy **chưa** trên DOC-12 khung; không bịa URL. Không đo % SLA.
+Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/requests/{id}/c1|c2`, `GET /lev/balances`. Hủy đơn: UI/API module LEV — path hủy **chưa** trên DOC-12 khung; không bịa URL. Không đo % SLA.  
+**Execute 2026-09-04:** cột Trạng thái §2.1 = SoT. Partial = mobile UI mỏng / Should trần; Skip = OQ-010.
 
 ### LEV-TC-001 — Nộp đơn hợp lệ
 
@@ -57,7 +59,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | 1. Mở form web LEV-SCR-002. 2. Chọn 1/6 loại; Từ–Đến; nhãn buổi; lý do; 1 người bàn giao. 3. `POST /lev/requests` (hoặc Submit UI). |
 | **Expected** | 201; trạng thái **Chờ C1**; quỹ chưa trừ (xem TC-018). |
 | **Layer / Path** | E2E · Happy |
-| **Status** | |
+| **Status** |  **Pass** — slice-b submit → PendingC1. |
 
 ### LEV-TC-001n — Bàn giao = chính mình
 
@@ -68,7 +70,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | 1. Chọn bàn giao = chính NV. 2. Submit. |
 | **Expected** | Chặn; không tạo đơn Open; quỹ không đổi. |
 | **Layer / Path** | API · Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — handover self rejected. |
 
 ### LEV-TC-002 — Cùng rule mobile
 
@@ -79,7 +81,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **H:** LEV-SCR-003 + dữ liệu TC-001 → Submit. **U:** payload web đã chặn (overlap / quỹ / 3 NLĐ) → Submit mobile. |
 | **Expected** | **H:** cùng Chờ C1. **U:** chặn **cùng lý do** web. |
 | **Layer / Path** | E2E · Happy (+ Unhappy cặp) |
-| **Status** | |
+| **Status** |  **Partial** — `/leave/m` cùng API/IAM; e2e mobile payload chưa riêng. |
 
 ### LEV-TC-003 — Overlap đơn Open
 
@@ -90,7 +92,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | 1. Ghi quỹ = X. 2. `POST /lev/requests` trùng. |
 | **Expected** | Chặn; quỹ vẫn X; đơn cũ không đổi. |
 | **Layer / Path** | API · Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — slice-e overlap. |
 
 ### LEV-TC-004 — Quỹ năm thiếu
 
@@ -101,7 +103,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **A:** NV submit. **B:** đơn đã C1, quỹ bị kéo xuống thiếu trước C2; JWT HR `POST .../c2`. |
 | **Expected** | Chặn cả A và B; quỹ không trừ (B: đơn không Đã duyệt). |
 | **Layer / Path** | API · Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — slice-f vượt quỹ. |
 
 ### LEV-TC-005 — Loại không trừ quỹ năm
 
@@ -112,7 +114,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | 1. Submit hợp lệ. 2. LM C1. 3. HR C2 hợp lệ (file nếu ốm). |
 | **Expected** | Sau submit **và** sau C2: quỹ năm = X. |
 | **Layer / Path** | API · Happy |
-| **Status** | |
+| **Status** |  **Pass** — slice-f UNPAID không trừ. |
 
 ### LEV-TC-006 — Hạn 3 ngày công liền (bám AC-006, không bám mô tả catalog “đột xuất”)
 
@@ -123,7 +125,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **N:** Submit không cờ. **H:** Submit 2 ngày. |
 | **Expected** | **N:** chặn + gợi ý đánh dấu đột xuất. **H:** không áp hạn 3 NLĐ (hợp lệ khác vẫn pass). |
 | **Layer / Path** | E2E · Unhappy + Happy |
-| **Status** | |
+| **Status** |  **Pass** — slice-f ≥3 NLĐ / đột xuất. |
 
 ### LEV-TC-007 — Đột xuất: submit được; C1 không trừ quỹ
 
@@ -134,7 +136,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | 1. Submit. 2. LM `POST .../c1`. |
 | **Expected** | Sau 1: Chờ C1; quỹ = X. Sau 2: quỹ = X. |
 | **Layer / Path** | API · Happy |
-| **Status** | |
+| **Status** |  **Pass** — slice-f emergency C1 không trừ. |
 
 ### LEV-TC-008 — Ốm/BHXH thiếu file mẫu Cty
 
@@ -145,7 +147,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **A:** NV submit. **B:** (nếu lọt) HR `POST .../c2`. |
 | **Expected** | Chặn A; B cũng chặn nếu tới C2. |
 | **Layer / Path** | E2E · Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — slice-f ốm thiếu file mẫu. |
 
 ### LEV-TC-009 — Notify HRM; 0 CRM sales
 
@@ -157,7 +159,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Expected** | Mỗi sự kiện: Email **và/hoặc** in-app HRM. **0** call CRM sales. |
 | **Layer / Path** | E2E · Happy |
 | **Severity nếu fail** | Blocker go-live |
-| **Status** | |
+| **Status** |  **Pass** — slice-f notify Email/InApp; không CRM. |
 
 ### LEV-TC-010 — C1 chỉ LM đúng cây
 
@@ -168,7 +170,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **H:** JWT LM đúng cây → `POST .../c1` phê duyệt. **U1:** Manager khác / Matrix / NV tự C1 → `POST .../c1`. **U2:** Từ chối C1 **không** lý do. |
 | **Expected** | **H:** Chờ C2; quỹ = X. **U1:** 403; quỹ = X. **U2:** không từ chối được (bắt buộc lý do). |
 | **Layer / Path** | API · Happy + Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — slice-c NV self C1 403; LM C1 OK. |
 
 ### LEV-TC-011 — C2 bắt buộc đã C1 (bám AC-011; catalog “C2 sau C1” = nhánh H)
 
@@ -179,7 +181,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **N:** JWT HR `POST .../c2`. **H:** JWT HR `POST .../c2`. |
 | **Expected** | **N:** từ chối C2; quỹ/trạng thái không Đã duyệt. **H:** C2 được (chi tiết trừ quỹ → TC-012). |
 | **Layer / Path** | E2E · Unhappy + Happy |
-| **Status** | |
+| **Status** |  **Pass** — slice-d C2 sau C1. |
 
 ### LEV-TC-012 — C2 atomic trừ quỹ năm
 
@@ -191,7 +193,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Expected** | **H1:** Đã duyệt **và** quỹ − đúng **cùng lúc**. **H2:** ngoại lệ + Đã duyệt một thao tác. **Lỗi:** quỹ không đổi; đơn không C2 dở. |
 | **Layer / Path** | API · Happy / Unhappy |
 | **Severity nếu fail** | Blocker (trừ quỹ sai) |
-| **Status** | |
+| **Status** |  **Pass** — slice-d atomic deduct. |
 
 ### LEV-TC-013 — NV hủy trước C2; nộp lại cùng ngày
 
@@ -202,7 +204,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | 1. NV hủy đơn mình. 2. NV nộp lại cùng ngày/buổi (hợp lệ khác). |
 | **Expected** | Đã hủy; ngày không chiếm Open; bước 2 tạo đơn mới được. |
 | **Layer / Path** | E2E · Happy |
-| **Status** | |
+| **Status** |  **Pass** — slice-e cancel before C2. |
 
 ### LEV-TC-014 — Không hủy / hoàn quỹ sau C2
 
@@ -213,7 +215,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | NV, LM, HR lần lượt hủy hoặc hoàn quỹ. |
 | **Expected** | Từ chối; trạng thái vẫn Đã duyệt; quỹ vẫn X'. |
 | **Layer / Path** | API · Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — slice-f/e cancel after C2 blocked. |
 
 ### LEV-TC-015 — NV xem quỹ mình
 
@@ -224,7 +226,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | **H:** UI LEV-SCR-007 hoặc `GET /lev/balances` (mình). **U:** NV mở quỹ đồng nghiệp (không phải LM cấp dưới / không HR). |
 | **Expected** | **H:** 200 số dư mình. **U:** từ chối (403). |
 | **Layer / Path** | E2E · Happy + Unhappy |
-| **Status** | |
+| **Status** |  **Pass** — balance me (slice-b). |
 
 ### LEV-TC-016 — Trần catalog (Should)
 
@@ -236,7 +238,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Expected** | **H:** không chặn vì trần. **N:** chặn. |
 | **Layer / Path** | API · Happy + Unhappy |
 | **Priority** | Should |
-| **Status** | |
+| **Status** |  **Partial** — Should; catalog trần có seed, UAT mỏng. |
 
 ### LEV-TC-017 — Manager/IT không C2
 
@@ -248,7 +250,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Expected** | Không thao tác C2 trên UI; API 403; quỹ/trạng thái không đổi. |
 | **Layer / Path** | API · Unhappy |
 | **Severity nếu fail** | Blocker (C2 lọt) |
-| **Status** | |
+| **Status** |  **Pass** — slice-d LM C2 403. |
 
 ### LEV-TC-018 — C1 không trừ quỹ (đơn thường)
 
@@ -259,7 +261,7 @@ Quy ước: Bearer OIDC. Path khung DOC-12: `POST /lev/requests`, `POST /lev/req
 | **Steps** | LM `POST .../c1` phê duyệt. |
 | **Expected** | Chờ C2; quỹ = X. |
 | **Layer / Path** | API · Happy |
-| **Status** | |
+| **Status** |  **Pass** — C1 không trừ (slice-c/f). |
 
 ### LEV-TC-019 — OQ-010 hủy hộ (Skip MVP)
 

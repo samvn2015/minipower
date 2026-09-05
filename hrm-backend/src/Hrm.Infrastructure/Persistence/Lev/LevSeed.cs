@@ -11,6 +11,9 @@ internal static class LevSeed
 
     public static readonly Guid DevBalance2026Id = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee");
 
+    /// <summary>Quỹ DEV cho MNV-HO (sub=local-lm) — UAT C1/nộp thử.</summary>
+    public static readonly Guid HandoverBalance2026Id = Guid.Parse("eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeef");
+
     public const int DevBalanceYear = 2026;
 
     public const decimal DevEntitledDays = 12m;

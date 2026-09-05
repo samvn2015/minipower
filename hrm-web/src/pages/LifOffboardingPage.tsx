@@ -8,8 +8,13 @@ import {
   upsertLifOffChecklistTick,
 } from "../api/client";
 import type { LifOffboarding, LifOffChecklistBoard } from "../api/types";
+import { isHr, isIt, isItOnly, useCurrentUser } from "../hooks/useCurrentUser";
 
 export function LifOffboardingPage() {
+  const user = useCurrentUser();
+  const hr = isHr(user);
+  const canLock = isIt(user) || user.roles.includes("IAM-ROLE-PGD");
+  const itOnly = isItOnly(user);
   const [items, setItems] = useState<LifOffboarding[]>([]);
   const [board, setBoard] = useState<LifOffChecklistBoard | null>(null);
   const [caseId, setCaseId] = useState("");
@@ -106,6 +111,7 @@ export function LifOffboardingPage() {
         <p className="muted">
           LIF-SCR-001/003/004/005 — N = ngày LV cuối; checklist Must; khóa Git+CRM SP tại N+3 (IT/job;
           HR không khóa — FR-003/005–009).
+          {itOnly ? " · IT: xem + Early CR lock; HR xác nhận N / tick / đóng." : ""}
         </p>
       </div>
       {error && <div className="error-box">{error}</div>}
@@ -122,43 +128,49 @@ export function LifOffboardingPage() {
             ))}
           </select>
         </label>
-        <label className="muted">
-          Ngày LV cuối (N){" "}
-          <input type="date" value={n} onChange={(e) => setN(e.target.value)} />
-        </label>
-        <button type="button" className="btn" onClick={onConfirm} disabled={!caseId || !n}>
-          HR xác nhận N
-        </button>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={onClose}
-          disabled={!board?.canClose}
-        >
-          Đóng off
-        </button>
+        {hr && (
+          <>
+            <label className="muted">
+              Ngày LV cuối (N){" "}
+              <input type="date" value={n} onChange={(e) => setN(e.target.value)} />
+            </label>
+            <button type="button" className="btn" onClick={onConfirm} disabled={!caseId || !n}>
+              HR xác nhận N
+            </button>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={onClose}
+              disabled={!board?.canClose}
+            >
+              Đóng off
+            </button>
+          </>
+        )}
       </div>
 
-      <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
-        <label className="muted">
-          Early CR reason{" "}
-          <input
-            type="text"
-            value={earlyCrReason}
-            onChange={(e) => setEarlyCrReason(e.target.value)}
-            placeholder="Lý do an ninh (không CRM sales)"
-            style={{ minWidth: 240 }}
-          />
-        </label>
-        <button
-          type="button"
-          className="btn btn-secondary"
-          onClick={onEarlyCrLock}
-          disabled={!caseId || !earlyCrReason.trim()}
-        >
-          Early CR lock
-        </button>
-      </div>
+      {canLock && (
+        <div className="row" style={{ gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+          <label className="muted">
+            Early CR reason{" "}
+            <input
+              type="text"
+              value={earlyCrReason}
+              onChange={(e) => setEarlyCrReason(e.target.value)}
+              placeholder="Lý do an ninh (không CRM sales)"
+              style={{ minWidth: 240 }}
+            />
+          </label>
+          <button
+            type="button"
+            className="btn btn-secondary"
+            onClick={onEarlyCrLock}
+            disabled={!caseId || !earlyCrReason.trim()}
+          >
+            Early CR lock
+          </button>
+        </div>
+      )}
 
       {loading && <p className="muted">Đang tải…</p>}
       {items.length > 0 && (
@@ -214,6 +226,7 @@ export function LifOffboardingPage() {
                       <input
                         type="checkbox"
                         checked={i.isChecked}
+                        disabled={!hr}
                         onChange={(e) => onTick(i.code, e.target.checked)}
                       />
                     </td>

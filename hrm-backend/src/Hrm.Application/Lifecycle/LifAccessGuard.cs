@@ -62,7 +62,7 @@ public static class LifAccessGuard
         {
             throw new ForbiddenException(
                 HrmErrorCodes.Forbidden,
-                "Chỉ HR/IT/PGD đánh dấu cấp TK onboarding (LIF-FR-002).");
+                "Chỉ HR/IT/PGD xem LIF và cấp TK / khóa hệ thống (LIF-FR-002/005/008).");
         }
     }
 

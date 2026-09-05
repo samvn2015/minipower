@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { fetchDevToken } from "../api/client";
+import { fetchCurrentUser, fetchDevToken } from "../api/client";
 import { DEV_PERSONAS } from "../api/types";
 
 export function LoginPage() {
@@ -13,7 +13,12 @@ export function LoginPage() {
     setError(null);
     try {
       await fetchDevToken(sub, email);
-      navigate("/profile", { replace: true });
+      const me = await fetchCurrentUser();
+      // IT seed không gắn MNV — tránh landing /profile (IAM-FR-017)
+      const home = me.roles.includes("IAM-ROLE-IT") && !me.roles.includes("IAM-ROLE-HR")
+        ? "/iam/accounts"
+        : "/profile";
+      navigate(home, { replace: true });
     } catch (err) {
       setError(err instanceof Error ? err.message : "Đăng nhập thất bại");
     } finally {

@@ -17,13 +17,22 @@ internal sealed class LeaveBalanceConfiguration : IEntityTypeConfiguration<Leave
         builder.Ignore(x => x.RemainingDays);
         builder.HasIndex(x => new { x.EmployeeId, x.Year }).IsUnique();
 
-        builder.HasData(new LeaveBalance
-        {
-            Id = LevSeed.DevBalance2026Id,
-            EmployeeId = EmpSeed.DevEmployeeId,
-            Year = LevSeed.DevBalanceYear,
-            EntitledDays = LevSeed.DevEntitledDays,
-            UsedDays = 0m
-        });
+        builder.HasData(
+            new LeaveBalance
+            {
+                Id = LevSeed.DevBalance2026Id,
+                EmployeeId = EmpSeed.DevEmployeeId,
+                Year = LevSeed.DevBalanceYear,
+                EntitledDays = LevSeed.DevEntitledDays,
+                UsedDays = 0m
+            },
+            new LeaveBalance
+            {
+                Id = LevSeed.HandoverBalance2026Id,
+                EmployeeId = EmpSeed.HandoverEmployeeId,
+                Year = LevSeed.DevBalanceYear,
+                EntitledDays = LevSeed.DevEntitledDays,
+                UsedDays = 0m
+            });
     }
 }
