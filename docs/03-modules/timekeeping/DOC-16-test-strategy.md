@@ -2,6 +2,7 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
+| 0.3 | 2026-09-05 | DEV | **Chốt** · TC-014 SCR tách (DEC-DLV-023) |
 | 0.2 | 2026-09-04 | QC (execute) | **Chốt** · St cập nhật (DEC-DLV-015) |
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA) | **Chốt** (DEC-DLV-004) |
 
@@ -25,7 +26,7 @@
 | TIM-TC-011 | NV/LM import/chốt | 403 | API | Unhappy | Must | Pass |
 | TIM-TC-012 | Bỏ chốt; cấm nếu PAY đã chốt | Chặn | API | Unhappy | Must | Pass |
 | TIM-TC-013 | Ẩn màn HR NV/LM | 403 | E2E | Unhappy | Must | Pass |
-| TIM-TC-014 | Đủ TIM-SCR-001…006 | Có màn; pixel không fail | E2E | Happy | Must | Partial |
+| TIM-TC-014 | Đủ TIM-SCR-001…006 | Có màn; pixel không fail | E2E | Happy | Must | Pass |
 | TIM-TC-015 | Hai mẫu Active | Cấm | API | Unhappy | Must | Pass |
 | TIM-TC-016 | Đổi mẫu không tự commit | Preview only | API | Happy | Must | Pass |
 | TIM-TC-NFR-001 | 403 NV/LM DOC-13 | Pass | API | Unhappy | Must | Pass |
@@ -177,7 +178,7 @@ E2E sau LBS+GW. Path: `POST /tim/imports`, `POST /tim/periods/{ym}/close`. Commi
 | **Steps** | Đi luồng mẫu → import → commit → chốt → bỏ chốt. |
 | **Expected** | Có 6 màn. Pixel HTML MCP không fail Must. |
 | **Layer / Path** | E2E · Happy |
-| **Status** |  **Partial** — templates/imports/periods UI; chưa đủ 6 SCR tách. |
+| **Status** |  **Pass** — `/tim` (001) · templates (002) · imports (003) · `…/commit` (004) · close (005) · unlock (006). Pixel không Must. |
 
 ### TIM-TC-015 — Cấm hai mẫu Active
 
@@ -209,6 +210,7 @@ E2E sau LBS+GW. Path: `POST /tim/imports`, `POST /tim/periods/{ym}/close`. Commi
 
 | Phiên bản | Thay đổi | Tác giả |
 |-----------|----------|---------|
+| 0.3 | TC-014 Pass — tách SCR-001…006 (DEC-DLV-023) | DEV |
 | 0.2 | Execute St catalog + §3 (DEC-DLV-015) | QC / PGD |
 | 0.1 | Chốt catalog (DEC-DLV-004) | PGD Dư Hùng |
 | 0.1 | §3 chi tiết (DEC-DLV-006) | Trịnh Yên |

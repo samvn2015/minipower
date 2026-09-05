@@ -89,9 +89,14 @@ export function TimTemplatePage() {
       <div>
         <h2>Công bố mẫu chấm công</h2>
         <p className="muted">TIM-SCR-002 — một version Active; cột lấy từ master (không hardcode URD).</p>
-        <Link className="btn btn-secondary" to="/tim/imports">
-          Import công →
-        </Link>
+        <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
+          <Link className="btn btn-ghost" to="/tim">
+            ← Danh sách
+          </Link>
+          <Link className="btn btn-secondary" to="/tim/imports">
+            Import công →
+          </Link>
+        </div>
       </div>
 
       {error && <div className="error-box">{error}</div>}

@@ -249,3 +249,16 @@
 - Affects: LIF commands · EmpAuditActions · e2e-api-lif-slice-c
 - Trace: LIF-TC-014 · LIF-TC-NFR-002 · DEC-DLV-021
 - Confidence: cao *(unit)* · vừa *(e2e khi Host chạy)*
+
+### DEC-DLV-023 — Siết TIM SCR-001…006 · [2026-09-05]
+- Status: accepted *(PGD «làm tiếp» sau #46)*
+- Context: TIM-TC-014 Partial; PRB/LIF SCR đã Pass.
+- Options: A Để Partial · B **Tách 6 màn web khung** · C Sửa luôn TIM audit/TC-008
+- Decision: chọn **B** (một slice SCR)
+- Why (loại C vì audit/leave-merge = slice API riêng)
+- Consequences:
+  - Routes: `/tim` · templates · imports · `…/commit` · close · unlock.
+  - `timekeeping/DOC-16` v0.3: TC-014 **Pass**. Partial còn TC-008 / NFR-002.
+- Affects: hrm-web · DOC-16 timekeeping
+- Trace: TIM-TC-014 · DEC-DLV-015 · DEC-DLV-021
+- Confidence: vừa *(khung UI)*
