@@ -1,4 +1,6 @@
 using Hrm.Application.Timekeeping.Commands;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave;
@@ -26,10 +28,12 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
                 1,
                 [Line(workDays: 20, otUnclassified: 0)]));
 
+        var audit = new FakeAudit();
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
             imports,
-            new FakeLeaveRepo([]));
+            new FakeLeaveRepo([]),
+            audit);
 
         var result = await handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11"));
 
@@ -37,6 +41,7 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         Assert.Equal("2026-11", result.PeriodYm);
         Assert.True(imports.CloseCalled);
         Assert.Equal(0m, result.TotalLeaveDaysPaid);
+        Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.TimesheetPeriodClosed);
     }
 
     [Fact]
@@ -66,7 +71,8 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
             imports,
-            new FakeLeaveRepo(leaves));
+            new FakeLeaveRepo(leaves),
+            new FakeAudit());
 
         var result = await handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11"));
 
@@ -92,7 +98,8 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
             imports,
-            new FakeLeaveRepo([]));
+            new FakeLeaveRepo([]),
+            new FakeAudit());
 
         var result = await handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11"));
 
@@ -115,7 +122,8 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
             imports,
-            new FakeLeaveRepo([]));
+            new FakeLeaveRepo([]),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new CloseTimesheetPeriodCommand("local-dev", "2026-11")));
@@ -137,7 +145,8 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         var handler = new CloseTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-LM"]),
             imports,
-            new FakeLeaveRepo([]));
+            new FakeLeaveRepo([]),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new CloseTimesheetPeriodCommand("local-lm", "2026-11")));
@@ -145,6 +154,29 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
 
     private static TimesheetLineSnapshot Line(decimal workDays, decimal otUnclassified) =>
         new(Guid.NewGuid(), EmployeeId, "MNV-DEV", workDays, 0, 0, 0, otUnclassified, 0, 0, 0);
+
+
+    private sealed class FakeAudit : IEmpAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+    }
 
     private sealed class FakeAccountRepo(string[] roles) : IIdentityAccountReadRepository
     {

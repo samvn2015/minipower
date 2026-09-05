@@ -1,4 +1,6 @@
 using Hrm.Application.Timekeeping.Commands;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Payroll.Repositories;
@@ -28,15 +30,18 @@ public sealed class UnlockTimesheetPeriodCommandHandlerTests
                         Guid.NewGuid(), EmployeeId, "MNV-DEV", 22, 0, 0, 0, 0, 2, 0, 0)
                 ]));
 
+        var audit = new FakeAudit();
         var handler = new UnlockTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
             imports,
-            new FakePayGate(closed: false));
+            new FakePayGate(closed: false),
+            audit);
 
         var result = await handler.HandleAsync(new UnlockTimesheetPeriodCommand("local-dev", "2027-04"));
 
         Assert.Equal("Draft", result.Status);
         Assert.True(imports.UnlockCalled);
+        Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.TimesheetPeriodUnlocked);
     }
 
     [Fact]
@@ -54,7 +59,8 @@ public sealed class UnlockTimesheetPeriodCommandHandlerTests
         var handler = new UnlockTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
             imports,
-            new FakePayGate(closed: true));
+            new FakePayGate(closed: true),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ConflictException>(() =>
             handler.HandleAsync(new UnlockTimesheetPeriodCommand("local-dev", "2027-04")));
@@ -76,10 +82,34 @@ public sealed class UnlockTimesheetPeriodCommandHandlerTests
         var handler = new UnlockTimesheetPeriodCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-LM"]),
             imports,
-            new FakePayGate(closed: false));
+            new FakePayGate(closed: false),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new UnlockTimesheetPeriodCommand("local-lm", "2027-04")));
+    }
+
+
+    private sealed class FakeAudit : IEmpAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeAccountRepo(string[] roles) : IIdentityAccountReadRepository

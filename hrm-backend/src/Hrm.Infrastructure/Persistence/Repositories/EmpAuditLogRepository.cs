@@ -37,4 +37,26 @@ internal sealed class EmpAuditLogRepository(AppDbContext db) : IEmpAuditLogRepos
                 x.OccurredAtUtc,
                 x.Detail))
             .ToArrayAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+        string action,
+        int take = 50,
+        CancellationToken cancellationToken = default)
+    {
+        var limit = take <= 0 ? 50 : Math.Min(take, 200);
+        return await db.EmpAuditLogs
+            .AsNoTracking()
+            .Where(x => x.Action == action)
+            .OrderByDescending(x => x.OccurredAtUtc)
+            .Take(limit)
+            .Select(x => new EmpAuditLogSnapshot(
+                x.Id,
+                x.Action,
+                x.EmployeeId,
+                x.RelatedId,
+                x.ActorIdpSubject,
+                x.OccurredAtUtc,
+                x.Detail))
+            .ToArrayAsync(cancellationToken);
+    }
 }

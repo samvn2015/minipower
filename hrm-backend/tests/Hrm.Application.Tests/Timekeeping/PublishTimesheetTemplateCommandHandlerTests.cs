@@ -1,4 +1,6 @@
 using Hrm.Application.Timekeeping.Commands;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Timekeeping;
@@ -15,14 +17,17 @@ public sealed class PublishTimesheetTemplateCommandHandlerTests
     public async Task HandleAsync_HrPublishes_ActivatesAndRetiresPrevious()
     {
         var repo = new FakeTemplateRepo();
+        var audit = new FakeAudit();
         var handler = new PublishTimesheetTemplateCommandHandler(
             new FakeAccountRepo("local-dev", ["IAM-ROLE-HR"]),
-            repo);
+            repo,
+            audit);
 
         var result = await handler.HandleAsync(new PublishTimesheetTemplateCommand("local-dev", DraftId));
 
         Assert.Equal("Active", result.Status);
         Assert.True(repo.Published);
+        Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.TimesheetTemplatePublished);
     }
 
     [Fact]
@@ -30,10 +35,33 @@ public sealed class PublishTimesheetTemplateCommandHandlerTests
     {
         var handler = new PublishTimesheetTemplateCommandHandler(
             new FakeAccountRepo("local-dev", ["IAM-ROLE-NV"]),
-            new FakeTemplateRepo());
+            new FakeTemplateRepo(),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new PublishTimesheetTemplateCommand("local-dev", DraftId)));
+    }
+
+    private sealed class FakeAudit : IEmpAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeAccountRepo(string sub, string[] roles) : IIdentityAccountReadRepository

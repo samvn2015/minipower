@@ -78,10 +78,28 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
         var imports = new FakeImportRepo { BatchHasErrors = true };
         var handler = new CommitTimesheetImportCommandHandler(
             new FakeAccountRepo(["IAM-ROLE-HR"]),
-            imports);
+            imports,
+            new FakeAudit());
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new CommitTimesheetImportCommand("local-dev", Guid.NewGuid())));
+    }
+
+    private sealed class FakeAudit : IEmpAuditLogRepository
+    {
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
+            Task.CompletedTask;
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeAccountRepo(string[] roles) : IIdentityAccountReadRepository

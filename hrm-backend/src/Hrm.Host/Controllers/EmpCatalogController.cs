@@ -41,4 +41,18 @@ public sealed class EmpCatalogController(IAsyncQueryDispatcher queries) : Contro
             cancellationToken);
         return Ok(items);
     }
+
+    /// <summary>Audit theo action (TIM publish/commit/close/unlock — RelatedId, EmployeeId có thể null).</summary>
+    [HttpGet("audit-logs")]
+    [Authorize]
+    public async Task<IActionResult> ListAuditLogsByAction(
+        [FromQuery] string action,
+        [FromQuery] int take = 50,
+        CancellationToken cancellationToken = default)
+    {
+        var items = await queries.DispatchAsync<ListAuditLogsByActionQuery, IReadOnlyList<EmpAuditLogDto>>(
+            new ListAuditLogsByActionQuery(User.GetIdpSubject(), action, take),
+            cancellationToken);
+        return Ok(items);
+    }
 }

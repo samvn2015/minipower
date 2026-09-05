@@ -58,3 +58,43 @@ public sealed class ListEmployeeAuditLogsQueryHandler(
             x.Detail)).ToArray();
     }
 }
+
+public sealed record ListAuditLogsByActionQuery(string? ActorIdpSubject, string Action, int Take = 50)
+    : Jarvis.Domain.Shared.Messaging.IQuery;
+
+public sealed class ListAuditLogsByActionQueryHandler(
+    IIdentityAccountReadRepository accounts,
+    IEmpAuditLogRepository auditLogs)
+    : IAsyncQueryHandler<ListAuditLogsByActionQuery, IReadOnlyList<EmpAuditLogDto>>
+{
+    public async Task<IReadOnlyList<EmpAuditLogDto>> HandleAsync(
+        ListAuditLogsByActionQuery query,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(query);
+        IamAccessGuard.RequireAuthenticated(query.ActorIdpSubject);
+
+        var actor = await accounts.FindByIdpSubjectAsync(query.ActorIdpSubject!, cancellationToken)
+            .ConfigureAwait(false);
+        if (actor is null || actor.Status != Domain.Identity.IdentityAccountStatus.Active)
+            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không hiệu lực.");
+
+        if (!IamAccessGuard.IsHrOrIt(actor))
+            throw new ForbiddenException(HrmErrorCodes.Forbidden, "Chỉ HR/IT xem audit.");
+
+        if (string.IsNullOrWhiteSpace(query.Action))
+            throw new BadRequestException(HrmErrorCodes.BadRequest, "action bắt buộc.");
+
+        var items = await auditLogs
+            .ListByActionAsync(query.Action.Trim(), query.Take, cancellationToken)
+            .ConfigureAwait(false);
+        return items.Select(x => new EmpAuditLogDto(
+            x.Id,
+            x.Action,
+            x.EmployeeId,
+            x.RelatedId,
+            x.ActorIdpSubject,
+            x.OccurredAtUtc,
+            x.Detail)).ToArray();
+    }
+}

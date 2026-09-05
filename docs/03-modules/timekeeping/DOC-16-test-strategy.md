@@ -2,6 +2,7 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
+| 0.4 | 2026-09-05 | DEV | **Chốt** · NFR-002 audit (DEC-DLV-024) |
 | 0.3 | 2026-09-05 | DEV | **Chốt** · TC-014 SCR tách (DEC-DLV-023) |
 | 0.2 | 2026-09-04 | QC (execute) | **Chốt** · St cập nhật (DEC-DLV-015) |
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA) | **Chốt** (DEC-DLV-004) |
@@ -30,7 +31,7 @@
 | TIM-TC-015 | Hai mẫu Active | Cấm | API | Unhappy | Must | Pass |
 | TIM-TC-016 | Đổi mẫu không tự commit | Preview only | API | Happy | Must | Pass |
 | TIM-TC-NFR-001 | 403 NV/LM DOC-13 | Pass | API | Unhappy | Must | Pass |
-| TIM-TC-NFR-002 | Audit công bố/import/chốt | Log | API | Happy | Must | Partial |
+| TIM-TC-NFR-002 | Audit công bố/import/chốt | Log | API | Happy | Must | Pass |
 
 ## 3. Chi tiết test case
 
@@ -204,12 +205,13 @@ E2E sau LBS+GW. Path: `POST /tim/imports`, `POST /tim/periods/{ym}/close`. Commi
 ### TIM-TC-NFR-001 / 002
 
 403 NV/LM DOC-13. Audit: công bố / import / chốt / bỏ chốt — không bịa SLA.  
-**Status:** NFR-001 **Pass** (TC-011). NFR-002 **Partial** — chưa e2e audit đủ mọi thao tác.
+**Status:** NFR-001 **Pass** (TC-011). NFR-002 **Pass** — EmpAudit publish/commit/close/unlock + `GET /v1/emp/audit-logs?action=`.
 
 ## 8. Nhật ký
 
 | Phiên bản | Thay đổi | Tác giả |
 |-----------|----------|---------|
+| 0.4 | NFR-002 Pass — TIM EmpAudit (DEC-DLV-024) | DEV |
 | 0.3 | TC-014 Pass — tách SCR-001…006 (DEC-DLV-023) | DEV |
 | 0.2 | Execute St catalog + §3 (DEC-DLV-015) | QC / PGD |
 | 0.1 | Chốt catalog (DEC-DLV-004) | PGD Dư Hùng |

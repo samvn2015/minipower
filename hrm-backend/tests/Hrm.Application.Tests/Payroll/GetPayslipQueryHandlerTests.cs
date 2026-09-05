@@ -71,6 +71,13 @@ public sealed class GetPayslipQueryHandlerTests
             Guid employeeId,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
     }
 
     private sealed class FakeAccountRepo(string[] roles, string? employeeCode) : IIdentityAccountReadRepository

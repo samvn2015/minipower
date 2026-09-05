@@ -1,5 +1,7 @@
 using Hrm.Application.Common;
 using Hrm.Application.Timekeeping.Dtos;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Shared.Constants;
 using Hrm.Domain.Timekeeping;
@@ -60,7 +62,8 @@ public sealed record PublishTimesheetTemplateCommand(string? ActorIdpSubject, Gu
 
 public sealed class PublishTimesheetTemplateCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ITimesheetTemplateRepository templates)
+    ITimesheetTemplateRepository templates,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<PublishTimesheetTemplateCommand, TimesheetTemplatePublishResult>
 {
     public async Task<TimesheetTemplatePublishResult> HandleAsync(
@@ -88,6 +91,15 @@ public sealed class PublishTimesheetTemplateCommandHandler(
         var activeCount = await templates.CountActiveAsync(cancellationToken).ConfigureAwait(false);
         if (activeCount != 1)
             throw new InvalidOperationException("Invariant TIM-FR-015: phải đúng một mẫu Active.");
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.TimesheetTemplatePublished,
+                EmployeeId: null,
+                command.TemplateId,
+                command.ActorIdpSubject!,
+                before.VersionCode),
+            cancellationToken).ConfigureAwait(false);
 
         return new TimesheetTemplatePublishResult(
             command.TemplateId,
