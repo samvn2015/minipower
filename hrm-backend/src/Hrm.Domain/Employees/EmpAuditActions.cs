@@ -9,4 +9,6 @@ public static class EmpAuditActions
     public const string LmChangeRejected = "LmChangeRejected";
     public const string ProbationDecided = "ProbationDecided";
     public const string PayslipViewed = "PayslipViewed";
+    public const string LifOffboardingNConfirmed = "LifOffboardingNConfirmed";
+    public const string LifOffboardingAccessLocked = "LifOffboardingAccessLocked";
 }

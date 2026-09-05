@@ -2,6 +2,7 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
+| 0.4 | 2026-09-05 | DEV | **Chốt** · TC-014/NFR-002 audit (DEC-DLV-022) |
 | 0.3 | 2026-09-05 | DEV | **Chốt** · TC-012 SCR tách (DEC-DLV-021) |
 | 0.2 | 2026-09-04 | QC (execute) | **Chốt** · St cập nhật (DEC-DLV-018) |
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA) | **Chốt** (DEC-DLV-004) |
@@ -26,11 +27,11 @@
 | LIF-TC-011 | Chat theo master | Should | E2E | Happy | Should | Partial |
 | LIF-TC-012 | Đủ LIF-SCR-001…006 | Có màn | E2E | Happy | Must | Pass |
 | LIF-TC-013 | Hiện N và N+3 | UI đúng | E2E | Happy | Must | Pass |
-| LIF-TC-014 | Audit khóa sớm | Log | API | Happy | Must | Partial |
+| LIF-TC-014 | Audit khóa sớm | Log | API | Happy | Must | Pass |
 | LIF-TC-015 | NV 403 ghi N job | 403 | API | Unhappy | Must | Pass |
 | LIF-TC-016 | Không nút CRM sales | Không UI | E2E | Happy | Must | Pass |
 | LIF-TC-NFR-001 | HR không credential Git | Pass | E2E | Unhappy | Must | Pass |
-| LIF-TC-NFR-002 | Audit N / khóa Git-CRM | Log | API | Happy | Must | Partial |
+| LIF-TC-NFR-002 | Audit N / khóa Git-CRM | Log | API | Happy | Must | Pass |
 | LIF-TC-HA-001 | Job N+3 không chạy DR | Count 0 | HA | Unhappy | Must | Pass |
 
 ## 3. Chi tiết test case
@@ -181,7 +182,7 @@ Path: onboarding/offboarding API `v1/lif/*`. Job **chỉ Active** (ADR-003 · `I
 | **Steps** | **H:** khóa sớm có CR. **N:** khóa sớm không CR. |
 | **Expected** | **H:** log CR. **N:** ghi vi phạm. |
 | **Layer / Path** | API · Happy + Unhappy |
-| **Status** |  **Partial** — early CR fields persist; audit EmpLog riêng mỏng. |
+| **Status** |  **Pass** — EmpAudit `LifOffboardingAccessLocked` + detail CR (unit + `e2e-api-lif-slice-c`); không CR → BadRequest. |
 
 ### LIF-TC-015 — NV 403 ghi N kích job
 
@@ -205,7 +206,7 @@ Path: onboarding/offboarding API `v1/lif/*`. Job **chỉ Active** (ADR-003 · `I
 
 ### LIF-TC-NFR-001 / 002 · LIF-TC-HA-001
 
-**Status:** NFR-001 **Pass** · NFR-002 **Partial** · HA-001 **Pass** (HostRoleGate Standby).
+**Status:** NFR-001 **Pass** · NFR-002 **Pass** (`LifOffboardingNConfirmed` + `LifOffboardingAccessLocked`) · HA-001 **Pass** (HostRoleGate Standby).
 
 HR không credential Git. Audit N / khóa Git-CRM. **HA:** trên Standby/DR, job N+3 count = 0 (không bịa % uptime / kubectl).
 
@@ -213,6 +214,7 @@ HR không credential Git. Audit N / khóa Git-CRM. **HA:** trên Standby/DR, job
 
 | Phiên bản | Thay đổi | Tác giả |
 |-----------|----------|---------|
+| 0.4 | TC-014 + NFR-002 Pass — EmpAudit LIF (DEC-DLV-022) | DEV |
 | 0.3 | TC-012 Pass — tách SCR-001…006 (DEC-DLV-021) | DEV |
 | 0.2 | Execute St (DEC-DLV-018) | QC / PGD |
 | 0.1 | Chốt catalog (DEC-DLV-004) | PGD Dư Hùng |

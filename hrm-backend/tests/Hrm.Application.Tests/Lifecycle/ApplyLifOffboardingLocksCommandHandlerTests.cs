@@ -1,5 +1,7 @@
 using Hrm.Application.Common;
 using Hrm.Application.Lifecycle.Commands;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Lifecycle;
@@ -19,9 +21,11 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
     public async Task It_LocksGitAndCrmSpTogether_AtNPlus3()
     {
         var repo = new FakeRepo();
+        var audit = new FakeAudit();
         var handler = new ApplyLifOffboardingLocksCommandHandler(
             new FakeAccounts(["IAM-ROLE-IT"]),
-            repo);
+            repo,
+            audit);
 
         var dto = await handler.HandleAsync(
             new ApplyLifOffboardingLocksCommand("it-dev", CaseId, NPlus3, null));
@@ -32,6 +36,10 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
         Assert.False(dto.IsEarlySecurityCr);
         Assert.Equal(LifOffboardingFacts.LockChannelGitAndCrmSp, repo.LastChannel);
         Assert.DoesNotContain("sales", repo.LastChannel, StringComparison.OrdinalIgnoreCase);
+        Assert.Contains(audit.Entries, e =>
+            e.Action == EmpAuditActions.LifOffboardingAccessLocked
+            && e.Detail != null
+            && e.Detail.Contains("nPlus3", StringComparison.OrdinalIgnoreCase));
     }
 
     [Fact]
@@ -39,7 +47,8 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
     {
         var handler = new ApplyLifOffboardingLocksCommandHandler(
             new FakeAccounts(["IAM-ROLE-IT"]),
-            new FakeRepo());
+            new FakeRepo(),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(
@@ -50,9 +59,11 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
     public async Task EarlyWithCr_OkAndAudited()
     {
         var repo = new FakeRepo();
+        var audit = new FakeAudit();
         var handler = new ApplyLifOffboardingLocksCommandHandler(
             new FakeAccounts(["IAM-ROLE-IT"]),
-            repo);
+            repo,
+            audit);
 
         var dto = await handler.HandleAsync(
             new ApplyLifOffboardingLocksCommand(
@@ -61,6 +72,10 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
         Assert.True(dto.GitLocked && dto.CrmSpLocked);
         Assert.True(dto.IsEarlySecurityCr);
         Assert.Equal("CR-SEC-1 an ninh", dto.EarlyCrReason);
+        Assert.Contains(audit.Entries, e =>
+            e.Action == EmpAuditActions.LifOffboardingAccessLocked
+            && e.Detail != null
+            && e.Detail.Contains("CR-SEC-1", StringComparison.Ordinal));
     }
 
     [Fact]
@@ -68,7 +83,8 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
     {
         var handler = new ApplyLifOffboardingLocksCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"]),
-            new FakeRepo());
+            new FakeRepo(),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(
@@ -79,25 +95,45 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
     public async Task Job_SkipsBeforeNPlus3_LocksWhenDue()
     {
         var repo = new FakeRepo();
+        var audit = new FakeAudit();
         var handler = new RunLifNPlus3LocksCommandHandler(
             new FakeAccounts(["IAM-ROLE-IT"]),
             repo,
-            new FakeHostRoleGate(active: true));
+            new FakeHostRoleGate(active: true),
+            audit);
 
         var early = await handler.HandleAsync(
             new RunLifNPlus3LocksCommand("it-dev", new DateOnly(2026, 10, 1)));
         Assert.Equal(0, early.Locked);
         Assert.Equal(1, early.SkippedNotDue);
+        Assert.Empty(audit.Entries);
 
         var due = await handler.HandleAsync(
             new RunLifNPlus3LocksCommand("it-dev", NPlus3));
         Assert.Equal(1, due.Locked);
         Assert.True(repo.LastApply is not null);
+        Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.LifOffboardingAccessLocked);
     }
 
     private sealed class FakeHostRoleGate(bool active) : IHostRoleGate
     {
         public bool IsActiveHost() => active;
+    }
+
+    private sealed class FakeAudit : IEmpAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeAccounts(string[] roles) : IIdentityAccountReadRepository

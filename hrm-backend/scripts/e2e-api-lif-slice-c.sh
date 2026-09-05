@@ -98,5 +98,19 @@ assert "CR-SEC" in (d.get("earlyCrReason") or "")
 print("early CR OK")
 PY
 
+echo "========== LIF-TC-014 / NFR-002 — EmpAudit N + AccessLocked =========="
+AUDIT_N=$(curl -sf -H "$(auth_hdr "$HR_TOKEN")" "$BASE/v1/emp/employees/$EMP2_ID/audit-logs")
+python3 - <<'PY' "$AUDIT_N"
+import json, sys
+d = json.loads(sys.argv[1])
+rows = d.get("data", d) if isinstance(d, dict) else d
+actions = {r.get("action") for r in rows}
+assert "LifOffboardingNConfirmed" in actions, actions
+assert "LifOffboardingAccessLocked" in actions, actions
+locked = next(r for r in rows if r.get("action") == "LifOffboardingAccessLocked")
+assert "CR-SEC" in (locked.get("detail") or ""), locked
+print("LIF audit EmpLog OK", sorted(actions))
+PY
+
 echo ""
 echo "OK — LIF slice C (N+3 Git+CRM SP locks)"

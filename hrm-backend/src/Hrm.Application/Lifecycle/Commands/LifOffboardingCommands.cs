@@ -1,5 +1,6 @@
 using Hrm.Application.Common;
 using Hrm.Application.Lifecycle.Dtos;
+using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Lifecycle;
@@ -57,7 +58,8 @@ public sealed class CreateLifOffboardingCommandHandler(
 
 public sealed class ConfirmLifOffboardingNCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ILifOffboardingRepository offboardings)
+    ILifOffboardingRepository offboardings,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ConfirmLifOffboardingNCommand, LifOffboardingDto>
 {
     public async Task<LifOffboardingDto> HandleAsync(
@@ -86,6 +88,15 @@ public sealed class ConfirmLifOffboardingNCommandHandler(
             request.CaseId,
             request.LastWorkingDayN,
             request.ActorIdpSubject,
+            cancellationToken);
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LifOffboardingNConfirmed,
+                snap.EmployeeId,
+                snap.Id,
+                request.ActorIdpSubject,
+                $"N={snap.LastWorkingDayN:yyyy-MM-dd};N+3={LifOffboardingFacts.ComputeNPlus3(snap.LastWorkingDayN!.Value):yyyy-MM-dd}"),
             cancellationToken);
 
         return LifOffboardingMapper.ToDto(snap);
@@ -207,7 +218,8 @@ public sealed record RunLifNPlus3LocksCommand(
 
 public sealed class ApplyLifOffboardingLocksCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ILifOffboardingRepository offboardings)
+    ILifOffboardingRepository offboardings,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ApplyLifOffboardingLocksCommand, LifOffboardingDto>
 {
     public async Task<LifOffboardingDto> HandleAsync(
@@ -254,14 +266,33 @@ public sealed class ApplyLifOffboardingLocksCommandHandler(
                 request.ActorIdpSubject),
             cancellationToken);
 
+        await AppendLockAuditAsync(auditLogs, snap, request.ActorIdpSubject, cancellationToken);
+
         return LifOffboardingMapper.ToDto(snap);
     }
+
+    internal static Task AppendLockAuditAsync(
+        IEmpAuditLogRepository auditLogs,
+        LifOffboardingSnapshot snap,
+        string actorIdpSubject,
+        CancellationToken cancellationToken) =>
+        auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LifOffboardingAccessLocked,
+                snap.EmployeeId,
+                snap.Id,
+                actorIdpSubject,
+                snap.IsEarlySecurityCr
+                    ? $"earlyCr={snap.EarlyCrReason};channel={LifOffboardingFacts.LockChannelGitAndCrmSp}"
+                    : $"nPlus3;asOf={snap.LockAsOfDate:yyyy-MM-dd};channel={LifOffboardingFacts.LockChannelGitAndCrmSp}"),
+            cancellationToken);
 }
 
 public sealed class RunLifNPlus3LocksCommandHandler(
     IIdentityAccountReadRepository accounts,
     ILifOffboardingRepository offboardings,
-    IHostRoleGate hostRoleGate)
+    IHostRoleGate hostRoleGate,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>
 {
     public async Task<LifNPlus3LockRunResult> HandleAsync(
@@ -309,7 +340,7 @@ public sealed class RunLifNPlus3LocksCommandHandler(
                 continue;
             }
 
-            await offboardings.ApplyAccessLocksAsync(
+            var snap = await offboardings.ApplyAccessLocksAsync(
                 new LifAccessLockApplyModel(
                     c.Id,
                     asOf,
@@ -317,6 +348,8 @@ public sealed class RunLifNPlus3LocksCommandHandler(
                     CrReason: null,
                     request.ActorIdpSubject),
                 cancellationToken);
+            await ApplyLifOffboardingLocksCommandHandler.AppendLockAuditAsync(
+                auditLogs, snap, request.ActorIdpSubject, cancellationToken);
             locked++;
         }
 
