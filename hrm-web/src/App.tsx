@@ -13,9 +13,13 @@ import { LoginPage } from "./pages/LoginPage";
 import { PayAllowancePage } from "./pages/PayAllowancePage";
 import { PayPayslipPage } from "./pages/PayPayslipPage";
 import { PayPeriodPage } from "./pages/PayPeriodPage";
+import { TimClosePage } from "./pages/TimClosePage";
+import { TimCommitPage } from "./pages/TimCommitPage";
 import { TimImportPage } from "./pages/TimImportPage";
+import { TimListPage } from "./pages/TimListPage";
 import { TimPeriodPage } from "./pages/TimPeriodPage";
 import { TimTemplatePage } from "./pages/TimTemplatePage";
+import { TimUnlockPage } from "./pages/TimUnlockPage";
 import { isHr, isHrOrIt, isIt, useCurrentUser } from "./hooks/useCurrentUser";
 import { PrbCasesPage } from "./pages/PrbCasesPage";
 import { PrbDecidePage } from "./pages/PrbDecidePage";
@@ -98,6 +102,14 @@ export default function App() {
           <Route path="/leave/c1" element={<LeaveC1QueuePage />} />
           <Route path="/leave/c2" element={<LeaveC2QueuePage />} />
           <Route
+            path="/tim"
+            element={
+              <RequireHr>
+                <TimListPage />
+              </RequireHr>
+            }
+          />
+          <Route
             path="/tim/templates"
             element={
               <RequireTimTemplate>
@@ -110,6 +122,30 @@ export default function App() {
             element={
               <RequireHr>
                 <TimImportPage />
+              </RequireHr>
+            }
+          />
+          <Route
+            path="/tim/imports/:batchId/commit"
+            element={
+              <RequireHr>
+                <TimCommitPage />
+              </RequireHr>
+            }
+          />
+          <Route
+            path="/tim/close"
+            element={
+              <RequireHr>
+                <TimClosePage />
+              </RequireHr>
+            }
+          />
+          <Route
+            path="/tim/unlock"
+            element={
+              <RequireHr>
+                <TimUnlockPage />
               </RequireHr>
             }
           />

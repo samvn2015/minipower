@@ -117,10 +117,13 @@ export function AppLayout() {
                 </Link>
                 {user.roles.includes("IAM-ROLE-HR") && (
                   <>
+                    <Link className="btn btn-ghost" to="/tim">
+                      Công TIM
+                    </Link>
                     <Link className="btn btn-ghost" to="/tim/imports">
                       Import công
                     </Link>
-                    <Link className="btn btn-ghost" to="/tim/periods">
+                    <Link className="btn btn-ghost" to="/tim/close">
                       Chốt công
                     </Link>
                     <Link className="btn btn-ghost" to="/pay/periods">

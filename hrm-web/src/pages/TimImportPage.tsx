@@ -1,13 +1,11 @@
 import { FormEvent, useEffect, useState } from "react";
-import { Link } from "react-router-dom";
-import {
-  commitTimesheetImport,
-  fetchActiveTimesheetTemplate,
-  previewTimesheetImport,
-} from "../api/client";
+import { Link, useNavigate } from "react-router-dom";
+import { fetchActiveTimesheetTemplate, previewTimesheetImport } from "../api/client";
 import type { TimesheetImportBatch, TimesheetTemplate } from "../api/types";
 
+/** TIM-SCR-003 — import + preview lỗi; [Ghi] → SCR-004 khi sạch. */
 export function TimImportPage() {
+  const navigate = useNavigate();
   const [active, setActive] = useState<TimesheetTemplate | null>(null);
   const [periodYm, setPeriodYm] = useState("2026-10");
   const [csvText, setCsvText] = useState(
@@ -82,34 +80,18 @@ export function TimImportPage() {
     }
   }
 
-  async function onCommit() {
-    if (!batch) return;
-    setBusy(true);
-    setError(null);
-    setMessage(null);
-    try {
-      const result = await commitTimesheetImport(batch.id);
-      setMessage(`Đã ghi bảng công Draft ${result.periodYm} — ${result.lineCount} dòng.`);
-      setBatch(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Commit thất bại");
-    } finally {
-      setBusy(false);
-    }
-  }
-
   return (
     <div className="card stack">
-      <div className="row" style={{ justifyContent: "space-between" }}>
+      <div className="row" style={{ justifyContent: "space-between", flexWrap: "wrap", gap: 8 }}>
         <div>
           <h2>Import + preview công</h2>
-          <p className="muted">TIM-SCR-003/004 — khớp version mẫu, cấm commit khi còn lỗi Must.</p>
+          <p className="muted">TIM-SCR-003 — khớp version mẫu; [Ghi] disabled nếu còn lỗi Must.</p>
         </div>
-        <Link className="btn btn-secondary" to="/tim/templates">
-          ← Mẫu TIM
+        <Link className="btn btn-ghost" to="/tim">
+          ← Danh sách
         </Link>
-        <Link className="btn btn-secondary" to="/tim/periods">
-          Chốt tháng →
+        <Link className="btn btn-ghost" to="/tim/templates">
+          Mẫu TIM
         </Link>
       </div>
 
@@ -169,9 +151,11 @@ export function TimImportPage() {
             type="button"
             className="btn"
             disabled={busy || batch.hasMustErrors}
-            onClick={() => onCommit()}
+            onClick={() =>
+              navigate(`/tim/imports/${batch.id}/commit`, { state: { batch } })
+            }
           >
-            Ghi bảng công (commit)
+            Tiếp tục ghi (SCR-004)
           </button>
         </div>
       )}
