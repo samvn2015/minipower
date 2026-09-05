@@ -6,7 +6,7 @@
 |------|---------|
 | **Cập nhật** | 2026-09-05 |
 | **Người rollup** | Dư Hùng (PGD) · soạn trợ lý |
-| **Nguồn sync** | DOC-03 · memory/delivery · DOC-08–17 **Chốt** · 7 Must · UAT DEV §1–§7 Pass · PRB/LIF DOC-16 **v0.3** (SCR/HA) · DEC-DLV-020/021 · PR #42–#44 |
+| **Nguồn sync** | DOC-03 · memory/delivery · 7 Must · UAT DEV Pass · PRB/LIF/TIM SCR · LIF audit · DEC-DLV-020…023 · PR #42–#47 |
 
 ---
 
@@ -22,7 +22,7 @@
 | **FR đã baseline** | 0 |
 | **FR đang phân tích** | 0 |
 | **Blocker / nợ mở** | 5 (xem dưới) — JWKS **không** chặn DEV/UAT (DEC-DLV-011) |
-| **Code / UAT** | 7 Must trên `main` · e2e · DOC-16 St · **UAT DEV Must Pass** · PRB/LIF SCR+HA siết (#43/#44) · **Prod:** Lark JWKS + PG host + RTO còn mở |
+| **Code / UAT** | 7 Must trên `main` · e2e · DOC-16 St · **UAT DEV Must Pass** · SCR/HA/audit siết (#43–#47) · **Prod:** Lark JWKS + PG host + RTO còn mở |
 
 ---
 
@@ -33,12 +33,12 @@ Ký hiệu: `—` chưa · `◐` đang · `✓` xong (Chốt, chưa BL) · `BL` 
 | Module | Owner | Discovery | Req (04–07) | Arch slice | Plan | Delivery | Sign-off | Ghi chú |
 |--------|-------|-----------|-------------|------------|------|----------|----------|---------|
 | leave | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §3 Pass · OQ-010 Skip · lịch lễ MVP |
-| payroll | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §5 Pass · C&B Δ=0 |
-| timekeeping | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §4 Pass · cấm máy CC |
+| payroll | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §5 Pass · C&B Δ=0 · NFR-002 Partial |
+| timekeeping | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §4 · SCR-001…006 Pass (#47) · Partial TC-008/NFR-002 |
 | employee-profile | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §2 Pass |
-| lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §7 · HA-001 Pass · SCR-001…006 Pass · Partial TC-014/NFR-002 |
+| lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §7 · SCR+HA Pass · TC-014/NFR-002 Pass (#46) · Partial TC-011 Should |
 | identity | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §1 Pass · OIDC Lark Partial (DEV bypass) |
-| probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §6 · HA-001 Pass · SCR-001…004 Pass (DOC-16 v0.3) |
+| probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §6 · HA + SCR Pass (DOC-16 v0.3) |
 | events | BA | ✓ | — | ◐ | — | — | — | chưa SRS |
 | hr-analytics | BA | ✓ | — | ◐ | — | — | — | Should; chưa SRS |
 
@@ -72,7 +72,8 @@ Arch = `✓` khung. Delivery 7 Must = tài liệu + execute + **UAT DEV** (chưa
 | M4h | 7 Must code + Must gaps | LEV…LIF · PR #32–#35 | 2026-09-04 | **done** ◐ (`main`) |
 | M4i | DOC-16 execute St | St v0.2 · TC-run · PR #36–#39 | 2026-09-04 | **done** ◐ |
 | M4j | UAT DEV Must | checklist §1–§7 · PR #40–#42 | 2026-09-04 | **done** ◐ (API+§1 UI; ký formal tuỳ chọn) |
-| M4k | Siết SCR / HA Standby | PRB #43 · LIF #44 · DOC-16 v0.3 | 2026-09-05 | **done** ◐ |
+| M4k | Siết SCR / HA Standby | PRB #43 · LIF #44 | 2026-09-05 | **done** ◐ |
+| M4l | LIF audit + TIM SCR | #46 · #47 · DEC-DLV-022/023 | 2026-09-05 | **done** ◐ |
 | M5 | Go-live | Prod 24/7 | 2027 | planned — JWKS · PG host · RTO/RPO |
 
 → Chi tiết: [`DOC-15`](../00-governance/DOC-15-project-plan.md) **Chốt** · WBS: [`DOC-14`](../04-platform/DOC-14-wbs-estimate.md) **Chốt**  
@@ -84,8 +85,10 @@ Arch = `✓` khung. Delivery 7 Must = tài liệu + execute + **UAT DEV** (chưa
 |------|-------|--------|-----|------------|
 | UAT DEV Must (checklist) | QC / PGD | all Must | 2026-09-04 | **done** ◐ — §1–§7 Pass; ký formal ☐ |
 | Overview sync | PM | platform | 2026-09-05 | **done** (rollup này) |
-| Siết Partial SCR / HA Standby | DEV | PRB · LIF | 2026-09-05 | **done** ◐ — #43/#44 |
-| LIF audit Early CR (TC-014 / NFR-002) | DEV / QC | lifecycle | | Partial mỏng |
+| Siết Partial SCR / HA Standby | DEV | PRB · LIF · TIM | 2026-09-05 | **done** ◐ — #43/#44/#47 |
+| LIF audit Early CR (TC-014 / NFR-002) | DEV | lifecycle | 2026-09-05 | **done** ◐ — #46 |
+| TIM audit / TC-008 phép↔công | DEV / QC | timekeeping | | Partial mỏng |
+| PAY NFR-002 audit đủ thao tác | DEV / QC | payroll | | Partial |
 | RTO/RPO phút (không bịa %) | SA / PGD | NFR-012 | | mở |
 | Prod PostgreSQL host (OQ-DLV-003) | IT | platform | | mở |
 | Lark issuer + JWKS Prod | IT / SA | identity | | **mở** — DEV bypass DEC-DLV-011 |
