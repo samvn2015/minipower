@@ -8,15 +8,15 @@ Dự án này **là sản phẩm / hệ thống đích**, không phải repo mai
 
 - **Mục tiêu:** Số hóa toàn diện vòng đời nhân sự, tự động hóa luồng duyệt/cảnh báo, chuẩn hóa quản lý công - lương và nâng cao trải nghiệm nhân viên — đi qua **6 phase / 18 DOC** chuẩn nghề, giữ mọi thứ **trace được** (UC → FR → AC → Test).
 - **Triết lý bất biến:** `AI = trợ lý ra quyết định · Con người = người quyết định cuối cùng`. **Không** xây đội agent tự chạy / tự bàn giao. AI chỉ chuyển sang *thực thi* (sinh code, sinh artifact cuối) **khi tài liệu tiền đề đã đủ rõ**; trước đó chỉ discovery, đặt câu hỏi, phản biện, phân tích trade-off, gợi ý — **không nhảy giải pháp sớm**.
-- **Phase hiện tại:** `requirements` → skill `minipower/skills/requirements/SKILL.md`, memory `memory/requirements/`.
+- **Phase hiện tại:** `delivery` → skill `.claude/skills/minipower/skills/delivery/SKILL.md`, memory `memory/delivery/`.
 - **Vai trò anh Dư Hùng:** BA, PM, SA, DEV, QC, DevOps, Support — lăng kính hỗ trợ ra quyết định (không thay con người quyết):
-  - **BA** → minipower/roles/BA.md
-  - **PM** → minipower/roles/PM.md
-  - **SA** → minipower/roles/SA.md
-  - **DEV** → minipower/roles/DEV.md
-  - **QC** → minipower/roles/QC.md
-  - **DevOps** → minipower/roles/DevOps.md
-  - **Support** → minipower/roles/Support.md
+  - **BA** → .claude/skills/minipower/roles/BA.md
+  - **PM** → .claude/skills/minipower/roles/PM.md
+  - **SA** → .claude/skills/minipower/roles/SA.md
+  - **DEV** → .claude/skills/minipower/roles/DEV.md
+  - **QC** → .claude/skills/minipower/roles/QC.md
+  - **DevOps** → .claude/skills/minipower/roles/DevOps.md
+  - **Support** → .claude/skills/minipower/roles/Support.md
 - **Kinh nghiệm Minipower:** `returning`.
 
 ## Xưng hô
@@ -28,7 +28,7 @@ Dự án này **là sản phẩm / hệ thống đích**, không phải repo mai
 ## Việc phải làm
 
 - Đầu session: đọc `memory/profile.json` → `memory/memory.md` → `docs/05-traceability/overview.md`.
-- Prompt làm việc: khai `Phase:` + module (hoặc `04-platform`) + `DOC-NN`; gọi `/minipower` hoặc `@minipower/skills/{current_phase}/SKILL.md`.
+- Prompt làm việc: khai `Phase:` + module (hoặc `04-platform`) + `DOC-NN`; gọi `/minipower` hoặc `@.claude/skills/minipower/skills/{current_phase}/SKILL.md`.
 - Một phiên = **một slice** (một module + một DOC + section/ID); thiếu scope → hỏi trọn gói, không search repo.
 - Trước khi **thực thi** (viết code / artifact cuối): qua **readiness-gate** — liệt kê **tất cả** thiếu sót một lượt; hoãn có ghi nợ `memory/{phase}/open-questions.md`.
 - Trước **baseline / bàn giao**: qua **doc-review** — verdict PASS / BLOCK.
@@ -43,7 +43,7 @@ Dự án này **là sản phẩm / hệ thống đích**, không phải repo mai
 | Tên | Dư Hùng |
 | Vai trò | BA, PM, SA, DEV, QC, DevOps, Support |
 | Dự án | Số hóa toàn diện vòng đời nhân sự, tự động hóa luồng duyệt/cảnh báo, chuẩn hóa quản lý công - lương và nâng cao trải nghiệm nhân viên. |
-| Giai đoạn | requirements |
+| Giai đoạn | delivery |
 | Kinh nghiệm Minipower | Đã dùng (returning) |
 
 ## Kiến trúc & quy ước (phải tuân thủ)
@@ -71,8 +71,8 @@ Dự án này **là sản phẩm / hệ thống đích**, không phải repo mai
 - `README.md` — entry dự án · `memory/memory.md` — index context
 - `docs/05-traceability/overview.md` — tổng quan 30s (phase, module, blocker)
 - `docs/01-project/DOC-01` … `DOC-03` — vision, stakeholder, scope
-- Pack Minipower: `minipower/SKILL.md` (router), `minipower/docs/pipeline.md`, `minipower/docs/parallel-work.md`
-- Hook đã cài: token-guard, auto-routing, profile-guard — xem `minipower/agents/`
+- Pack Minipower: `.claude/skills/minipower/SKILL.md` (router), `.claude/skills/minipower/docs/pipeline.md`, `.claude/skills/minipower/docs/parallel-work.md`
+- Hook đã cài: token-guard, auto-routing, profile-guard — xem `.claude/skills/minipower/agents/`
 
 Khi anh Dư Hùng yêu cầu thêm scope / đổi hướng lớn: chạy deliberation hoặc change-control trước — **không** nhảy giải pháp sớm.
 
@@ -138,8 +138,8 @@ Với multi-step task, nêu plan ngắn:
 
 ## Minipower pack (import)
 
-Điều chỉnh path nếu pack không symlink tại `.cursor/skills/minipower/`:
+Điều chỉnh path nếu pack không symlink tại `.claude/skills/minipower/`:
 
-@.cursor/skills/minipower/agents/token-guard.md
-@.cursor/skills/minipower/agents/auto-routing.md
-@.cursor/skills/minipower/agents/profile-guard.md
+@.claude/skills/minipower/agents/token-guard.md
+@.claude/skills/minipower/agents/auto-routing.md
+@.claude/skills/minipower/agents/profile-guard.md
