@@ -1,0 +1,488 @@
+export type ApiEnvelope<T> = {
+  data: T;
+  traceId?: string;
+  code?: string;
+};
+
+export type CurrentUser = {
+  sub: string;
+  name: string | null;
+  roles: string[];
+};
+
+export type EmployeeListItem = {
+  id: string;
+  employeeCode: string;
+  fullName: string | null;
+  emailCty: string | null;
+  orgUnitCode: string | null;
+  hasContract: boolean;
+  status: string;
+};
+
+export type EmployeeContract = {
+  contractType: string;
+  startDate: string;
+  endDate: string | null;
+  isProbation: boolean;
+};
+
+export type Seniority = {
+  years: number;
+  months: number;
+  displayText: string;
+  ruleCode: string;
+};
+
+export type EducationLevel = {
+  code: string;
+  name: string;
+};
+
+export type EmpCatalogItem = {
+  code: string;
+  name: string;
+};
+
+export type EmployeeDetail = {
+  id: string;
+  employeeCode: string;
+  fullName: string | null;
+  cccd: string | null;
+  emailCty: string | null;
+  taxId: string | null;
+  orgUnitCode: string | null;
+  educationLevelCode: string | null;
+  educationLevelName: string | null;
+  seniority: Seniority | null;
+  contract: EmployeeContract | null;
+  lineManagerEmployeeId: string | null;
+  status: string;
+};
+
+export type DevPersona = {
+  id: string;
+  label: string;
+  sub: string;
+  email?: string;
+};
+
+export const DEV_PERSONAS: DevPersona[] = [
+  { id: "hr", label: "HR / C&B (local-dev)", sub: "local-dev", email: "dev@company.local" },
+  { id: "lm", label: "Line Manager (local-lm)", sub: "local-lm", email: "handover@company.local" },
+  { id: "it", label: "IT (it-dev)", sub: "it-dev", email: "it@company.local" },
+];
+
+export type LineManagerChangeItem = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  employeeFullName: string | null;
+  proposedLineManagerEmployeeId: string;
+  proposedLineManagerCode: string;
+  proposedLineManagerName: string | null;
+  status: string;
+  requestedByIdpSubject: string;
+  requestedAtUtc: string;
+  reviewedByIdpSubject?: string | null;
+  reviewedAtUtc?: string | null;
+  reviewNote?: string | null;
+};
+
+export type LineManagerChangeResult = {
+  requestId: string;
+  status: string;
+};
+
+export type IdentityAccount = {
+  id: string;
+  idpSubject: string;
+  displayName: string | null;
+  emailCty: string | null;
+  employeeCode: string | null;
+  status: string;
+  roles: string[];
+};
+
+export type IdentityAccountAdminResult = {
+  accountId: string;
+  status: string;
+  roles: string[];
+};
+
+export const IAM_ASSIGNABLE_ROLES = [
+  "IAM-ROLE-NV",
+  "IAM-ROLE-LM",
+  "IAM-ROLE-HR",
+  "IAM-ROLE-IT",
+  "IAM-ROLE-PGD",
+] as const;
+
+export type LeaveType = {
+  code: string;
+  name: string;
+  deductsAnnualBalance: boolean;
+};
+
+export type LeaveBalance = {
+  year: number;
+  entitledDays: number;
+  usedDays: number;
+  remainingDays: number;
+};
+
+export type LeaveRequestItem = {
+  id: string;
+  leaveTypeCode: string;
+  leaveTypeName: string | null;
+  fromDate: string;
+  toDate: string;
+  dayPart: string;
+  totalDays: number;
+  reason: string;
+  handoverEmployeeId: string;
+  status: string;
+  isEmergency: boolean;
+};
+
+export type LeaveRequestPendingC1Item = {
+  id: string;
+  employeeCode: string;
+  employeeFullName: string | null;
+  leaveTypeCode: string;
+  leaveTypeName: string | null;
+  fromDate: string;
+  toDate: string;
+  dayPart: string;
+  totalDays: number;
+  reason: string;
+  handoverEmployeeId: string;
+  isEmergency: boolean;
+  submittedAtUtc: string;
+};
+
+export type LeaveRequestActionResult = {
+  id: string;
+  status: string;
+};
+
+export type TimesheetTemplateColumn = {
+  columnKey: string;
+  displayName: string;
+  sortOrder: number;
+  isRequired: boolean;
+  mapsTo: string;
+};
+
+export type TimesheetTemplate = {
+  id: string;
+  versionCode: string;
+  name: string;
+  status: string;
+  publishedAtUtc: string | null;
+  publishedByIdpSubject: string | null;
+  columns: TimesheetTemplateColumn[];
+};
+
+export type TimesheetImportRow = {
+  rowNumber: number;
+  employeeCode: string | null;
+  workDays: number | null;
+  ot15: number | null;
+  ot20: number | null;
+  ot30: number | null;
+  otUnclassified: number | null;
+  isOk: boolean;
+  errorCode: string | null;
+  errorMessage: string | null;
+};
+
+export type TimesheetImportBatch = {
+  id: string;
+  periodYm: string;
+  templateVersionCode: string;
+  status: string;
+  totalRows: number;
+  errorRows: number;
+  hasMustErrors: boolean;
+  fileName: string | null;
+  rows: TimesheetImportRow[];
+};
+
+export type TimesheetCommitResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+};
+
+export type TimesheetLine = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  workDays: number;
+  ot15: number;
+  ot20: number;
+  ot30: number;
+  otUnclassified: number;
+  leaveDaysPaid: number;
+  leaveDaysUnpaid: number;
+  leaveDaysOther: number;
+};
+
+export type TimesheetPeriod = {
+  id: string;
+  periodYm: string;
+  status: string;
+  sourceImportBatchId: string | null;
+  lineCount: number;
+  lines: TimesheetLine[];
+};
+
+export type TimesheetCloseResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+  totalLeaveDaysPaid: number;
+  totalLeaveDaysUnpaid: number;
+};
+
+export type TimesheetUnlockResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+};
+
+export type PayLine = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  workDays: number;
+  leaveDaysUnpaid: number;
+  leaveDaysPaid: number;
+  nTinh: number;
+  timeWageFactor: number;
+  ot15: number;
+  ot20: number;
+  ot30: number;
+  contractAllowance: number;
+  monthlyAllowance: number;
+  bhRate: number;
+  tncnRate: number;
+  bhAmount: number;
+  tncnAmount: number;
+  netPay: number;
+};
+
+export type PayPeriod = {
+  id: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+  standardWorkDays: number;
+  hasNTinhOverCap: boolean;
+  overCapEmployeeCodes: string[];
+  lines: PayLine[];
+  warnings: string[];
+};
+
+export type PayRunResult = {
+  periodId: string;
+  periodYm: string;
+  status: string;
+  lineCount: number;
+  warnings: string[];
+};
+
+export type PayAllowanceCatalogItem = {
+  code: string;
+  name: string;
+  isActive: boolean;
+};
+
+export type PayMonthlyAllowance = {
+  id: string;
+  periodYm: string;
+  employeeId: string;
+  employeeCode: string;
+  code: string;
+  amount: number;
+};
+
+export type PayMonthlyAllowanceResult = {
+  periodYm: string;
+  employeeCode: string;
+  code: string;
+  amount: number;
+};
+
+export type PayPayslip = {
+  id: string;
+  periodId: string;
+  periodYm: string;
+  status: string;
+  employeeId: string;
+  employeeCode: string;
+  workDays: number;
+  leaveDaysUnpaid: number;
+  leaveDaysPaid: number;
+  nTinh: number;
+  timeWageFactor: number;
+  ot15: number;
+  ot20: number;
+  ot30: number;
+  contractAllowance: number;
+  monthlyAllowance: number;
+  bhRate: number;
+  tncnRate: number;
+  bhAmount: number;
+  tncnAmount: number;
+  netPay: number;
+};
+
+export type PayExportItem = {
+  employeeCode: string;
+  toAddress?: string | null;
+  pdfFileName?: string | null;
+  pdfBase64?: string | null;
+};
+
+export type PayExportResult = {
+  periodYm: string;
+  pdfCount: number;
+  emailCount: number;
+  items: PayExportItem[];
+};
+
+export type ProbationCase = {
+  employeeId: string;
+  employeeCode: string;
+  fullName?: string | null;
+  contractType: string;
+  probationStartDate: string;
+  probationEndDate?: string | null;
+  hasCompleteMilestone: boolean;
+  t15DueDate?: string | null;
+  t7DueDate?: string | null;
+};
+
+export type ProbationMilestone = {
+  employeeId: string;
+  employeeCode: string;
+  fullName?: string | null;
+  contractType?: string | null;
+  probationStartDate?: string | null;
+  probationEndDate?: string | null;
+  isOnProbation: boolean;
+  hasCompleteMilestone: boolean;
+  t15DueDate?: string | null;
+  t7DueDate?: string | null;
+  source: string;
+};
+
+export type ProbationReminder = {
+  id: string;
+  kind: string;
+  employeeId: string;
+  employeeCode: string;
+  probationEndDate: string;
+  dueDate: string;
+  asOfDate: string;
+  assigneeEmployeeId?: string | null;
+  assigneeEmployeeCode?: string | null;
+  inAppMessage: string;
+  emailTo: string;
+  channel: string;
+  createdAtUtc: string;
+};
+
+export type ProbationReminderRunResult = {
+  asOfDate: string;
+  t15Created: number;
+  t7Created: number;
+  skippedIncompleteMilestone: number;
+  skippedAlreadyExists: number;
+};
+
+export type ProbationMasterItem = {
+  code: string;
+  name: string;
+  sortOrder: number;
+};
+
+export type ProbationEvaluation = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  probationEndDate: string;
+  status: string;
+  proposedOutcomeCode?: string | null;
+  decidedOutcomeCode?: string | null;
+  decidedByIdpSubject?: string | null;
+  decidedAtUtc?: string | null;
+  extendDurationCode?: string | null;
+};
+
+export type LifOffboarding = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  source: string;
+  status: string;
+  lastWorkingDayN?: string | null;
+  nPlus3Expected?: string | null;
+  resignationSignedDate?: string | null;
+  jobNPlus3Eligible: boolean;
+  confirmedByIdpSubject?: string | null;
+  confirmedAtUtc?: string | null;
+  note?: string | null;
+  gitLocked?: boolean;
+  crmSpLocked?: boolean;
+  lockedAtUtc?: string | null;
+  lockAsOfDate?: string | null;
+  isEarlySecurityCr?: boolean;
+  earlyCrReason?: string | null;
+  lockedByIdpSubject?: string | null;
+};
+
+export type LifNPlus3LockRunResult = {
+  asOfDate: string;
+  locked: number;
+  skippedNotDue: number;
+  skippedAlreadyLocked: number;
+  skippedNoN: number;
+};
+
+export type LifOnboarding = {
+  id: string;
+  employeeId: string;
+  employeeCode: string;
+  status: string;
+  note?: string | null;
+  emailCtyProvisioned: boolean;
+  gitProvisioned: boolean;
+  crmSpProvisioned: boolean;
+  chatProvisioned: boolean;
+  allProvisioned: boolean;
+  closedByIdpSubject?: string | null;
+  closedAtUtc?: string | null;
+};
+
+export type LifOffChecklistItem = {
+  code: string;
+  name: string;
+  isMust: boolean;
+  sortOrder: number;
+  isChecked: boolean;
+  checkedByIdpSubject?: string | null;
+  checkedAtUtc?: string | null;
+};
+
+export type LifOffChecklistBoard = {
+  caseId: string;
+  status: string;
+  canClose: boolean;
+  items: LifOffChecklistItem[];
+};

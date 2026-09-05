@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <FrameworkReference Include="Microsoft.AspNetCore.App" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="9.0.15">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Hrm.Domain\Hrm.Domain.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.Domain/Jarvis.Domain.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.EntityFramework/Jarvis.EntityFramework.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.Caching/Jarvis.Caching.csproj" />
+    <ProjectReference Include="../../../../jarvis/Jarvis.BlobStoring/Jarvis.BlobStoring.csproj" />
+  </ItemGroup>
+
+</Project>

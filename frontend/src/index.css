@@ -1,0 +1,256 @@
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+:root {
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+  line-height: 1.5;
+  color: #1a1a1a;
+  background: #f4f6f8;
+}
+
+body {
+  margin: 0;
+}
+
+a {
+  color: #0b5cab;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+button {
+  cursor: pointer;
+}
+
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-header {
+  background: #0b3d6d;
+  color: #fff;
+  padding: 0.75rem 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+.app-header-meta {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.app-main {
+  width: min(1100px, 100%);
+  margin: 0 auto;
+  padding: 1.5rem;
+  flex: 1;
+}
+
+.card {
+  background: #fff;
+  border: 1px solid #dde3ea;
+  border-radius: 10px;
+  padding: 1.25rem;
+  box-shadow: 0 1px 2px rgb(0 0 0 / 4%);
+}
+
+.card h2 {
+  margin: 0 0 1rem;
+  font-size: 1.25rem;
+}
+
+.muted {
+  color: #5c6670;
+}
+
+.stack {
+  display: grid;
+  gap: 1rem;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btn {
+  border: 1px solid transparent;
+  border-radius: 8px;
+  padding: 0.55rem 1rem;
+  background: #0b5cab;
+  color: #fff;
+}
+
+.btn:hover {
+  background: #094a89;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: #0b5cab;
+  border-color: #0b5cab;
+}
+
+.btn-secondary:hover {
+  background: #eef4fb;
+}
+
+.btn-ghost {
+  background: transparent;
+  color: #fff;
+  border-color: rgb(255 255 255 / 35%);
+}
+
+.btn-ghost:hover {
+  background: rgb(255 255 255 / 10%);
+}
+
+.table-wrap {
+  overflow-x: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  padding: 0.75rem;
+  border-bottom: 1px solid #e7ebf0;
+  text-align: left;
+}
+
+th {
+  font-size: 0.8125rem;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  color: #5c6670;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  background: #eef4fb;
+  color: #0b5cab;
+}
+
+.badge-warn {
+  background: #fff4e5;
+  color: #9a5b00;
+}
+
+.form-grid {
+  display: grid;
+  gap: 1rem;
+}
+
+.form-grid label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.875rem;
+  font-weight: 600;
+}
+
+.form-grid input,
+.form-grid select {
+  padding: 0.55rem 0.65rem;
+  border: 1px solid #c9d2dc;
+  border-radius: 8px;
+}
+
+.error-box {
+  background: #fff1f0;
+  border: 1px solid #ffccc7;
+  color: #a8071a;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.success-box {
+  background: #f6ffed;
+  border: 1px solid #b7eb8f;
+  color: #237804;
+  padding: 0.75rem 1rem;
+  border-radius: 8px;
+}
+
+.login-grid {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.login-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 1rem;
+  border: 1px solid #dde3ea;
+  border-radius: 10px;
+  background: #fff;
+}
+
+.login-option strong {
+  display: block;
+}
+
+.empty-state {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #5c6670;
+}
+
+/* PAY-SCR-006 — touch-friendly layout; same fields as SCR-005 */
+.pay-mobile .btn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+
+.pay-mobile table th,
+.pay-mobile table td {
+  padding: 0.75rem 0.5rem;
+  font-size: 1rem;
+}
+
+.pay-mobile h2 {
+  font-size: 1.35rem;
+}
+
+.leave-mobile .btn {
+  min-height: 44px;
+  padding: 0.65rem 1rem;
+}
+
+.leave-mobile h2 {
+  font-size: 1.35rem;
+}

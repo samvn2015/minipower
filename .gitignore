@@ -1,0 +1,28 @@
+.DS_Store
+**/.DS_Store
+
+# .NET / Visual Studio
+[Bb]in/
+[Oo]bj/
+[Ll]og/
+.vs/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+TestResults/
+*.DotSettings.user
+
+# Secrets
+.env
+.env.*
+!.env.example
+**/secrets.json
+
+# Node (frontend, autotest)
+**/node_modules/
+**/dist/
+playwright-report/
+test-results/
+blob-report/
+playwright/.cache/
