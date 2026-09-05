@@ -236,3 +236,16 @@
 - Affects: hrm-web · DOC-16 lifecycle
 - Trace: LIF-TC-012 · DEC-DLV-018 · DEC-DLV-020
 - Confidence: vừa *(khung UI; chưa pixel E2E)*
+
+### DEC-DLV-022 — LIF EmpAudit N + khóa Git/CRM · [2026-09-05]
+- Status: accepted *(PGD «làm tiếp» sau #45)*
+- Context: Overview nợ LIF TC-014 / NFR-002 Partial.
+- Options: A Để Partial · B **Append EmpAudit trên confirm-N + locks/job** · C Bịa audit riêng LIF table
+- Decision: chọn **B** (cùng EmpAuditLog như PRB/PAY)
+- Why (loại C vì SoT audit EMP đã có API list)
+- Consequences:
+  - Actions: `LifOffboardingNConfirmed` · `LifOffboardingAccessLocked` (early CR detail).
+  - DOC-16 lifecycle v0.4: TC-014 + NFR-002 **Pass**. Partial còn TC-011 Should.
+- Affects: LIF commands · EmpAuditActions · e2e-api-lif-slice-c
+- Trace: LIF-TC-014 · LIF-TC-NFR-002 · DEC-DLV-021
+- Confidence: cao *(unit)* · vừa *(e2e khi Host chạy)*

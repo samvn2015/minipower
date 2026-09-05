@@ -18,9 +18,11 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
     public async Task Confirm_Hr_SetsNAndNPlus3Eligible()
     {
         var repo = new FakeRepo(ResignationSignedDate: new DateOnly(2026, 8, 1));
+        var audit = new FakeAudit();
         var handler = new ConfirmLifOffboardingNCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
-            repo);
+            repo,
+            audit);
 
         var dto = await handler.HandleAsync(
             new ConfirmLifOffboardingNCommand("local-dev", CaseId, new DateOnly(2026, 9, 30)));
@@ -30,6 +32,8 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
         Assert.Equal(new DateOnly(2026, 10, 3), dto.NPlus3Expected);
         Assert.True(dto.JobNPlus3Eligible);
         Assert.Equal("local-dev", dto.ConfirmedByIdpSubject);
+        Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.LifOffboardingNConfirmed);
+        Assert.Contains(audit.Entries, e => e.Detail != null && e.Detail.Contains("N=2026-09-30"));
     }
 
     [Fact]
@@ -38,7 +42,8 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
         var signed = new DateOnly(2026, 9, 15);
         var handler = new ConfirmLifOffboardingNCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
-            new FakeRepo(ResignationSignedDate: signed));
+            new FakeRepo(ResignationSignedDate: signed),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new ConfirmLifOffboardingNCommand("local-dev", CaseId, signed)));
@@ -49,7 +54,8 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
     {
         var handler = new ConfirmLifOffboardingNCommandHandler(
             new FakeAccounts(["IAM-ROLE-NV"], "MNV-DEV"),
-            new FakeRepo(null));
+            new FakeRepo(null),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(
@@ -62,6 +68,22 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
         Assert.Equal(
             new DateOnly(2026, 10, 3),
             LifOffboardingFacts.ComputeNPlus3(new DateOnly(2026, 9, 30)));
+    }
+
+    private sealed class FakeAudit : IEmpAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 
     private sealed class FakeAccounts(string[] roles, string? employeeCode) : IIdentityAccountReadRepository
