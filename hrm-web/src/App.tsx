@@ -22,8 +22,13 @@ import { PrbDecidePage } from "./pages/PrbDecidePage";
 import { PrbEvaluatePage } from "./pages/PrbEvaluatePage";
 import { PrbIncompletePage } from "./pages/PrbIncompletePage";
 import { PrbMyMilestonesPage } from "./pages/PrbMyMilestonesPage";
+import { LifCasesPage } from "./pages/LifCasesPage";
+import { LifConfirmNPage } from "./pages/LifConfirmNPage";
+import { LifLocksPage } from "./pages/LifLocksPage";
+import { LifOffChecklistPage } from "./pages/LifOffChecklistPage";
 import { LifOffboardingPage } from "./pages/LifOffboardingPage";
 import { LifOnboardingPage } from "./pages/LifOnboardingPage";
+import { LifSecurityCrPage } from "./pages/LifSecurityCrPage";
 import type { ReactNode } from "react";
 
 function RequirePayHr({ children }: { children: ReactNode }) {
@@ -166,6 +171,14 @@ export default function App() {
             }
           />
           <Route
+            path="/lif"
+            element={
+              <RequireLifActor>
+                <LifCasesPage />
+              </RequireLifActor>
+            }
+          />
+          <Route
             path="/lif/onboarding"
             element={
               <RequireLifActor>
@@ -178,6 +191,38 @@ export default function App() {
             element={
               <RequireLifActor>
                 <LifOffboardingPage />
+              </RequireLifActor>
+            }
+          />
+          <Route
+            path="/lif/offboarding/:caseId/n"
+            element={
+              <RequireLifActor>
+                <LifConfirmNPage />
+              </RequireLifActor>
+            }
+          />
+          <Route
+            path="/lif/offboarding/:caseId/locks"
+            element={
+              <RequireLifActor>
+                <LifLocksPage />
+              </RequireLifActor>
+            }
+          />
+          <Route
+            path="/lif/offboarding/:caseId/checklist"
+            element={
+              <RequireLifActor>
+                <LifOffChecklistPage />
+              </RequireLifActor>
+            }
+          />
+          <Route
+            path="/lif/offboarding/:caseId/security"
+            element={
+              <RequireLifActor>
+                <LifSecurityCrPage />
               </RequireLifActor>
             }
           />

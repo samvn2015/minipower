@@ -94,11 +94,11 @@ export function MyProfilePage() {
               <Link className="btn" to="/iam/accounts">
                 IAM accounts
               </Link>
+              <Link className="btn btn-secondary" to="/lif">
+                LIF danh sách
+              </Link>
               <Link className="btn btn-secondary" to="/lif/onboarding">
                 Onboarding
-              </Link>
-              <Link className="btn btn-secondary" to="/lif/offboarding">
-                Offboarding / khóa
               </Link>
             </div>
           </>

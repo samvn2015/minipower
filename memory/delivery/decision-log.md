@@ -223,3 +223,16 @@
 - Affects: PRB Application · hrm-web · DOC-16 probation
 - Trace: ADR-003 · PRB-TC-HA-001 · PRB-TC-013 · DEC-DLV-013
 - Confidence: cao *(unit HA)* · vừa *(SCR khung, chưa pixel E2E)*
+
+### DEC-DLV-021 — Siết LIF SCR-001…006 · [2026-09-05]
+- Status: accepted *(PGD «làm tiếp» sau merge #42/#43)*
+- Context: LIF-TC-012 Partial; HA-001 đã Pass.
+- Options: A Để Partial · B **Tách 6 màn web khung** · C Sửa luôn TC-014/NFR-002 audit
+- Decision: chọn **B** (một slice SCR)
+- Why (loại C vì audit EmpLog = slice API riêng)
+- Consequences:
+  - Routes: `/lif` · onboarding · off `…/n|locks|checklist|security`.
+  - `lifecycle/DOC-16` v0.3: TC-012 **Pass**. Partial còn TC-011/014/NFR-002.
+- Affects: hrm-web · DOC-16 lifecycle
+- Trace: LIF-TC-012 · DEC-DLV-018 · DEC-DLV-020
+- Confidence: vừa *(khung UI; chưa pixel E2E)*
