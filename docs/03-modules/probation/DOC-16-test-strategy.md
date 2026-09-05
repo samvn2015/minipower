@@ -2,6 +2,7 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
+| 0.3 | 2026-09-04 | DEV | **Chốt** · HA-001 + TC-013 (DEC-DLV-020) |
 | 0.2 | 2026-09-04 | QC (execute) | **Chốt** · St cập nhật (DEC-DLV-013) |
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA) | **Chốt** (DEC-DLV-004) |
 
@@ -24,12 +25,12 @@
 | PRB-TC-010 | Cấm CRM sales | 0 call | E2E | Unhappy | Must | Pass |
 | PRB-TC-011 | In-app + email/app | Đủ 2 kênh | E2E | Happy | Must | Pass |
 | PRB-TC-012 | Phiếu động catalog | Không field cứng | E2E | Happy | Must | Pass |
-| PRB-TC-013 | Đủ PRB-SCR-001…004 | Có 4 màn; pixel không fail | E2E | Happy | Must | Partial |
+| PRB-TC-013 | Đủ PRB-SCR-001…004 | Có 4 màn; pixel không fail | E2E | Happy | Must | Pass |
 | PRB-TC-014 | Không LM → HR; thiếu đề xuất vẫn chốt | HR chốt được | API | Happy | Must | Pass |
 | PRB-TC-015 | Không date picker KT ảo | Link EMP | E2E | Unhappy | Must | Pass |
 | PRB-TC-016 | T-15/T-7 theo KT mới | Sau gia hạn | API | Happy | Must | Pass |
 | PRB-TC-017 | Audit người chốt = HR | Log user HR | API | Happy | Must | Pass |
-| PRB-TC-HA-001 | Job T-15/T-7 không chạy DR | Count 0 | HA | Unhappy | Must | Open |
+| PRB-TC-HA-001 | Job T-15/T-7 không chạy DR | Count 0 | HA | Unhappy | Must | Pass |
 
 ## 3. Chi tiết test case
 
@@ -166,7 +167,7 @@ Path: `GET /prb/cases`, `POST .../propose` (LM), `POST .../decide` (HR). Job T-1
 | **Steps** | Mở 4 màn. |
 | **Expected** | Có 4 màn. Pixel HTML MCP không fail AC. |
 | **Layer / Path** | E2E · Happy |
-| **Status** | **Partial** — `/prb/cases` + `/prb/me` (SCR-001/004); SCR-002/003 chưa tách màn riêng. |
+| **Status** | **Pass** — `/prb/cases` (001) · `/prb/cases/:id/evaluate` (002) · `/prb/cases/:id/decide` (003) · `/prb/incomplete` (004). Pixel HTML không Must. |
 
 ### PRB-TC-014 — Không LM → HR; thiếu đề xuất vẫn chốt
 
@@ -217,12 +218,13 @@ Path: `GET /prb/cases`, `POST .../propose` (LM), `POST .../decide` (HR). Job T-1
 | **Steps** | Standby/DR: đếm job T-15/T-7. |
 | **Expected** | Count 0. Không bịa % / kubectl. |
 | **Layer / Path** | HA · Unhappy |
-| **Status** | **Open** — `IHostRoleGate` mới gắn LIF N+3; job PRB reminders **chưa** gate Standby. |
+| **Status** | **Pass** — `RunProbationRemindersCommandHandler` + `IHostRoleGate` Standby → `BadRequest`, không tạo reminder (unit `HandleAsync_StandbyHost_Throws_NoReminders`). |
 
 ## 8. Nhật ký
 
 | Phiên bản | Thay đổi | Tác giả |
 |-----------|----------|---------|
+| 0.3 | HA-001 + TC-013 Pass — Standby gate + tách SCR-001…004 (DEC-DLV-020) | DEV |
 | 0.2 | Execute St catalog + §3 (DEC-DLV-013) | QC / PGD |
 | 0.1 | Chốt catalog (DEC-DLV-004) | PGD Dư Hùng |
 | 0.1 | §3 chi tiết (DEC-DLV-006) | Trịnh Yên |

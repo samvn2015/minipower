@@ -1,3 +1,4 @@
+using Hrm.Application.Common;
 using Hrm.Application.Probation.Commands;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
@@ -5,6 +6,7 @@ using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Probation;
 using Hrm.Domain.Probation.Repositories;
+using Jarvis.Domain.Shared.ExceptionHandling;
 
 namespace Hrm.Application.Tests.Probation;
 
@@ -24,7 +26,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     null,
                     EmployeeStatus.Active)
             ]),
-            repo);
+            repo,
+            new FakeHostRoleGate(active: true));
 
         // KT 2026-06-30 → T-15 = 2026-06-15
         var result = await handler.HandleAsync(
@@ -53,7 +56,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     null,
                     EmployeeStatus.Active)
             ]),
-            repo);
+            repo,
+            new FakeHostRoleGate(active: true));
 
         // T-7 = 2026-06-23
         var result = await handler.HandleAsync(
@@ -78,7 +82,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     null,
                     EmployeeStatus.Active)
             ]),
-            repo);
+            repo,
+            new FakeHostRoleGate(active: true));
 
         var result = await handler.HandleAsync(
             new RunProbationRemindersCommand("local-dev", new DateOnly(2026, 6, 15)));
@@ -86,6 +91,34 @@ public sealed class RunProbationRemindersCommandHandlerTests
         Assert.Equal(0, result.T15Created);
         Assert.Equal(1, result.SkippedIncompleteMilestone);
         Assert.Empty(repo.Items);
+    }
+
+    [Fact]
+    public async Task HandleAsync_StandbyHost_Throws_NoReminders()
+    {
+        var empId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
+        var repo = new FakeReminderRepo();
+        var handler = new RunProbationRemindersCommandHandler(
+            new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
+            new FakeEmployees([
+                new EmployeeSnapshot(
+                    empId, "MNV-TV3", "TV3", null, "tv3@company.local", null, null, null, null, null,
+                    new EmployeeContractSnapshot("PROBATION", new DateOnly(2026, 1, 1), new DateOnly(2026, 6, 30), true),
+                    null,
+                    EmployeeStatus.Active)
+            ]),
+            repo,
+            new FakeHostRoleGate(active: false));
+
+        await Assert.ThrowsAsync<BadRequestException>(() =>
+            handler.HandleAsync(new RunProbationRemindersCommand("local-dev", new DateOnly(2026, 6, 15))));
+
+        Assert.Empty(repo.Items);
+    }
+
+    private sealed class FakeHostRoleGate(bool active) : IHostRoleGate
+    {
+        public bool IsActiveHost() => active;
     }
 
     private sealed class FakeAccounts(string[] roles, string? employeeCode) : IIdentityAccountReadRepository
