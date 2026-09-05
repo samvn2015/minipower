@@ -4,9 +4,9 @@
 
 | Meta | Giá trị |
 |------|---------|
-| **Cập nhật** | 2026-09-04 |
+| **Cập nhật** | 2026-09-05 |
 | **Người rollup** | Dư Hùng (PGD) · soạn trợ lý |
-| **Nguồn sync** | DOC-03 · memory/delivery · DOC-08–17 **Chốt** · 7 Must code · TC-run · DOC-16 St v0.2 execute · **UAT DEV Must §1–§7 Pass** · DEC-DLV-010/011 · PR #34–#41 |
+| **Nguồn sync** | DOC-03 · memory/delivery · DOC-08–17 **Chốt** · 7 Must · UAT DEV §1–§7 Pass · PRB/LIF DOC-16 **v0.3** (SCR/HA) · DEC-DLV-020/021 · PR #42–#44 |
 
 ---
 
@@ -22,7 +22,7 @@
 | **FR đã baseline** | 0 |
 | **FR đang phân tích** | 0 |
 | **Blocker / nợ mở** | 5 (xem dưới) — JWKS **không** chặn DEV/UAT (DEC-DLV-011) |
-| **Code / UAT** | 7 Must trên `main` · e2e · DOC-16 St v0.2 · **UAT DEV Must Pass** (checklist) · **Prod:** Lark JWKS + PG host + RTO còn mở |
+| **Code / UAT** | 7 Must trên `main` · e2e · DOC-16 St · **UAT DEV Must Pass** · PRB/LIF SCR+HA siết (#43/#44) · **Prod:** Lark JWKS + PG host + RTO còn mở |
 
 ---
 
@@ -36,9 +36,9 @@ Ký hiệu: `—` chưa · `◐` đang · `✓` xong (Chốt, chưa BL) · `BL` 
 | payroll | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §5 Pass · C&B Δ=0 |
 | timekeeping | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §4 Pass · cấm máy CC |
 | employee-profile | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §2 Pass |
-| lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §7 Pass · HA Standby nợ · SCR Partial |
+| lifecycle | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §7 · HA-001 Pass · SCR-001…006 Pass · Partial TC-014/NFR-002 |
 | identity | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §1 Pass · OIDC Lark Partial (DEV bypass) |
-| probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §6 Pass · HA job Open · SCR Partial |
+| probation | BA | ✓ | ✓ | ✓ | ✓ | ✓ | — | UAT §6 · HA-001 Pass · SCR-001…004 Pass (DOC-16 v0.3) |
 | events | BA | ✓ | — | ◐ | — | — | — | chưa SRS |
 | hr-analytics | BA | ✓ | — | ◐ | — | — | — | Should; chưa SRS |
 
@@ -71,7 +71,8 @@ Arch = `✓` khung. Delivery 7 Must = tài liệu + execute + **UAT DEV** (chưa
 | M4c–g | IAM→web + TC early | slices + e2e-web | 2026-08-29 | **done** ◐ |
 | M4h | 7 Must code + Must gaps | LEV…LIF · PR #32–#35 | 2026-09-04 | **done** ◐ (`main`) |
 | M4i | DOC-16 execute St | St v0.2 · TC-run · PR #36–#39 | 2026-09-04 | **done** ◐ |
-| M4j | UAT DEV Must | checklist §1–§7 · PR #40–#41 · persona fixes | 2026-09-04 | **done** ◐ (API+§1 UI; ký formal tuỳ chọn) |
+| M4j | UAT DEV Must | checklist §1–§7 · PR #40–#42 | 2026-09-04 | **done** ◐ (API+§1 UI; ký formal tuỳ chọn) |
+| M4k | Siết SCR / HA Standby | PRB #43 · LIF #44 · DOC-16 v0.3 | 2026-09-05 | **done** ◐ |
 | M5 | Go-live | Prod 24/7 | 2027 | planned — JWKS · PG host · RTO/RPO |
 
 → Chi tiết: [`DOC-15`](../00-governance/DOC-15-project-plan.md) **Chốt** · WBS: [`DOC-14`](../04-platform/DOC-14-wbs-estimate.md) **Chốt**  
@@ -82,13 +83,14 @@ Arch = `✓` khung. Delivery 7 Must = tài liệu + execute + **UAT DEV** (chưa
 | Việc | Owner | Module | Due | Trạng thái |
 |------|-------|--------|-----|------------|
 | UAT DEV Must (checklist) | QC / PGD | all Must | 2026-09-04 | **done** ◐ — §1–§7 Pass; ký formal ☐ |
-| Overview sync | PM | platform | 2026-09-04 | **done** (rollup này) |
+| Overview sync | PM | platform | 2026-09-05 | **done** (rollup này) |
+| Siết Partial SCR / HA Standby | DEV | PRB · LIF | 2026-09-05 | **done** ◐ — #43/#44 |
+| LIF audit Early CR (TC-014 / NFR-002) | DEV / QC | lifecycle | | Partial mỏng |
 | RTO/RPO phút (không bịa %) | SA / PGD | NFR-012 | | mở |
 | Prod PostgreSQL host (OQ-DLV-003) | IT | platform | | mở |
 | Lark issuer + JWKS Prod | IT / SA | identity | | **mở** — DEV bypass DEC-DLV-011 |
 | EVT/RPT SRS nếu vào Must | BA / PGD | EVT, RPT | | chưa |
 | `02-baseline/` | PGD | all | | **chưa** |
-| Siết Partial SCR / HA Standby | DEV | PRB · LIF | | nợ mỏng |
 
 ---
 
