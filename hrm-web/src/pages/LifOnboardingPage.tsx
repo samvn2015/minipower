@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link, useSearchParams } from "react-router-dom";
 import {
   closeLifOnboarding,
   createLifOnboarding,
@@ -12,13 +13,15 @@ import { isHr, isItOnly, useCurrentUser } from "../hooks/useCurrentUser";
 
 const SYSTEMS = ["EmailCty", "Git", "CrmSp", "Chat"] as const;
 
+/** LIF-SCR-002 — checklist on + cấp TK lúc on; cấm hẹn Git = N+3. */
 export function LifOnboardingPage() {
   const user = useCurrentUser();
   const hr = isHr(user);
   const itOnly = isItOnly(user);
+  const [searchParams] = useSearchParams();
   const [items, setItems] = useState<LifOnboarding[]>([]);
   const [board, setBoard] = useState<LifOffChecklistBoard | null>(null);
-  const [caseId, setCaseId] = useState("");
+  const [caseId, setCaseId] = useState(searchParams.get("case") ?? "");
   const [employeeId, setEmployeeId] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [message, setMessage] = useState<string | null>(null);
@@ -38,7 +41,8 @@ export function LifOnboardingPage() {
   }
 
   useEffect(() => {
-    reload()
+    const fromQuery = searchParams.get("case");
+    reload(fromQuery || undefined)
       .catch((err: Error) => setError(err.message))
       .finally(() => setLoading(false));
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -111,6 +115,9 @@ export function LifOnboardingPage() {
           (FR-001/002).
           {itOnly ? " · IT: xem case + cấp TK; HR mở/đóng case." : ""}
         </p>
+        <Link className="btn btn-ghost" to="/lif">
+          ← Danh sách (SCR-001)
+        </Link>
       </div>
       {error && <div className="error-box">{error}</div>}
       {message && <div className="success-box">{message}</div>}
@@ -158,7 +165,7 @@ export function LifOnboardingPage() {
 
       {selected && (
         <div className="stack">
-          <h3>Cấp TK lúc on (SCR-002)</h3>
+          <h3>Cấp TK lúc on</h3>
           <div className="row" style={{ gap: 8, flexWrap: "wrap" }}>
             {SYSTEMS.map((sys) => {
               const done =

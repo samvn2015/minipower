@@ -85,11 +85,11 @@ export function AppLayout() {
               user.roles.includes("IAM-ROLE-PGD") ||
               user.roles.includes("IAM-ROLE-IT")) && (
               <>
+                <Link className="btn btn-ghost" to="/lif">
+                  LIF
+                </Link>
                 <Link className="btn btn-ghost" to="/lif/onboarding">
                   Onboarding
-                </Link>
-                <Link className="btn btn-ghost" to="/lif/offboarding">
-                  Offboarding
                 </Link>
               </>
             )}

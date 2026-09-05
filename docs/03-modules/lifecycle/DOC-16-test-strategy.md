@@ -2,6 +2,7 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
+| 0.3 | 2026-09-05 | DEV | **Chốt** · TC-012 SCR tách (DEC-DLV-021) |
 | 0.2 | 2026-09-04 | QC (execute) | **Chốt** · St cập nhật (DEC-DLV-018) |
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA) | **Chốt** (DEC-DLV-004) |
 
@@ -23,7 +24,7 @@
 | LIF-TC-009 | Checklist off | OK | E2E | Happy | Must | Pass |
 | LIF-TC-010 | Không CRM sales | 0 call INT-006 | E2E | Unhappy | Must | Pass |
 | LIF-TC-011 | Chat theo master | Should | E2E | Happy | Should | Partial |
-| LIF-TC-012 | Đủ LIF-SCR-001…006 | Có màn | E2E | Happy | Must | Partial |
+| LIF-TC-012 | Đủ LIF-SCR-001…006 | Có màn | E2E | Happy | Must | Pass |
 | LIF-TC-013 | Hiện N và N+3 | UI đúng | E2E | Happy | Must | Pass |
 | LIF-TC-014 | Audit khóa sớm | Log | API | Happy | Must | Partial |
 | LIF-TC-015 | NV 403 ghi N job | 403 | API | Unhappy | Must | Pass |
@@ -159,7 +160,7 @@ Path: onboarding/offboarding API `v1/lif/*`. Job **chỉ Active** (ADR-003 · `I
 | **Steps** | Mở 6 màn. |
 | **Expected** | Có màn. Pixel HTML không Must. |
 | **Layer / Path** | E2E · Happy |
-| **Status** |  **Partial** — on/off pages; chưa đủ 6 SCR tách. |
+| **Status** |  **Pass** — `/lif` (001) · `/lif/onboarding` (002) · `…/n` (003) · `…/locks` (004) · `…/checklist` (005) · `…/security` (006). Pixel không Must. |
 
 ### LIF-TC-013 — Hiện N và N+3
 
@@ -212,6 +213,7 @@ HR không credential Git. Audit N / khóa Git-CRM. **HA:** trên Standby/DR, job
 
 | Phiên bản | Thay đổi | Tác giả |
 |-----------|----------|---------|
+| 0.3 | TC-012 Pass — tách SCR-001…006 (DEC-DLV-021) | DEV |
 | 0.2 | Execute St (DEC-DLV-018) | QC / PGD |
 | 0.1 | Chốt catalog (DEC-DLV-004) | PGD Dư Hùng |
 | 0.1 | §3 chi tiết (DEC-DLV-006) | Trịnh Yên |
