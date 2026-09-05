@@ -57,5 +57,16 @@ assert len(actives) == 1, actives
 print("active count:", len(actives), "code:", actives[0]["versionCode"])
 PY
 
+echo "========== TIM-TC-NFR-002 — publish audit =========="
+AUDIT=$(curl -sf -H "$(auth_hdr "$HR_TOKEN")" \
+  "$BASE/v1/emp/audit-logs?action=TimesheetTemplatePublished&take=5")
+python3 - <<'PY' "$AUDIT"
+import json, sys
+d = json.loads(sys.argv[1])
+rows = d.get("data", d) if isinstance(d, dict) else d
+assert any(r.get("action") == "TimesheetTemplatePublished" for r in rows), rows
+print("TimesheetTemplatePublished audit OK")
+PY
+
 echo ""
 echo "OK — TIM slice A (template master MVP)"

@@ -23,4 +23,9 @@ public interface IEmpAuditLogRepository
     Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
         Guid employeeId,
         CancellationToken cancellationToken = default);
+
+    Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+        string action,
+        int take = 50,
+        CancellationToken cancellationToken = default);
 }

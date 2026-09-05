@@ -262,3 +262,17 @@
 - Affects: hrm-web · DOC-16 timekeeping
 - Trace: TIM-TC-014 · DEC-DLV-015 · DEC-DLV-021
 - Confidence: vừa *(khung UI)*
+
+### DEC-DLV-024 — TIM EmpAudit công bố/import/chốt · [2026-09-05]
+- Status: accepted *(PGD «làm tiếp» sau #48)*
+- Context: Overview nợ TIM NFR-002 Partial.
+- Options: A Để Partial · B **Append EmpAudit 4 thao tác + list by action** · C Bịa bảng TIM_Audit
+- Decision: chọn **B**
+- Why (loại C vì EmpAuditLog đã SoT; TIM related không gắn 1 NV → list by action)
+- Consequences:
+  - Actions: TemplatePublished · ImportCommitted · PeriodClosed · PeriodUnlocked.
+  - `GET /v1/emp/audit-logs?action=` (HR/IT).
+  - DOC-16 timekeeping v0.4: NFR-002 **Pass**. Partial còn TC-008.
+- Affects: TIM commands · EmpAudit · e2e-api-tim-slice-a/c
+- Trace: TIM-TC-NFR-002 · DEC-DLV-023
+- Confidence: cao *(unit)* · vừa *(e2e Host)*

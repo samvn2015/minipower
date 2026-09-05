@@ -59,5 +59,16 @@ HTTP=$(curl -s -o /tmp/tim-lm-close.json -w "%{http_code}" -X POST \
 echo "LM close → HTTP $HTTP (expect 403)"
 [[ "$HTTP" == "403" ]] || { cat /tmp/tim-lm-close.json; exit 1; }
 
+echo "========== TIM-TC-NFR-002 — close audit =========="
+AUDIT=$(curl -sf -H "$(auth_hdr "$HR_TOKEN")" \
+  "$BASE/v1/emp/audit-logs?action=TimesheetPeriodClosed&take=5")
+python3 - <<'PY' "$AUDIT"
+import json, sys
+d = json.loads(sys.argv[1])
+rows = d.get("data", d) if isinstance(d, dict) else d
+assert any(r.get("action") == "TimesheetPeriodClosed" and "2026-12" in (r.get("detail") or "") for r in rows), rows
+print("TimesheetPeriodClosed audit OK")
+PY
+
 echo ""
 echo "OK — TIM slice C (period close + OT guard)"

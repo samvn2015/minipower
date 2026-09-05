@@ -162,5 +162,12 @@ public sealed class ApproveLineManagerChangeCommandHandlerTests
             Guid employeeId,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
     }
 }

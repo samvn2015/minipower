@@ -1,5 +1,6 @@
 using Hrm.Application.Common;
 using Hrm.Application.Timekeeping.Dtos;
+using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave.Repositories;
@@ -104,7 +105,8 @@ public sealed record CommitTimesheetImportCommand(string? ActorIdpSubject, Guid 
 
 public sealed class CommitTimesheetImportCommandHandler(
     IIdentityAccountReadRepository accounts,
-    ITimesheetImportRepository imports)
+    ITimesheetImportRepository imports,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<CommitTimesheetImportCommand, TimesheetCommitResult>
 {
     public async Task<TimesheetCommitResult> HandleAsync(
@@ -137,6 +139,15 @@ public sealed class CommitTimesheetImportCommandHandler(
                 HrmErrorCodes.BadRequest,
                 "Không commit được (kỳ đã chốt hoặc batch không hợp lệ).");
 
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.TimesheetImportCommitted,
+                EmployeeId: null,
+                period.Id,
+                command.ActorIdpSubject!,
+                $"{period.PeriodYm};lines={period.LineCount};batch={command.BatchId}"),
+            cancellationToken).ConfigureAwait(false);
+
         return new TimesheetCommitResult(
             period.Id,
             period.PeriodYm,
@@ -150,7 +161,8 @@ public sealed record CloseTimesheetPeriodCommand(string? ActorIdpSubject, string
 public sealed class CloseTimesheetPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetImportRepository imports,
-    ILeaveRequestRepository leaveRequests)
+    ILeaveRequestRepository leaveRequests,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<CloseTimesheetPeriodCommand, TimesheetCloseResult>
 {
     public async Task<TimesheetCloseResult> HandleAsync(
@@ -208,6 +220,15 @@ public sealed class CloseTimesheetPeriodCommandHandler(
             .ConfigureAwait(false)
             ?? throw new ConflictException(HrmErrorCodes.Conflict, $"Không chốt được kỳ {ym}.");
 
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.TimesheetPeriodClosed,
+                EmployeeId: null,
+                closed.Id,
+                command.ActorIdpSubject!,
+                $"{closed.PeriodYm};lines={closed.LineCount};leavePaid={closed.Lines.Sum(l => l.LeaveDaysPaid)}"),
+            cancellationToken).ConfigureAwait(false);
+
         return new TimesheetCloseResult(
             closed.Id,
             closed.PeriodYm,
@@ -223,7 +244,8 @@ public sealed record UnlockTimesheetPeriodCommand(string? ActorIdpSubject, strin
 public sealed class UnlockTimesheetPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetImportRepository imports,
-    IPayPeriodGate payPeriods)
+    IPayPeriodGate payPeriods,
+    IEmpAuditLogRepository auditLogs)
     : IAsyncCommandHandler<UnlockTimesheetPeriodCommand, TimesheetUnlockResult>
 {
     public async Task<TimesheetUnlockResult> HandleAsync(
@@ -265,6 +287,15 @@ public sealed class UnlockTimesheetPeriodCommandHandler(
             .UnlockPeriodAsync(ym, cancellationToken)
             .ConfigureAwait(false)
             ?? throw new ConflictException(HrmErrorCodes.Conflict, $"Không bỏ chốt được kỳ {ym}.");
+
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.TimesheetPeriodUnlocked,
+                EmployeeId: null,
+                unlocked.Id,
+                command.ActorIdpSubject!,
+                unlocked.PeriodYm),
+            cancellationToken).ConfigureAwait(false);
 
         return new TimesheetUnlockResult(
             unlocked.Id,
