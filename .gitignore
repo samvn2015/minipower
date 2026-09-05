@@ -25,3 +25,9 @@ TestResults/
 
 # Local tooling
 .venv-xlsx/
+
+# Node (hrm/frontend, hrm/autotest, hrm-web)
+**/node_modules/
+**/dist/
+playwright-report/
+test-results/
