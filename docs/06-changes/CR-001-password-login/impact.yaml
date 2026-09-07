@@ -1,0 +1,41 @@
+cr_id: CR-001
+title: Đăng nhập username/password
+status: draft
+change_type: modify
+modules:
+  - identity
+affected_docs:
+  - path: 04-platform/DOC-09-adr/ADR-007-idp-oidc.md
+    doc: ADR-007
+    action: supersede
+  - path: 04-platform/DOC-09-adr/ADR-001-stack-style-hosting.md
+    doc: ADR-001
+    action: modify
+  - path: 04-platform/DOC-11-data-model/DOC-11-data-model.md
+    doc: DOC-11
+    action: modify
+  - path: 04-platform/DOC-12-api-spec/DOC-12-api-specification.md
+    doc: DOC-12
+    action: modify
+  - path: 04-platform/DOC-12-api-spec/openapi.yaml
+    doc: DOC-12
+    action: modify
+  - path: 04-platform/DOC-13-nfr.md
+    doc: DOC-13
+    action: modify
+  - path: 03-modules/identity/DOC-06-srs.md
+    doc: DOC-06
+    action: modify
+  - path: 03-modules/identity/DOC-07-acceptance-criteria.md
+    doc: DOC-07
+    action: modify
+  - path: 03-modules/identity/DOC-16-test-strategy.md
+    doc: DOC-16
+    action: modify
+impact:
+  scope: true
+  timeline_days: null
+  regression_tests:
+    - IAM UAT §1
+    - IAM DOC-16 TC SSO
+baseline_target: null
