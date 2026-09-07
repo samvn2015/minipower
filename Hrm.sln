@@ -21,6 +21,10 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hrm.Domain.Tests", "unittes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hrm.Application.Tests", "unittest\Hrm.Application.Tests\Hrm.Application.Tests.csproj", "{E23EDE06-0289-4888-9327-4AAC8BA32CDC}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "unittest", "unittest", "{48F45164-4FC6-2D6D-9FD6-B37E6140D6A8}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Hrm.Architecture.Tests", "unittest\Hrm.Architecture.Tests\Hrm.Architecture.Tests.csproj", "{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -115,6 +119,18 @@ Global
 		{E23EDE06-0289-4888-9327-4AAC8BA32CDC}.Release|x64.Build.0 = Release|Any CPU
 		{E23EDE06-0289-4888-9327-4AAC8BA32CDC}.Release|x86.ActiveCfg = Release|Any CPU
 		{E23EDE06-0289-4888-9327-4AAC8BA32CDC}.Release|x86.Build.0 = Release|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Debug|x64.Build.0 = Debug|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Debug|x86.Build.0 = Debug|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Release|x64.ActiveCfg = Release|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Release|x64.Build.0 = Release|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Release|x86.ActiveCfg = Release|Any CPU
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -128,5 +144,6 @@ Global
 		{108419C9-EEB6-4069-B6F9-5A80E11FA1D2} = {0F9113EE-888A-26D2-68B0-4A7D0A2A8745}
 		{8971FD55-F719-482E-B0F0-29283F015EE4} = {0F9113EE-888A-26D2-68B0-4A7D0A2A8745}
 		{E23EDE06-0289-4888-9327-4AAC8BA32CDC} = {0F9113EE-888A-26D2-68B0-4A7D0A2A8745}
+		{9FEFF986-B1CB-4022-B807-E28D2FEF9C02} = {48F45164-4FC6-2D6D-9FD6-B37E6140D6A8}
 	EndGlobalSection
 EndGlobal
