@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class TimesheetImportRepository(AppDbContext db) : ITimesheetImportRepository
+internal sealed class TimesheetImportRepository(TimDbContext db) : ITimesheetImportRepository
 {
     public async Task<Guid> CreatePreviewAsync(
         TimesheetImportBatchCreateModel model,

@@ -38,6 +38,10 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IEducationLevelReadRepository, EducationLevelReadRepository>();
         builder.Services.AddScoped<ISeniorityRuleReadRepository, SeniorityRuleReadRepository>();
         builder.Services.AddScoped<IEmpAuditLogRepository, EmpAuditLogRepository>();
+        builder.Services.AddScoped<ITimAuditLogRepository, TimAuditLogRepository>();
+        builder.Services.AddScoped<IPayAuditLogRepository, PayAuditLogRepository>();
+        builder.Services.AddScoped<IPrbAuditLogRepository, PrbAuditLogRepository>();
+        builder.Services.AddScoped<ILifAuditLogRepository, LifAuditLogRepository>();
         builder.Services.AddScoped<ILineManagerChangeRepository, LineManagerChangeRepository>();
         builder.Services.AddScoped<ILeaveTypeReadRepository, LeaveTypeReadRepository>();
         builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
@@ -81,6 +85,10 @@ public static class InfrastructureLayerExtension
 
         AddContextConnection<IamDbContext>(builder, "IamDbContext", connectionString);
         AddContextConnection<LevDbContext>(builder, "LevDbContext", connectionString);
+        AddContextConnection<EmpDbContext>(builder, "EmpDbContext", connectionString);
+        AddContextConnection<TimDbContext>(builder, "TimDbContext", connectionString);
+        AddContextConnection<PrbDbContext>(builder, "PrbDbContext", connectionString);
+        AddContextConnection<LifDbContext>(builder, "LifDbContext", connectionString);
 
         return builder;
     }

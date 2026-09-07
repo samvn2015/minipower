@@ -134,7 +134,7 @@ public sealed class DecideProbationEvaluationCommandHandler(
     IProbationMasterReadRepository masters,
     IProbationEvaluationRepository evaluations,
     ILifOffboardingRepository offboardings,
-    IEmpAuditLogRepository auditLogs)
+    IPrbAuditLogRepository auditLogs)
     : IAsyncCommandHandler<DecideProbationEvaluationCommand, ProbationEvaluationDto>
 {
     public const string LifSourcePrbFail = "PRB-FAIL";

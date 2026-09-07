@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class ProbationReminderRepository(AppDbContext db) : IProbationReminderRepository
+internal sealed class ProbationReminderRepository(PrbDbContext db) : IProbationReminderRepository
 {
     public Task<bool> ExistsAsync(
         Guid employeeId,

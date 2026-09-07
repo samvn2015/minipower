@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRepository
+internal sealed class EmployeeReadRepository(EmpDbContext db) : IEmployeeReadRepository
 {
     public async Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(
         CancellationToken cancellationToken = default)

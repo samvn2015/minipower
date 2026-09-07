@@ -90,7 +90,7 @@ public sealed class UnlockTimesheetPeriodCommandHandlerTests
     }
 
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ITimAuditLogRepository
     {
         public List<EmpAuditLogEntry> Entries { get; } = [];
 

@@ -240,7 +240,7 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
                 outcomeCode, decidedByIdpSubject, DateTime.UtcNow, note, extendDurationCode));
     }
 
-    private sealed class FakeAuditLogs : IEmpAuditLogRepository
+    private sealed class FakeAuditLogs : IPrbAuditLogRepository
     {
         public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;

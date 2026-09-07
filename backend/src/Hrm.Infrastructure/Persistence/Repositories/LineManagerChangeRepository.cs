@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LineManagerChangeRepository(AppDbContext db)
+internal sealed class LineManagerChangeRepository(EmpDbContext db)
     : ILineManagerChangeRepository
 {
     public Task<LineManagerChangeSnapshot?> FindByIdAsync(

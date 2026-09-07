@@ -120,7 +120,7 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
         public bool IsActiveHost() => active;
     }
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ILifAuditLogRepository
     {
         public List<EmpAuditLogEntry> Entries { get; } = [];
 

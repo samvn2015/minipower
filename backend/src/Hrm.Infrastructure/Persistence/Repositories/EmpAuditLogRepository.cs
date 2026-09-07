@@ -4,11 +4,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class EmpAuditLogRepository(AppDbContext db) : IEmpAuditLogRepository
+/// <summary>
+/// ADR-011 W1c — logic audit dùng chung, gắn vào DbContext nào là do lớp con quyết định.
+/// <c>db.Set&lt;EmpAuditLog&gt;()</c> thay cho DbSet cụ thể để tái dùng được cho mọi context.
+/// </summary>
+internal abstract class EmpAuditLogRepositoryBase(DbContext db) : IEmpAuditLogRepository
 {
     public async Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
     {
-        db.EmpAuditLogs.Add(new EmpAuditLog
+        db.Set<EmpAuditLog>().Add(new EmpAuditLog
         {
             Id = Guid.NewGuid(),
             Action = entry.Action,
@@ -24,7 +28,7 @@ internal sealed class EmpAuditLogRepository(AppDbContext db) : IEmpAuditLogRepos
     public async Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
         Guid employeeId,
         CancellationToken cancellationToken = default) =>
-        await db.EmpAuditLogs
+        await db.Set<EmpAuditLog>()
             .AsNoTracking()
             .Where(x => x.EmployeeId == employeeId)
             .OrderByDescending(x => x.OccurredAtUtc)
@@ -44,7 +48,7 @@ internal sealed class EmpAuditLogRepository(AppDbContext db) : IEmpAuditLogRepos
         CancellationToken cancellationToken = default)
     {
         var limit = take <= 0 ? 50 : Math.Min(take, 200);
-        return await db.EmpAuditLogs
+        return await db.Set<EmpAuditLog>()
             .AsNoTracking()
             .Where(x => x.Action == action)
             .OrderByDescending(x => x.OccurredAtUtc)

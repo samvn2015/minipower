@@ -1,3 +1,4 @@
+using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Payroll.Entities;
 using Microsoft.EntityFrameworkCore;
 
@@ -39,6 +40,9 @@ public class PayDbContext(DbContextOptions<PayDbContext> options) : DbContext(op
 
     public DbSet<PayExportOutbox> PayExportOutboxes => Set<PayExportOutbox>();
 
+    /// <summary>Bảng audit dùng chung ở schema <c>shared</c> (①a + phương án A).</summary>
+    public DbSet<EmpAuditLog> EmpAuditLogs => Set<EmpAuditLog>();
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -48,6 +52,7 @@ public class PayDbContext(DbContextOptions<PayDbContext> options) : DbContext(op
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(PayDbContext).Assembly,
             type => type.Namespace == typeof(AppDbContext).Namespace + ".Configurations"
-                    && type.Name.StartsWith("Pay", StringComparison.Ordinal));
+                    && (type.Name.StartsWith("Pay", StringComparison.Ordinal)
+                        || type.Name.StartsWith("EmpAuditLog", StringComparison.Ordinal)));
     }
 }

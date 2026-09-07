@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LifOffChecklistRepository(AppDbContext db) : ILifOffChecklistRepository
+internal sealed class LifOffChecklistRepository(LifDbContext db) : ILifOffChecklistRepository
 {
     public async Task<IReadOnlyList<LifOffChecklistItemSnapshot>> ListActiveItemsAsync(
         CancellationToken cancellationToken = default)

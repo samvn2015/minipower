@@ -85,7 +85,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
             handler.HandleAsync(new CommitTimesheetImportCommand("local-dev", Guid.NewGuid())));
     }
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ITimAuditLogRepository
     {
         public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;

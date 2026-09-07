@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class EmployeeWriteRepository(AppDbContext db)
+internal sealed class EmployeeWriteRepository(EmpDbContext db)
     : IEmployeeWriteRepository
 {
     public async Task<Guid> CreateAsync(

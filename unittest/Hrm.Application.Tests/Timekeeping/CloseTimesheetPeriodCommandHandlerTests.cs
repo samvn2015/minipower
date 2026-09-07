@@ -156,7 +156,7 @@ public sealed class CloseTimesheetPeriodCommandHandlerTests
         new(Guid.NewGuid(), EmployeeId, "MNV-DEV", workDays, 0, 0, 0, otUnclassified, 0, 0, 0);
 
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ITimAuditLogRepository
     {
         public List<EmpAuditLogEntry> Entries { get; } = [];
 

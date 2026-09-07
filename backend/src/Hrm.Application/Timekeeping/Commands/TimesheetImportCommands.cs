@@ -106,7 +106,7 @@ public sealed record CommitTimesheetImportCommand(string? ActorIdpSubject, Guid 
 public sealed class CommitTimesheetImportCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetImportRepository imports,
-    IEmpAuditLogRepository auditLogs)
+    ITimAuditLogRepository auditLogs)
     : IAsyncCommandHandler<CommitTimesheetImportCommand, TimesheetCommitResult>
 {
     public async Task<TimesheetCommitResult> HandleAsync(
@@ -162,7 +162,7 @@ public sealed class CloseTimesheetPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetImportRepository imports,
     ILeaveRequestRepository leaveRequests,
-    IEmpAuditLogRepository auditLogs)
+    ITimAuditLogRepository auditLogs)
     : IAsyncCommandHandler<CloseTimesheetPeriodCommand, TimesheetCloseResult>
 {
     public async Task<TimesheetCloseResult> HandleAsync(
@@ -245,7 +245,7 @@ public sealed class UnlockTimesheetPeriodCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetImportRepository imports,
     IPayPeriodGate payPeriods,
-    IEmpAuditLogRepository auditLogs)
+    ITimAuditLogRepository auditLogs)
     : IAsyncCommandHandler<UnlockTimesheetPeriodCommand, TimesheetUnlockResult>
 {
     public async Task<TimesheetUnlockResult> HandleAsync(

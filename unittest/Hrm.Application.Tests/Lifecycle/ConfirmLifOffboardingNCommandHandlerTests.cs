@@ -70,7 +70,7 @@ public sealed class ConfirmLifOffboardingNCommandHandlerTests
             LifOffboardingFacts.ComputeNPlus3(new DateOnly(2026, 9, 30)));
     }
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ILifAuditLogRepository
     {
         public List<EmpAuditLogEntry> Entries { get; } = [];
 

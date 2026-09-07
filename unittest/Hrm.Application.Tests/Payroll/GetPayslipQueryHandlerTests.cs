@@ -62,7 +62,7 @@ public sealed class GetPayslipQueryHandlerTests
         Assert.Equal("MNV-HO", dto.EmployeeCode);
     }
 
-    private sealed class FakeAuditLogs : IEmpAuditLogRepository
+    private sealed class FakeAuditLogs : IPayAuditLogRepository
     {
         public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class SeniorityRuleReadRepository(AppDbContext db) : ISeniorityRuleReadRepository
+internal sealed class SeniorityRuleReadRepository(EmpDbContext db) : ISeniorityRuleReadRepository
 {
     public async Task<SeniorityRuleSnapshot?> GetActiveAsync(CancellationToken cancellationToken = default) =>
         await db.SeniorityRules

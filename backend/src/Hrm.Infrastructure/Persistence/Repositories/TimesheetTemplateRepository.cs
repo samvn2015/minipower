@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class TimesheetTemplateRepository(AppDbContext db) : ITimesheetTemplateRepository
+internal sealed class TimesheetTemplateRepository(TimDbContext db) : ITimesheetTemplateRepository
 {
     public async Task<TimesheetTemplateVersionSnapshot?> FindActiveAsync(
         CancellationToken cancellationToken = default)

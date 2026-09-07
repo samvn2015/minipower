@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class ProbationMasterReadRepository(AppDbContext db) : IProbationMasterReadRepository
+internal sealed class ProbationMasterReadRepository(PrbDbContext db) : IProbationMasterReadRepository
 {
     public async Task<IReadOnlyList<ProbationOutcomeSnapshot>> ListOutcomesAsync(
         CancellationToken cancellationToken = default)
@@ -67,7 +67,7 @@ internal sealed class ProbationMasterReadRepository(AppDbContext db) : IProbatio
     }
 }
 
-internal sealed class ProbationEvaluationRepository(AppDbContext db) : IProbationEvaluationRepository
+internal sealed class ProbationEvaluationRepository(PrbDbContext db) : IProbationEvaluationRepository
 {
     public async Task<ProbationEvaluationSnapshot?> FindOpenByEmployeeAsync(
         Guid employeeId,
