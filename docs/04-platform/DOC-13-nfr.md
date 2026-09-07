@@ -3,10 +3,11 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-25 | Trịnh Yên (BA) | **Chốt** (NFR platform · DEC-REQ-038) |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — NFR-012 phát biểu lại theo **ADR-010** (DEC-ARC-017/018): bỏ DR/DC |
 
 **ISO/IEC 25010** · ISO/IEC/IEEE 29148 (phần NFR).  
 **Phạm vi:** cross-cutting HRM (leave, PAY, TIM, EMP, LIF đã có SRS/AC; PRB/EVT/RPT/IAM chưa SRS).  
-**Cổng:** PGD chốt v0.1 (DEC-REQ-038). Nợ: SLA/RTO/RPO/thuật toán mã hóa → DOC-08; DOC-16 load/pen; Ban HR ☐; module chưa SRS. **Chưa** `02-baseline/`. **Không** tự SAD/DOC-16.
+**Cổng:** PGD chốt v0.1 (DEC-REQ-038). Nợ: uptime %, **RTO-failover / RTO-restore**, chu kỳ backup, thuật toán mã hóa → DOC-08 · ADR-010; DOC-16 load/pen; Ban HR ☐; module chưa SRS. **Chưa** `02-baseline/`. **Không** tự SAD/DOC-16.
 
 **Không:** bịa 99,9% uptime; pixel HTML; list field master; notify CRM bán hàng (đã cấm FR).
 
@@ -31,7 +32,7 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 | NFR-009 | Reliability | Cảnh báo TV/SN/lễ: **0 sót 0 trễ** so với lịch master (BO-005) — chi tiết FR khi mở EVT/PRB | Should | UAT | SH-002 |
 | NFR-010 | Compliance | BH/TNCN tỷ lệ **theo luật/quy chế tại kỳ** — không hardcode URD (CN-001) | Must | Review master | SH-002 |
 | NFR-011 | Constraint | Go-live **2027**; 2026 xây; CAPEX ~1 tỷ (CN-004, 005) — không phải metric runtime | Must | PMO | SH-001 |
-| NFR-012 | Availability | SLA uptime / RTO / RPO | TBD | DOC-08 | SH-006 |
+| NFR-012 | Availability | Uptime · **RTO-failover** (trong DC) · **RTO-restore** (mất DC) — **không** RPO xuyên site (ADR-010) | TBD | DOC-08 · ADR-010 | SH-006 |
 
 ## 3. Phân loại
 
@@ -46,7 +47,10 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 
 | NFR ID | Requirement | Target |
 |--------|-------------|--------|
-| NFR-012 | Uptime / RTO / RPO | **TBD** architecture — BRD không chốt % |
+| NFR-012a | Uptime | **TBD** — BRD không chốt %; pattern 24/7 + Active/Standby **một DC** (ADR-010) |
+| NFR-012b | **RTO-failover** — Active hỏng, Standby cùng DC tiếp quản | **TBD phút** |
+| NFR-012c | **RTO-restore** — mất cả DC, khôi phục từ backup | **TBD giờ** — lớn hơn NFR-012b nhiều bậc |
+| NFR-012d | Chu kỳ backup + nơi lưu (off-site?) | **TBD** — Ops/IT (ADR-010 §4) |
 | NFR-009 | Cảnh báo đúng hạn | 0 sót 0 trễ (BO-005) khi module EVT/PRB có FR |
 
 ### 3.3 Bảo mật
@@ -122,7 +126,7 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 | NFR-007 | DEC-DIS-001 | LEV-AC-009 · LIF-AC-010 | |
 | NFR-008 | BO-006 | DOC-07 self-service | |
 | NFR-010 | CN-001 | PAY master kỳ | |
-| NFR-012 | — | TBD DOC-08 | |
+| NFR-012a–d | — | ADR-010 · TBD DOC-08 | Bỏ RPO xuyên site (DEC-ARC-017) |
 
 ## 6. Phê duyệt
 

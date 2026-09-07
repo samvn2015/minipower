@@ -3,10 +3,11 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (SAD khung · DEC-ARC-005) |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.4 bỏ DC-DR theo **ADR-010** (DEC-ARC-017/018) |
 
 **SEI** Views and Beyond · **Kruchten 4+1**.  
 **Tiền đề:** DOC-03 / 7× DOC-06 / DOC-13 **Chốt** (chưa `02-baseline/`). EVT + RPT **chưa SRS**.  
-**Cổng SAD đã chốt** (PGD · DEC-ARC-005). DOC-10/11/12 **Chốt** khung. Nợ: RTO/RPO phút; **Lark issuer URL** (IT); LBS; MFA; Ban HR ☐. ADR-001 · 002 · 003 · **007** **Accepted** (v0.2 Lark). **Không** tự DOC-17.
+**Cổng SAD đã chốt** (PGD · DEC-ARC-005). DOC-10/11/12 **Chốt** khung. Nợ: RTO/RPO phút; **Lark issuer URL** (IT); LBS; MFA; Ban HR ☐. ADR-001 · 002 · 003 *(§3–5 superseded)* · **007** (v0.2 Lark) · **010** **Accepted**. **Không** tự DOC-17.
 
 ---
 
@@ -55,7 +56,7 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | AG-007 | Không event phép/LIF/PRB sang CRM bán hàng | NFR-007 |
 | AG-008 | Self-service NV web + mobile MVP | NFR-008 |
 | AG-009 | Master động theo quy chế (mẫu CC, lịch, PC, BH/TNCN) — không hardcode | NFR-010, CN-006 |
-| AG-010 | Vận hành **24/7**; HA **Active/Standby**; **DR/DC** — số RTO/RPO TBD | NFR-012 · ADR-003 |
+| AG-010 | Vận hành **24/7**; HA **Active/Standby trong một DC**; **không DR/DC** — RTO-failover / RTO-restore TBD | NFR-012a–d · **ADR-010** |
 | AG-011 | Go-live 2027; p95 API NV **TBD**; số user **TBD** | NFR-011, NFR-P02, NFR-SC01 |
 | AG-012 | Mọi truy cập người dùng qua **SSO** (web = mobile) | NFR-003 · ADR-001 |
 | AG-013 | Cân bằng tải **LBS** trên nhánh **Active** (Standby không nhận user) | ADR-001 · ADR-003 · DOC-17 |
@@ -70,7 +71,7 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | NV / LM | Self-service 2 kênh | Logic + Process |
 | Dev / Tester | Module boundary, test NFR | Development |
 | IT / IAM | Git/CRM N+3, không credential HR | Process + Physical |
-| Ops | 24/7, A/S, DR/DC | Physical · ADR-003 |
+| Ops | 24/7, A/S một DC, backup/restore | Physical · **ADR-010** |
 
 ## 4. Các góc nhìn kiến trúc
 
@@ -156,26 +157,25 @@ Cấu trúc: **một repo hoặc nhiều repo / một service-deploy** *(ADR-001
 
 ### 4.4 Góc nhìn vật lý / Triển khai
 
-**Hosting + HA (ADR-001 Accepted · ADR-003 Accepted):** private mInvoice; **24/7**; **Active/Standby** trong DC; **DC-Prod + DC-DR**. IdP/LBS TBD. DB = **PostgreSQL** (ADR-009; version/host TBD). **Không** Active/Active hai DC.
+**Hosting + HA (ADR-001 · ADR-010 Accepted):** private mInvoice; **24/7**; **Active/Standby trong một DC**. **Không** DC-DR — khách hàng yêu cầu bỏ (DEC-ARC-018); thảm họa mất DC xử lý bằng **backup/restore**. IdP/LBS TBD. DB = **PostgreSQL** (ADR-009; version/host TBD). **Không** Active/Active.
 
 ```text
-                    ┌─ DC-Prod (ACTIVE) ─────────────────────────┐
+                    ┌─ DC-Prod (chỉ MỘT DC) ─────────────────────┐
  Client ──► [LBS-A] ─► [GW-A] ─► [MS-A…] ─► [DB-A]  (jobs ON)
                     │         Standby cùng DC: LBS-S / GW-S / MS-S / DB replica
+                    │         Standby nóng, không nhận user đến khi failover
                     └────────────────────────────────────────────┘
-                                      │ replicate DB (sync/async TBD)
-                    ┌─ DC-DR (STANDBY) ──────────────────────────┐
-                    │  LBS-DR / GW-DR / MS-DR / DB-DR   jobs OFF
-                    │  Promote khi failover (RTO TBD) · SSO IdP cùng mô hình
-                    └────────────────────────────────────────────┘
+                                      │ backup định kỳ (chu kỳ + nơi lưu TBD)
+                                      ▼
+                              [ Backup store ]  ← mất cả DC thì restore từ đây
+                                (RTO-restore TBD giờ · NFR-012c)
  Outbound chỉ từ Active: SMTP, Git, CRM sản phẩm
 ```
 
 | Environment | Nodes | Scaling |
 |-------------|-------|---------|
-| Prod | Cặp A/S + LBS trên Active | Ngang trong DC qua LBS sau failover nội bộ |
-| DR | Standby đủ công suất promote | Không nhận user đến khi cắt DC-Prod |
-| Dev / UAT | Không bắt buộc đủ DR | — |
+| Prod | Cặp A/S + LBS trên Active, **một DC** | Ngang trong DC qua LBS sau failover nội bộ |
+| Dev / UAT | Node đơn, không bắt buộc A/S | — |
 
 ### 4.5 Kịch bản (+1)
 
@@ -187,7 +187,7 @@ Cấu trúc: **một repo hoặc nhiều repo / một service-deploy** *(ADR-001
 | NV xem phiếu; LM 403 lương | Logic | NFR-002, 004 |
 | PRB T-15/T-7 + HR chốt | Process + Job | NFR-009 (PRB) |
 | LIF N+3 khóa Git/CRM | Process + Adapter | NFR-006 |
-| Failover A/S hoặc cắt sang DR | Physical + Process | NFR-012, AG-010, 014 |
+| Failover A/S trong DC · restore từ backup khi mất DC | Physical + Process | NFR-012a–d, AG-010, 014 |
 | Không notify CRM sales | Process | NFR-007 |
 
 ## 5. Mối quan tâm xuyên suốt
@@ -201,7 +201,7 @@ Cấu trúc: **một repo hoặc nhiều repo / một service-deploy** *(ADR-001
 | Mã hóa at-rest / TLS | **Không** đóng AES trên NFR | ADR TBD |
 | Error / 403 | Theo AC từng module | — |
 | Master động | Catalog quy chế, không hardcode luật | CN-006 |
-| HA / DR | 24/7; Active/Standby; DR/DC; job chỉ Active | ADR-003 **Accepted** |
+| HA | 24/7; Active/Standby **một DC**; backup/restore khi mất DC; job chỉ Active | **ADR-010 Accepted** *(supersede ADR-003 §3–5)* |
 
 ## 6. Tóm tắt quyết định kiến trúc
 
@@ -211,7 +211,8 @@ Cấu trúc: **một repo hoặc nhiều repo / một service-deploy** *(ADR-001
 |--------|----------|--------|
 | ADR-001 | Microservices + Gateway + LBS + SSO + .NET 9 + private | **Accepted** — [file](DOC-09-adr/ADR-001-stack-style-hosting.md) |
 | ADR-002 | JWT OIDC tại GW + IAM SoT role; SAML→JWT nội bộ | **Accepted** — [file](DOC-09-adr/ADR-002-sso-token.md) |
-| ADR-003 | 24/7 + Active/Standby + DR/DC (RTO/RPO số TBD) | **Accepted** — [file](DOC-09-adr/ADR-003-ha-dr-active-standby.md) |
+| ADR-003 | 24/7 + Active/Standby + DR/DC | **Accepted** — §3–5 **superseded** bởi ADR-010 — [file](DOC-09-adr/ADR-003-ha-dr-active-standby.md) |
+| ADR-010 | 24/7 + Active/Standby **một DC**; bỏ DR/DC *(khách yêu cầu)* | **Accepted** v0.2 — [file](DOC-09-adr/ADR-010-ha-single-dc-active-standby.md) |
 | ADR-004 | Mã hóa at-rest | Proposed |
 | ADR-005 | Broker job (in-process vs queue) | Proposed |
 | ADR-006 | MFA | Proposed |
