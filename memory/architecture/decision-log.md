@@ -284,3 +284,19 @@
 - Affects: ADR-011 · DOC-08 · DOC-11 · DOC-12 · DOC-14 · ADR-005 · BLK-004
 - Trace: deliberation B1 · DEC-ARC-016 · ADR-010 · doc-review 2026-09-07 B1
 - Confidence: vừa *(lộ trình chốt, nhưng W1 chưa xác minh kỹ thuật — OQ-ARC-011 — và khách chưa xác nhận — OQ-ARC-014)*
+
+### DEC-ARC-023 — Xác minh OQ-ARC-011: schema + role đủ cho NFR-002 · [2026-09-07]
+- Status: accepted *(kết quả đo, không phải lựa chọn phương án)*
+- Context: ADR-011 W1 dựa trên AS-04 — tin cậy **vừa**, chưa ai kiểm. Sai giả định này thì cả W1 phải thiết kế lại, mà W1 đụng 56 migration + 28 repository (RK-02).
+- Options: *(đo, không chọn)*
+- Decision: **AS-04 đúng** — nâng tin cậy từ *vừa* lên **cao**. W1 giữ nguyên thiết kế.
+- Why: đo thật trên PostgreSQL 16.8, database riêng `hrm_oq011`, 8/8 case đúng kỳ vọng. Quan trọng nhất: **JOIN chéo bị chặn ở tầng DB** và role **không tự nâng quyền** được.
+- Consequences:
+  - **Hàng rào NFR-002 khả thi mà không cần tách service** — nền tảng của phương án M được xác nhận bằng thực nghiệm.
+  - **Phát hiện 1:** app role chỉ có `USAGE` thì **không migrate được** kể cả schema của mình. Cần chốt ở W1: (i) app role có `CREATE`, hay (ii) **migrator role riêng** — nghiêng (ii) vì DOC-17 §2.1 đã ghi *"Prod: pipeline migrate riêng"*. Đã kiểm: cấp `CREATE` **không** làm thủng hàng rào.
+  - **Phát hiện 2:** `pg_catalog` lộ **tên bảng** schema khác (không lộ cột, không lộ dữ liệu). Chuẩn PostgreSQL, không tắt được bằng GRANT. **Không** vi phạm NFR-002 — ghi để audit không bất ngờ.
+  - **Phát hiện 3:** role `admin` có `rolcreaterole=false` → W1 **cần DBA/superuser** provision schema + role. Gộp yêu cầu vào OQ-DLV-003 khi gửi IT.
+  - Database thử nghiệm đã **dọn sạch**; `hrm` thật không bị đụng.
+- Affects: ADR-011 W1 · OQ-ARC-011 *(đóng)* · OQ-DLV-003 · DOC-17 §2.1
+- Trace: AS-04 deliberation B1 · ADR-011 · DEC-ARC-022
+- Confidence: cao *(thực nghiệm)*
