@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class IdentityAccountAdminRepository(AppDbContext db)
+internal sealed class IdentityAccountAdminRepository(IamDbContext db)
     : IIdentityAccountAdminRepository
 {
     public async Task<IReadOnlyList<IdentityAccountSnapshot>> ListAsync(

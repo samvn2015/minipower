@@ -79,6 +79,26 @@ public static class InfrastructureLayerExtension
         builder.Services.AddDbContext<PayDbContext>(options =>
             options.UseNpgsql(payConnectionString));
 
+        AddContextConnection<IamDbContext>(builder, "IamDbContext", connectionString);
+        AddContextConnection<LevDbContext>(builder, "LevDbContext", connectionString);
+
         return builder;
+    }
+
+    /// <summary>
+    /// ADR-011 W1c — nối một bounded context bằng role riêng của nó.
+    /// Thiếu cấu hình thì rơi về connection chung: app vẫn chạy, hàng rào chưa hoạt động.
+    /// </summary>
+    private static void AddContextConnection<TContext>(
+        IHostApplicationBuilder builder,
+        string name,
+        string fallback)
+        where TContext : DbContext
+    {
+        var cs = builder.Configuration.GetConnectionString(name);
+        if (string.IsNullOrWhiteSpace(cs))
+            cs = fallback;
+
+        builder.Services.AddDbContext<TContext>(options => options.UseNpgsql(cs));
     }
 }

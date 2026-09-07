@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class IdentityAccountReadRepository(AppDbContext db) : IIdentityAccountReadRepository
+internal sealed class IdentityAccountReadRepository(IamDbContext db) : IIdentityAccountReadRepository
 {
     public async Task<IdentityAccountSnapshot?> FindByIdpSubjectAsync(
         string idpSubject,

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class IdentityAccountWriteRepository(AppDbContext db)
+internal sealed class IdentityAccountWriteRepository(IamDbContext db)
     : IIdentityAccountWriteRepository
 {
     public async Task<IdentityAccountSnapshot> CreateAsync(
