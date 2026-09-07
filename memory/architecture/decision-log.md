@@ -186,3 +186,20 @@
 - Affects: ADR-001 · **ADR-003** · DOC-13 NFR-012 · DOC-17 · DOC-14 R-01 · memory/delivery BLK-002
 - Trace: OQ-ARC-008 · OQ-ARC-009 · DEC-ARC-003 · DEC-ARC-004 · deliberation B1
 - Confidence: cao *(dữ kiện từ PGD)* · vừa *(phạm vi đảo ADR-003 — còn câu hỏi Active/Standby)*
+
+### DEC-ARC-017 — ADR-010: 24/7 + A/S một DC, bỏ DR/DC · [2026-09-07]
+- Status: accepted *(PGD «vận hành 24/7, cặp active/standby trong cùng 1 DC»)*
+- Context: DEC-ARC-016 chốt bỏ DR/DC nhưng chưa rõ có bỏ luôn Active/Standby trong DC không. PGD xác nhận **giữ** 24/7 và A/S.
+- Options: G 24/7 + A/S + DR/DC hai site *(ADR-003)* · **K 24/7 + A/S một DC, backup/restore cho thảm họa** · J một DC chỉ RAID/backup · I Active/Active hai DC
+- Decision: chọn **K** → soạn **ADR-010**, supersede **ADR-003 §3–5**, giữ §1–2
+- Why (loại G vì đội ops hai site không tồn tại — DOC-14 R-01/A-01; loại J vì không đạt 24/7; loại I vì double-job, conflict chốt công/lương — đã loại từ ADR-003)
+- Consequences:
+  - Bỏ site thứ hai, bỏ replicate xuyên site, bỏ runbook chuyển site.
+  - Mất cả DC → **ngừng phục vụ đến khi restore**. Rủi ro PGD chấp nhận có ý thức.
+  - **NFR-012 tách hai loại RTO**: failover trong DC (nhanh) vs restore khi mất DC (chậm). RPO replicate xuyên site **không còn đối tượng** → OQ-ARC-002 / BLK-002 phải phát biểu lại chứ không chỉ điền số.
+  - Nợ mới: chu kỳ backup, nơi lưu off-site, thời gian restore mục tiêu — Ops/IT.
+  - Phương án K **không có** trong bảng options của ADR-003 (ADR-003 chỉ xét J); đây là điểm mới, không phải chọn lại phương án cũ.
+  - Nếu khách từng được cam kết DR/DC → là **thay đổi cam kết**, phải qua khách (cùng kênh với OQ-ARC-008).
+- Affects: **ADR-003 §3–5** · ADR-010 (mới) · DOC-13 NFR-012 · DOC-17 · DOC-08 SAD · DOC-14 R-01 · BLK-002
+- Trace: DEC-ARC-016 · DEC-ARC-004 · OQ-ARC-002 · OQ-ARC-009 · deliberation B1
+- Confidence: cao
