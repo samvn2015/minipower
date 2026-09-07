@@ -167,3 +167,22 @@
 - Affects: identity · Gateway · DOC-10 · DOC-17 · `hrm-backend` JWT config
 - Trace: `docs/04-platform/DOC-09-adr/ADR-007-idp-oidc.md` · `memory/delivery/decision-log.md` DEC-DLV-010
 - Confidence: cao *(brand)* · vừa *(Lark federation Google/Apple)*
+
+### DEC-ARC-016 — Microservices là yêu cầu khách hàng; bỏ DR/DC · [2026-09-07]
+- Status: accepted *(PGD trả lời OQ-ARC-008 + OQ-ARC-009 sau [deliberation B1](../../brainstorm/2026-09-07-arc-b1-monolith-vs-microservices.md))*
+- Context: Deliberation B1 dừng ở hai câu chặn — lý do gốc chỉ đạo microservices, và đội ops cho 7 service + DR hai DC.
+- Options: *(không phải lựa chọn phương án — đây là PGD cung cấp dữ kiện còn thiếu)*
+- Decision:
+  - **OQ-ARC-008 → microservices là _ý kiến khách hàng_**, không phải lựa chọn kỹ thuật nội bộ.
+  - **OQ-ARC-009 → _không làm DR/DC_ nữa.**
+- Why: khách quyết kiến trúc mục tiêu; DR/DC bị loại khỏi phạm vi vận hành.
+- Consequences:
+  - **T1 gần như đã có đáp án:** không thể tự đảo ADR-001 sang monolith — đó là cam kết với khách. Muốn đổi phải qua kênh khách hàng, không phải CR nội bộ.
+  - **ADR-003 bị đảo một phần** — §3 (hai site DC-Prod/DC-DR), §4 (replicate Prod→DR), §5 (job disable trên DR) không còn áp dụng. ADR-003 ghi rõ *"Không sửa khi Accepted — đảo = ADR mới"* → **phải soạn ADR mới supersede**.
+  - **R-01 (DOC-14) nhẹ đi đáng kể** — bỏ site thứ hai là bỏ phần lớn gánh vận hành mà góc Operations lo nhất. Microservices trở nên khả thi hơn so với giả định trong deliberation.
+  - **OQ-ARC-002 / BLK-002 (RTO/RPO) đổi bản chất** — không còn DR site thì RPO replicate hết nghĩa; RTO tính theo khôi phục trong một DC.
+  - DOC-17 §DR và DOC-13 NFR-012 phải sửa theo ADR mới.
+  - **Chưa rõ:** bỏ DR/DC có kèm bỏ luôn cặp Active/Standby trong **một** DC (ADR-003 §2) không — cần PGD xác nhận trước khi soạn ADR.
+- Affects: ADR-001 · **ADR-003** · DOC-13 NFR-012 · DOC-17 · DOC-14 R-01 · memory/delivery BLK-002
+- Trace: OQ-ARC-008 · OQ-ARC-009 · DEC-ARC-003 · DEC-ARC-004 · deliberation B1
+- Confidence: cao *(dữ kiện từ PGD)* · vừa *(phạm vi đảo ADR-003 — còn câu hỏi Active/Standby)*
