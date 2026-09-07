@@ -203,3 +203,18 @@
 - Affects: **ADR-003 §3–5** · ADR-010 (mới) · DOC-13 NFR-012 · DOC-17 · DOC-08 SAD · DOC-14 R-01 · BLK-002
 - Trace: DEC-ARC-016 · DEC-ARC-004 · OQ-ARC-002 · OQ-ARC-009 · deliberation B1
 - Confidence: cao
+
+### DEC-ARC-018 — Bỏ DR/DC là yêu cầu khách hàng · ADR-010 v0.2 · [2026-09-07]
+- Status: accepted *(PGD «khách hàng yêu cầu bỏ DR/DC»)*
+- Context: ADR-010 v0.1 ghi rủi ro *"nếu khách từng được cam kết DR/DC thì đây là thay đổi cam kết"*. PGD làm rõ nguồn gốc.
+- Options: *(không chọn phương án — bổ sung dữ kiện nguồn gốc yêu cầu)*
+- Decision: bỏ DR/DC **do khách hàng yêu cầu**, không phải quyết định nội bộ cắt chi phí → ADR-010 lên **v0.2**
+- Why: đặt yêu cầu này cùng thẩm quyền với ràng buộc microservices (OQ-ARC-008) — cả hai từ khách
+- Consequences:
+  - **Rủi ro "vi phạm cam kết" đóng.** Ngược lại, **giữ** hai site mới là làm sai yêu cầu khách.
+  - Rủi ro còn lại chuyển thành **kỳ vọng**: cần khách xác nhận bằng văn bản đã hiểu hệ quả — mất DC là ngừng phục vụ đến khi restore.
+  - **Quan sát cần đưa lại khách:** khách yêu cầu microservices (tăng phức tạp vận hành) *đồng thời* bỏ DR/DC (giảm chịu thảm họa) — hai yêu cầu kéo ngược chiều. Không sai, nhưng nên xác nhận khách hiểu.
+  - DOC-02 luồng phê duyệt: cần dấu vết yêu cầu của khách trong `assets/` để trace, hiện **chưa có file gốc**.
+- Affects: ADR-010 v0.2 · DOC-13 NFR-012 · DOC-17 · quan hệ khách hàng
+- Trace: DEC-ARC-017 · DEC-ARC-016 · OQ-ARC-008 · OQ-ARC-009
+- Confidence: cao *(dữ kiện từ PGD)* · thấp *(chưa có văn bản gốc từ khách trong assets/)*

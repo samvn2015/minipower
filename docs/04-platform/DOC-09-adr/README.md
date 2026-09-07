@@ -8,6 +8,6 @@
 | ADR-007 | **Lark** IdP OIDC; Google/Apple/@lhqglobal.vn; không host HRM | **Accepted** v0.2 | [ADR-007-idp-oidc.md](ADR-007-idp-oidc.md) |
 | ADR-008 | React + Go + K8s (đảo stack) | **Rejected** | [ADR-008-react-go-k8s.md](ADR-008-react-go-k8s.md) |
 | ADR-009 | PostgreSQL SoT (vs Mongo) | **Accepted** | [ADR-009-postgresql.md](ADR-009-postgresql.md) |
-| ADR-010 | 24/7 + A/S trong **một** DC; bỏ DR/DC | **Accepted** — supersede ADR-003 §3–5 | [ADR-010-ha-single-dc-active-standby.md](ADR-010-ha-single-dc-active-standby.md) |
+| ADR-010 | 24/7 + A/S trong **một** DC; bỏ DR/DC *(khách yêu cầu)* | **Accepted** v0.2 — supersede ADR-003 §3–5 | [ADR-010-ha-single-dc-active-standby.md](ADR-010-ha-single-dc-active-standby.md) |
 
 Mỗi quyết định = `ADR-{NNN}-{slug}.md` — khung: [template DOC-09](../../../templates/DOC-09-adr.md).

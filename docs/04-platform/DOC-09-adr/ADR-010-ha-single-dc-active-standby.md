@@ -3,6 +3,7 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-09-07 | soạn nháp SA (trợ lý) | **Accepted** (DEC-ARC-017 · PGD Dư Hùng) |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Accepted** — bổ sung nguồn gốc: **khách hàng yêu cầu** bỏ DR/DC (DEC-ARC-018) |
 
 **Michael Nygard ADR** · 1 file / 1 quyết định. **Không** sửa khi Accepted — đảo = ADR mới.
 
@@ -25,6 +26,10 @@ ADR-003 (Accepted 2026-08-26, DEC-ARC-004) khoá mô hình **24/7 + Active/Stand
 2. [Deliberation B1](../../../brainstorm/2026-09-07-arc-b1-monolith-vs-microservices.md) (2026-09-07): góc Operations nêu đây là mối lo #1, và *"vận hành hệ phân tán mà không có đội ops"* là điều họ nhất định không chấp nhận.
 
 PGD trả lời (DEC-ARC-016): **bỏ DR/DC**; giữ **vận hành 24/7** và **cặp Active/Standby trong cùng một DC**.
+
+**Nguồn gốc yêu cầu (v0.2 · DEC-ARC-018):** bỏ DR/DC là **yêu cầu từ khách hàng**, không phải quyết định nội bộ để giảm chi phí vận hành. Điều này đặt nó cùng thẩm quyền với ràng buộc microservices (OQ-ARC-008) — cả hai đều do khách đưa ra. Hệ quả: **không có rủi ro vi phạm cam kết**; ngược lại, giữ hai site sẽ là làm sai yêu cầu khách.
+
+**Quan sát gửi kèm (không phải quyết định):** khách yêu cầu **microservices** (làm tăng độ phức tạp vận hành) đồng thời yêu cầu **bỏ DR/DC** (làm giảm khả năng chịu thảm họa). Hai yêu cầu kéo ngược chiều nhau về mặt vận hành. Không có gì sai — nhưng nên xác nhận với khách rằng họ hiểu hệ quả ở §6 dưới đây.
 
 Lưu ý: phương án này **không có trong bảng của ADR-003**. ADR-003 chỉ xét J = *"Một DC, chỉ RAID/backup"* và đã loại vì không 24/7. Phương án hiện tại là một DC **có** Active/Standby — mạnh hơn J, yếu hơn G.
 
@@ -56,7 +61,7 @@ Gánh vận hành hai site không có người đảm nhiệm (DOC-14 R-01, A-01
 
 **Tiêu cực:** không còn khả năng chịu mất cả DC. RTO khi mất DC = thời gian restore, **lớn hơn nhiều** so với failover site.
 
-**Rủi ro:** nếu khách hàng từng được cam kết có DR/DC thì đây là **thay đổi cam kết** — cần thông qua khách, giống ràng buộc microservices ở OQ-ARC-008.
+**Rủi ro:** ~~thay đổi cam kết với khách~~ — **đã đóng (v0.2)**: chính khách hàng yêu cầu bỏ DR/DC (DEC-ARC-018). Rủi ro còn lại là **kỳ vọng**: cần khách xác nhận bằng văn bản rằng họ hiểu hệ quả §6 — mất DC là ngừng phục vụ đến khi restore xong — để tránh tranh chấp khi sự cố xảy ra.
 
 ### Tuân thủ & Tác động NFR
 
