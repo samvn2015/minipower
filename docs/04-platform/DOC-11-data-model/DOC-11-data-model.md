@@ -3,7 +3,7 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung ER · DEC-ARC-008) |
-| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §2 và §3 sinh lại từ schema thật, đóng doc-review **Blocker B2** |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Draft** — §2 và §3 sinh lại từ schema thật, đóng doc-review **Blocker B2**. Chờ PGD ký để lên Chốt |
 
 **UML / ERD khái niệm** · DOC-08 **Chốt** · ADR-001 DB-per-service **Accepted** · ADR-002 **Accepted**.  
 **Cổng:** PGD chốt v0.1 (DEC-ARC-008). Engine: **PostgreSQL** (ADR-009). Nợ: version/host/connection; UUID vs bigint; list field master; EVT/RPT. **Chưa** `02-baseline/`.
@@ -145,7 +145,7 @@ Khung **thực thể + ranh giới service** cho 7 module Must. Không physical 
 | Attribute | Định nghĩa | Sensitive |
 |-----------|------------|-----------|
 | `PayLine` (+ `PayPeriod`) | Dòng lương theo kỳ. **Không có entity `Payslip`** — phiếu lương là *query* trên `PayLine`, sửa từ v0.2 | **Y** — chỉ PAY + chính chủ |
-| `Cccd`, `Mst` trên `Employee` | Định danh | **Y** |
+| `Cccd`, `TaxId` trên `Employee` | Định danh — cả hai **unique** | **Y** |
 | idpSubject | Khóa SSO | Y (không public log) |
 | `KtTv` trên `EmployeeContract` | Mốc TV từ HĐ | N (EMP) |
 | `ProbationEvaluation` + `ProbationOutcome` | 3 mã kết quả (thay `PrbDecision` của v0.1) | N + audit HR |

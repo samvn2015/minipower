@@ -3,9 +3,9 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung OAS · DEC-ARC-010) |
-| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4 sinh lại từ Swagger runtime, đóng doc-review **Blocker B3** |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Draft** — §4 sinh lại từ Swagger runtime, đóng doc-review **Blocker B3**. Chờ PGD ký để lên Chốt |
 
-**OAS 3.0.3** · DOC-08/10/11 **Chốt** · ADR-001/002/007 **Accepted**.  
+**OAS 3.0.1** *(Swashbuckle sinh — khớp dòng đầu `openapi.yaml`)* · DOC-08/10/11 · ADR-001/002/007 **Accepted**.  
 **SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. Nợ: Base URL thật; issuer OIDC; full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
 
 ---
@@ -31,7 +31,9 @@ Mọi path công khai đi **LBS → Gateway**. Service phía sau không expose I
 
 **RBAC:** IAM DB sau token (ADR-002). 403 màn HR / lương — NFR-002/004.
 
-**Cấm:** `POST /auth/login` với password.
+**Cấm:** `POST /auth/login` với password **trên Production**.
+
+> **Ngoại lệ DEV/UAT — có trace:** `GET /dev/token` và `POST /dev/login` (nhận `username`/`password`) tồn tại để E2E local khi chưa có Lark JWKS (DEC-DLV-011). Cả hai nằm sau guard `IsDevelopment()` → **404 ngoài Development**, không lưu password trong DB (DOC-11 §3.1 giữ nguyên). Đưa password auth vào Production đã bị **từ chối** — [CR-001](../../06-changes/CR-001-password-login/CR-001-password-login.md) `closed-rejected`, DEC-DLV-025.
 
 ## 3. Quy ước chung
 
@@ -124,13 +126,18 @@ v0.1 mô tả path **không trùng chữ** với route thật. Ghi lại để n
 
 | Endpoint | FR/NFR/INT |
 |----------|------------|
-| `/iam/me` | ADR-002, INT-001 |
-| `/lev/*` | LEV DOC-06 |
-| `/tim/imports` | INT-003, NFR-001 |
-| `/pay/payslips/*` | NFR-002 |
-| `/prb/.../decide` | PRB-FR-009 |
-| `/lif/.../locks` | INT-004, INT-005 |
+| `GET /v1/iam/me` | ADR-002, INT-001 |
+| `GET /v1/lev/leave-balances/me` · `POST /v1/lev/leave-requests` | LEV DOC-06 |
+| `POST /v1/lev/leave-requests/{id}/c1/approve`\|`/c1/reject` | LEV C1 |
+| `POST /v1/lev/leave-requests/{id}/c2/approve`\|`/c2/reject` | LEV C2 — trừ quỹ |
+| `POST /v1/tim/imports` · `/v1/tim/imports/{id}/commit` | INT-003, NFR-001 |
+| `GET /v1/pay/payslips/me` · `GET /v1/pay/payslips/{id}` | **NFR-002** |
+| `POST /v1/prb/evaluations/{employeeId}/propose`\|`/decide` | PRB-FR-009 |
+| `POST /v1/lif/offboarding/{id}/locks` · `/v1/lif/offboarding/jobs/nplus3-locks` | INT-004, INT-005 |
+| `POST /dev/login` · `GET /dev/token` | DEC-DLV-011 · CR-001 *(DEV/UAT only)* |
 | *(cấm)* CRM sales | INT-006 |
+
+> Path lấy từ [`openapi.yaml`](openapi.yaml) — kiểm 2026-09-07. Không gõ tay lại; sai lệch §8 là nguyên nhân finding regression Major.
 
 ## 9. Phê duyệt
 
