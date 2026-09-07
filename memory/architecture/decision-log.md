@@ -317,3 +317,20 @@
 - Affects: 7 DbContext · 28 repository · 5 consumer Application · 10 test · ADR-011 W1 · OQ-ARC-016 *(đóng)*
 - Trace: ADR-011 W1 · DEC-ARC-022 · DEC-ARC-023 · readiness-gate 2026-09-07 (①a ②a ③ii)
 - Confidence: cao *(đo bằng pg_stat_activity + test + endpoint)*
+
+### DEC-ARC-025 — Mở ADR-005: coupling TIM↔PAY không phải saga · [2026-09-07]
+- Status: **proposed** *(chưa chốt — chờ PGD)*
+- Context: RK-04 chặn ADR-011 W3. DOC-08 §4.5 ghi *"saga TIM→PAY"*, §5 ghi *"hàng đợi giữa service TBD"*.
+- Options: **P Đọc guard qua API, không broker** · Q Broker + saga · R TIM publish event, PAY giữ read model · S Đọc thẳng DB chéo
+- Decision: **đề xuất P** — chưa Accepted
+- Why: soi code cho thấy **không có luồng ghi nào trải trên cả hai context**. PAY→TIM và TIM→PAY đều là **đọc guard đồng bộ** (`FindPeriodByYmAsync`, `IPayPeriodGate`). Saga giải một bài toán **không tồn tại**. Loại S vì phá hàng rào W1. Loại Q/R vì thêm hệ thống trạng thái phải vận hành trong khi đội ops chưa có (DOC-14 A-01/R-01, ADR-010), và cửa sổ dữ liệu cũ trái ngữ nghĩa chốt kỳ.
+- Consequences:
+  - **DOC-08 §4.5 R-007 sai với hệ thống thật** — phải bỏ chữ "saga".
+  - Không broker ở MVP ⇒ không thêm thành phần cần A/S + backup (khớp ADR-010).
+  - `GET /v1/tim/periods/{ym}` và `GET /v1/pay/periods/{ym}` thành **hợp đồng liên service** từ W3.
+  - Guard **fail-closed**: gọi lỗi/timeout ⇒ từ chối thao tác, không đoán.
+  - **Phát hiện thêm:** không có `BackgroundService`/`IHostedService` nào. Job T-15/T-7/N+3 chạy bằng endpoint do **bộ lập lịch ngoài** gọi, chưa tài liệu hoá (RK-06 · OQ-ARC-017).
+  - RK-05 timeout/retry guard chéo (OQ-ARC-018) · RK-07 idempotency `POST /v1/prb/jobs/reminders/run` chưa kiểm, trùng nhắc là rủi ro NFR-009.
+- Affects: ADR-005 (mới) · ADR-011 W3 *(gỡ RK-04)* · DOC-08 §4.5/§5 · DOC-12 · DOC-17
+- Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-022
+- Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hiệu năng hop mạng sau W3)*
