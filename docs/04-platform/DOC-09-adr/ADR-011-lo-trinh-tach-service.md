@@ -2,13 +2,13 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
-| 0.1 | 2026-09-07 | soạn nháp SA (trợ lý) | **Proposed** — chờ PGD chốt |
+| 0.1 | 2026-09-07 | soạn nháp SA (trợ lý) | **Accepted** — PGD chốt phương án **M** (DEC-ARC-022) |
 
 **Michael Nygard ADR** · 1 file / 1 quyết định. **Không** sửa khi Accepted — đảo = ADR mới.
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Proposed** — giải Blocker B1 của [doc-review 2026-09-07](../../../memory/delivery/doc-review-2026-09-07-doc11-12.md) |
+| **Status** | **Accepted** — PGD Dư Hùng 2026-09-07 (DEC-ARC-022). Đảo = ADR mới. Giải Blocker B1 của [doc-review 2026-09-07](../../../memory/delivery/doc-review-2026-09-07-doc11-12.md) |
 | **Date** | 2026-09-07 |
 | **Deciders** | Mr. Dư Hùng, PGD (A) |
 | **Consulted** | SA · Ops/IT (SH-006) · Dev (SH-010) · khách hàng *(ràng buộc microservices)* |
@@ -41,13 +41,13 @@ Năm ràng buộc cứng từ deliberation §3 giữ nguyên hiệu lực, mạn
 | Option | Mô tả | Pros | Cons |
 |--------|-------|------|------|
 | **L — Big bang** | Dừng tính năng, tách thẳng 7 service + GW + LBS | Đến đích nhanh nhất trên giấy | Đội chưa có (A-01); 7 module UAT Pass phải verify lại toàn bộ; saga TIM→PAY phải làm ngay; **rủi ro trượt 2027 cao nhất** |
-| **M — Hàng rào dữ liệu trước, tách deploy sau** *(đề xuất)* | Wave 1: tách **schema + DB role** theo bounded context trong cùng instance PostgreSQL, mỗi context một `DbContext`. Wave 2+: tách deploy từng service theo thứ tự rủi ro | **NFR-002 có hàng rào thật ngay wave 1** với chi phí thấp nhất; ranh giới bị cưỡng chế bằng GRANT chứ không bằng quy ước; mỗi wave giao được, không có giai đoạn "hệ thống không chạy" | Đích cuối tới chậm hơn L; phải chấp nhận trạng thái lai trong nhiều wave |
+| **M — Hàng rào dữ liệu trước, tách deploy sau** *(chọn)* | Wave 1: tách **schema + DB role** theo bounded context trong cùng instance PostgreSQL, mỗi context một `DbContext`. Wave 2+: tách deploy từng service theo thứ tự rủi ro | **NFR-002 có hàng rào thật ngay wave 1** với chi phí thấp nhất; ranh giới bị cưỡng chế bằng GRANT chứ không bằng quy ước; mỗi wave giao được, không có giai đoạn "hệ thống không chạy" | Đích cuối tới chậm hơn L; phải chấp nhận trạng thái lai trong nhiều wave |
 | N — Tách deploy trước, DB sau | Tách process 7 service, vẫn chung một DB | Có "7 service" sớm để trình khách | **NFR-002 vẫn không có hàng rào**; 7 service chung DB là distributed monolith — tệ hơn hiện tại về vận hành lẫn thiết kế |
 | O — Giữ monolith | Không làm gì | Rẻ nhất | **Loại** — trái yêu cầu khách (DEC-ARC-016) |
 
-### Quyết định *(đề xuất — chờ PGD)*
+### Quyết định
 
-Chọn **M**. Lộ trình theo wave, mỗi wave có tiêu chí ra rõ ràng:
+**Accepted — chọn M** (DEC-ARC-022). Lộ trình theo wave, mỗi wave có tiêu chí ra rõ ràng:
 
 | Wave | Nội dung | Tiêu chí ra |
 |------|----------|-------------|
@@ -98,13 +98,13 @@ Ngược lại, N tạo ra "7 service chung một DB" — trông giống đích 
 ### Câu hỏi mở
 
 - **OQ-ARC-013** — Thứ tự tách service sau PAY do ai quyết: khách, hay nội bộ theo rủi ro kỹ thuật?
-- **OQ-ARC-014** — Khách có chấp nhận lộ trình theo wave, hay yêu cầu đủ 7 service tại thời điểm go-live 2027?
+- **OQ-ARC-014** — Khách có chấp nhận lộ trình theo wave, hay yêu cầu đủ 7 service tại go-live 2027? ⚠️ **Vẫn mở sau khi Accepted.** ADR này là quyết định **nội bộ** về cách đi; nếu khách đòi đủ 7 service tại 2027 thì phương án M sụp và phải quay lại L. Cần trình khách trước khi mở W1.
 - **OQ-ARC-011** *(đang mở)* — xác minh kỹ thuật: schema + role riêng trong một instance PostgreSQL có đủ cho NFR-002 không?
 
 ### Phê duyệt
 
 | Vai trò | Họ tên | Ngày | Kết quả |
 |---------|--------|------|---------|
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ Accepted · ☐ Rejected · ☐ Đổi phương án |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-09-07 | ☑ **Accepted** — phương án M (DEC-ARC-022) |
 | SA | | | ☐ |
 | Ops / IT | | | ☐ |

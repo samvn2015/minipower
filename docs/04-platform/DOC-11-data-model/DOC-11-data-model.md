@@ -3,7 +3,7 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung ER · DEC-ARC-008) |
-| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Draft** — §2 và §3 sinh lại từ schema thật, đóng doc-review **Blocker B2**. Chờ PGD ký để lên Chốt |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §2/§3 sinh lại từ schema thật, đóng doc-review **B2** (PGD ký · DEC-ARC-021) |
 
 **UML / ERD khái niệm** · DOC-08 **Chốt** · ADR-001 DB-per-service **Accepted** · ADR-002 **Accepted**.  
 **Cổng:** PGD chốt v0.1 (DEC-ARC-008). Engine: **PostgreSQL** (ADR-009). Nợ: version/host/connection; UUID vs bigint; list field master; EVT/RPT. **Chưa** `02-baseline/`.
@@ -185,7 +185,8 @@ Replicate Prod→DR theo ADR-003 (cả N DB).
 
 | Vai trò | Họ tên | Ngày | Baseline |
 |---------|--------|------|----------|
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** khung v0.1 (DEC-ARC-008) · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** khung v0.1 (DEC-ARC-008) |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | **2026-09-07** | **Chốt v0.2** (DEC-ARC-021) · ☐ `02-baseline/` |
 | SA | | 2026-08-26 | Soạn → PGD chốt |
 | BA (R) | Trịnh Yên | 2026-08-26 | Soạn |
 | Business Owner | Ban HR | | ☐ Nợ |

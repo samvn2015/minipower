@@ -254,3 +254,33 @@
 - Affects: ADR-011 (mới) · DOC-08 · DOC-11 · DOC-12 · DOC-14 · ADR-005
 - Trace: deliberation B1 · DEC-ARC-016 · ADR-010 · doc-review 2026-09-07 Blocker B1/B2/B3
 - Confidence: vừa *(lộ trình hợp lý nhưng W1 chưa được xác minh kỹ thuật — OQ-ARC-011)*
+
+### DEC-ARC-021 — Ký DOC-11 v0.2 + DOC-12 v0.2 · [2026-09-07]
+- Status: accepted *(PGD ký sau regression doc-review)*
+- Context: Regression review đóng B2/B3 về nội dung nhưng mở Blocker F5 — hai DOC mang nhãn Chốt v0.2 mà chưa ai ký, không có DEC. Trợ lý đã hạ về Draft.
+- Options: A Giữ Draft đến khi có đội review · **B PGD ký v0.2 ngay** · C Rollback về v0.1
+- Decision: chọn **B** — ký v0.2, nhãn trở lại **Chốt**
+- Why (loại C vì v0.1 mô tả hệ thống không tồn tại; loại A vì không có đội review độc lập, giữ Draft chỉ trì hoãn)
+- Consequences:
+  - DOC-11 §9 và DOC-12 §9 thêm dòng ký **2026-09-07**; dòng v0.1 giữ nguyên làm lịch sử.
+  - F5 **đóng**. `02-baseline/` nay có phiên bản hợp lệ để lấy — nhưng vẫn chờ B1.
+  - 3 Minor của regression chưa sửa: DOC-11 §2 trỏ ADR đang Proposed *(nay đã Accepted — DEC-ARC-022)*, §3 sinh từ snapshot không phải DB thật, §4 tên khái niệm cũ.
+- Affects: DOC-11 v0.2 · DOC-12 v0.2 · BLK-004
+- Trace: doc-review regression 2026-09-07 F5 · DEC-ARC-008 · DEC-ARC-010
+- Confidence: cao
+
+### DEC-ARC-022 — ADR-011 Accepted: lộ trình wave (phương án M) · [2026-09-07]
+- Status: accepted *(PGD chốt)*
+- Context: B1 là Blocker cuối chặn baseline. ADR-011 dựng 4 phương án sau khi DEC-ARC-016 khoá đích đến và ADR-010 gỡ gánh DR/DC.
+- Options: L Big bang · **M Hàng rào dữ liệu trước, tách deploy sau** · N Tách deploy trước DB sau · O Giữ monolith
+- Decision: chọn **M** → ADR-011 **Proposed → Accepted**
+- Why (loại O trái yêu cầu khách; loại L vì đội chưa có, rủi ro trượt 2027 cao nhất; loại N vì 7 service chung một DB = distributed monolith, vẫn không có hàng rào NFR-002 mà đã gánh trọn chi phí vận hành)
+- Consequences:
+  - **B1 đóng về mặt quyết định nội bộ.** W1 (schema + DB role theo bounded context) là slice tiếp theo được phép mở.
+  - **OQ-ARC-014 VẪN MỞ** — ADR này là quyết định **nội bộ về cách đi**. Nếu khách đòi đủ 7 service tại go-live 2027 thì M sụp, phải quay lại L. **Cần trình khách trước khi mở W1.**
+  - RK-04: ADR-005 (saga TIM→PAY) còn Proposed, phải chốt trước W3.
+  - DOC-08 cần quy ước phân biệt *kiến trúc hiện tại* vs *đích đến*, nếu không doc-review chặn lại ở lần sau.
+  - RK-02: W1 đụng 56 migration + 28 repository → slice riêng, có rollback.
+- Affects: ADR-011 · DOC-08 · DOC-11 · DOC-12 · DOC-14 · ADR-005 · BLK-004
+- Trace: deliberation B1 · DEC-ARC-016 · ADR-010 · doc-review 2026-09-07 B1
+- Confidence: vừa *(lộ trình chốt, nhưng W1 chưa xác minh kỹ thuật — OQ-ARC-011 — và khách chưa xác nhận — OQ-ARC-014)*

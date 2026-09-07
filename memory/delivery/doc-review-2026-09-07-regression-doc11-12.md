@@ -2,7 +2,9 @@
 
 **Slice:** `04-platform` — DOC-11 v0.2 · DOC-12 v0.2 + `openapi.yaml` v0.2
 **Mục đích:** xác nhận Blocker **B2/B3** của [pass 2026-09-07](doc-review-2026-09-07-doc11-12.md) đã đóng
-**Reviewer:** QC (một pass đối kháng) · **Verdict: ⛔ BLOCK** — 1 Blocker mới, B1 chưa giải
+**Reviewer:** QC (một pass đối kháng) · **Verdict ban đầu: ⛔ BLOCK** — 1 Blocker mới, B1 chưa giải
+
+> **Cập nhật cuối ngày 2026-09-07 — verdict chuyển ✅ PASS.** 4 Major đã sửa; F5 đóng bằng **DEC-ARC-021** (PGD ký v0.2); B1 đóng bằng **DEC-ARC-022** (ADR-011 Accepted). Còn **3 Minor** và **OQ-ARC-014** *(khách chưa xác nhận lộ trình wave)*.
 
 > Bản v0.2 do trợ lý soạn. Pass này soi **chính bản sửa đó**, không mặc định nó đúng.
 

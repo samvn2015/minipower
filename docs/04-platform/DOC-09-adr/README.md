@@ -10,6 +10,6 @@
 | ADR-009 | PostgreSQL SoT (vs Mongo) | **Accepted** | [ADR-009-postgresql.md](ADR-009-postgresql.md) |
 | ADR-010 | 24/7 + A/S trong **một** DC; bỏ DR/DC *(khách yêu cầu)* | **Accepted** v0.2 — supersede ADR-003 §3–5 | [ADR-010-ha-single-dc-active-standby.md](ADR-010-ha-single-dc-active-standby.md) |
 
-| ADR-011 | Lộ trình monolith → microservices theo wave | **Proposed** — chờ PGD | [ADR-011-lo-trinh-tach-service.md](ADR-011-lo-trinh-tach-service.md) |
+| ADR-011 | Lộ trình monolith → microservices theo wave | **Accepted** — chờ khách xác nhận OQ-ARC-014 | [ADR-011-lo-trinh-tach-service.md](ADR-011-lo-trinh-tach-service.md) |
 
 Mỗi quyết định = `ADR-{NNN}-{slug}.md` — khung: [template DOC-09](../../../templates/DOC-09-adr.md).
