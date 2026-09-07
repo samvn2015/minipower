@@ -1,10 +1,16 @@
 cr_id: CR-001
 title: Đăng nhập username/password
-status: draft
+status: closed-rejected
 change_type: modify
 modules:
   - identity
-affected_docs:
+decision:
+  by: PGD
+  date: 2026-09-07
+  outcome: dev-only
+  ref: DEC-DLV-025
+# Production bi tu choi -> khong DOC nao duoc sua. Giu lai lam ho so phuong an bi loai.
+affected_docs_not_applied:
   - path: 04-platform/DOC-09-adr/ADR-007-idp-oidc.md
     doc: ADR-007
     action: supersede
@@ -33,7 +39,7 @@ affected_docs:
     doc: DOC-16
     action: modify
 impact:
-  scope: true
+  scope: false
   timeline_days: null
   regression_tests:
     - IAM UAT §1

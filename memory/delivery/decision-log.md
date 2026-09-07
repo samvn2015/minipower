@@ -276,3 +276,19 @@
 - Affects: TIM commands · EmpAudit · e2e-api-tim-slice-a/c
 - Trace: TIM-TC-NFR-002 · DEC-DLV-023
 - Confidence: cao *(unit)* · vừa *(e2e Host)*
+
+### DEC-DLV-025 — Password auth chỉ DEV/UAT, không vào Production · [2026-09-07]
+- Status: accepted *(PGD «không đưa password auth vào Production»)*
+- Context: PGD yêu cầu luồng đăng nhập username/password. DEV/UAT đã hiện thực (`POST /dev/login`); phần Prod soạn thành CR-001.
+- Options: A Chỉ DEV/UAT · B **Giữ DEV/UAT, từ chối Prod** · C Đưa password auth vào Prod (supersede ADR-007)
+- Decision: chọn **B** — CR-001 đóng, phần Prod **Từ chối**
+- Why (loại C vì tăng bề mặt tấn công credential, kéo theo sửa 9 DOC + toàn bộ TC IAM giả định SSO phải chạy lại; SSO đẩy rủi ro credential sang IdP)
+- Consequences:
+  - **ADR-007, ADR-001 §4, DOC-11 §3.1, DOC-12 §2 giữ nguyên** — không CR, không supersede.
+  - `IdentityAccount` **không** có PasswordHash; không migration.
+  - `POST /dev/login` + `GET /dev/token` sống sau guard `IsDevelopment()` → 404 ngoài Development.
+  - Prod vẫn chờ Lark JWKS (OQ-DLV-001) — không đổi.
+  - Rủi ro cần canh: cấu hình sai `ASPNETCORE_ENVIRONMENT` ở Prod sẽ mở endpoint dev.
+- Affects: identity · Hrm.Host/DevAuthController · DOC-17 checklist cutover
+- Trace: CR-001 · ADR-007 · DOC-12 §2 · DOC-11 §3.1 · DEC-DLV-011
+- Confidence: cao

@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Draft** — chờ PGD quyết |
+| **Status** | **Closed — Từ chối phần Production** (DEC-DLV-025 · 2026-09-07) |
 | **Type** | modify |
 | **Module(s)** | `identity` |
 | **Ngày** | 2026-09-07 |
@@ -41,7 +41,10 @@ Không đụng bốn ràng buộc trên vì endpoint **404 ngoài Development** 
 
 Password nằm trong file cấu hình DEV, **không** có `PasswordHash` trên `IdentityAccount`, **không** migration.
 
-## Phạm vi cần quyết (Production)
+## Phạm vi Production — **đã từ chối**
+
+> PGD quyết **không** đưa password auth vào Production (DEC-DLV-025). Bảng dưới giữ lại
+> làm hồ sơ phương án bị loại; **không** hạng mục nào được thực hiện.
 
 | Hạng mục | Nếu chấp thuận |
 |---|---|
@@ -53,9 +56,12 @@ Password nằm trong file cấu hình DEV, **không** có `PasswordHash` trên `
 | Audit | Bổ sung action đăng nhập / đổi mật khẩu / khoá vào `EmpAuditLog` (NFR-005) |
 | Song song SSO | Giữ Lark SSO đồng thời, hay thay hẳn? |
 
-## Affected documents
+## Affected documents — **không sửa DOC nào**
 
-| DOC | Path | Change |
+> Vì Production bị từ chối, **toàn bộ bảng dưới không áp dụng**. ADR-007, ADR-001 §4,
+> DOC-11 §3.1 và DOC-12 §2 **giữ nguyên hiệu lực**.
+
+| DOC | Path | Change *(không thực hiện)* |
 |-----|------|--------|
 | ADR-007 | `04-platform/DOC-09-adr/ADR-007-idp-oidc.md` | Superseded hoặc bổ sung ngoại lệ |
 | ADR-001 | `04-platform/DOC-09-adr/ADR-001-stack-style-hosting.md` | §4 SSO — sửa |
@@ -87,6 +93,10 @@ Password nằm trong file cấu hình DEV, **không** có `PasswordHash` trên `
 
 | Vai trò | Họ tên | Ngày | Kết quả |
 |---------|--------|------|---------|
-| Sponsor (A) | Mr. Dư Hùng, PGD | | ☐ Chấp thuận · ☐ Từ chối · ☐ Chỉ giữ DEV |
-| SA | | | ☐ |
-| Business Owner | Ban HR | | ☐ |
+| Sponsor (A) | Mr. Dư Hùng, PGD | 2026-09-07 | ☑ **Chỉ giữ DEV/UAT** — từ chối Production (DEC-DLV-025) |
+| SA | | | — *(không cần: không sửa DOC nào)* |
+| Business Owner | Ban HR | | — *(không cần: không đổi hành vi Prod)* |
+
+## Việc còn lại sau quyết định
+
+- [ ] DOC-17 §cutover: thêm mục kiểm `ASPNETCORE_ENVIRONMENT != Development` trên Prod — cấu hình sai sẽ mở `POST /dev/login` và `GET /dev/token`. Owner: SA / DevOps.
