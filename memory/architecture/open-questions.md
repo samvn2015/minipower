@@ -12,3 +12,5 @@
 - [ ] {OQ-ARC-010} Tải thật cuối tháng (số NV chấm công đồng thời) — chưa đo, NFR-001 chưa verify trên kiến trúc hiện tại · intent: quyết đơn vị scale · 2026-09-07 · chặn: không
 - [ ] {OQ-ARC-011} Tách schema/DB theo bounded context trong **một** deploy có đạt NFR-002 không? (AS-04, tin cậy vừa) · intent: phương án kiến trúc · 2026-09-07 · chặn: không
 - [ ] {OQ-ARC-012} **RK-01 — backup đặt trên máy Standby cùng DC** → mất DC là **mất luôn backup**, NFR-012c không thể đạt. Chọn: **(a)** chấp nhận mất dữ liệu, phát biểu lại §6 + xác nhận lại với khách · **(b)** thêm bản sao lạnh ngoài DC (rẻ hơn DR site nhiều bậc) · intent: ADR-010 §4 · 2026-09-07 · **chặn: có** *(go-live)* · [ADR-010 RK-01](../../docs/04-platform/DOC-09-adr/ADR-010-ha-single-dc-active-standby.md)
+- [ ] {OQ-ARC-013} Thứ tự tách service **sau PAY** — khách quyết hay nội bộ theo rủi ro kỹ thuật? · intent: ADR-011 W4+ · 2026-09-07 · chặn: không
+- [ ] {OQ-ARC-014} Khách có chấp nhận **lộ trình theo wave**, hay đòi đủ 7 service tại go-live 2027? · intent: ADR-011 · 2026-09-07 · **chặn: có** *(quyết định lộ trình)*

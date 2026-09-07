@@ -237,3 +237,20 @@
 - Affects: ADR-010 v0.3 · DOC-13 NFR-012c/d · DOC-17 §2.2 + §8 · OQ-ARC-012 · quan hệ khách hàng
 - Trace: DEC-ARC-017 · DEC-ARC-018 · OQ-ARC-002 · RK-01
 - Confidence: cao *(dữ kiện từ PGD)* · **RK-01 là suy luận kỹ thuật, tin cậy cao**
+
+### DEC-ARC-020 — Mở ADR-011: lộ trình tách service theo wave · [2026-09-07]
+- Status: **proposed** *(chưa chốt — chờ PGD)*
+- Context: Deliberation B1 đã khung lại vấn đề; DEC-ARC-016 + ADR-010 gỡ hai câu chặn. Đích đến bị khoá bởi khách (microservices), câu còn lại là **lộ trình**.
+- Options: L Big bang tách 7 service · **M Hàng rào dữ liệu trước, tách deploy sau** · N Tách deploy trước, DB sau · O Giữ monolith
+- Decision: **đề xuất M** — chưa Accepted
+- Why (loại O vì trái yêu cầu khách; loại L vì đội chưa có, rủi ro trượt 2027 cao nhất; **loại N vì 7 service chung một DB = distributed monolith — vẫn không có hàng rào NFR-002 mà đã gánh trọn chi phí vận hành phân tán**)
+- Consequences:
+  - W1 tách schema + DB role theo bounded context → **NFR-002 có hàng rào thật sớm nhất, chi phí thấp nhất**, không phụ thuộc tiến độ tuyển người.
+  - W2 cưỡng chế ranh giới bằng assembly + test kiến trúc. W3 tách PAY + Gateway. W4+ phần còn lại.
+  - Hệ thống ở trạng thái **lai** nhiều wave → DOC-08 cần quy ước phân biệt *hiện tại* vs *đích đến*, nếu không doc-review chặn lần nữa.
+  - RK-02 W1 đụng 56 migration + 28 repository → slice riêng, có rollback.
+  - RK-03 khách có thể hiểu W1/W2 là "chưa làm" → cần trình lộ trình.
+  - **RK-04 ADR-005 (saga TIM→PAY) còn Proposed nhưng W3 cần** → phải chốt trước W3.
+- Affects: ADR-011 (mới) · DOC-08 · DOC-11 · DOC-12 · DOC-14 · ADR-005
+- Trace: deliberation B1 · DEC-ARC-016 · ADR-010 · doc-review 2026-09-07 Blocker B1/B2/B3
+- Confidence: vừa *(lộ trình hợp lý nhưng W1 chưa được xác minh kỹ thuật — OQ-ARC-011)*
