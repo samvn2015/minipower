@@ -8,7 +8,7 @@ internal sealed class LifAccessLockOutboxConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<LifAccessLockOutbox> builder)
     {
-        builder.ToTable("lif_access_lock_outbox");
+        builder.ToTable("lif_access_lock_outbox", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.TargetSystems).IsRequired().HasMaxLength(64);

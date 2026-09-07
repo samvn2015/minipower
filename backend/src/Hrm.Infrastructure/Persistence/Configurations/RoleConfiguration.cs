@@ -9,7 +9,7 @@ internal sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
 {
     public void Configure(EntityTypeBuilder<Role> builder)
     {
-        builder.ToTable("iam_role");
+        builder.ToTable("iam_role", "iam");
         builder.HasKey(x => x.RoleCode);
         builder.Property(x => x.RoleCode).HasMaxLength(64);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(128);

@@ -9,7 +9,7 @@ internal sealed class LifOffboardingCaseConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<LifOffboardingCase> builder)
     {
-        builder.ToTable("lif_offboarding_case");
+        builder.ToTable("lif_offboarding_case", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Source).IsRequired().HasMaxLength(64);

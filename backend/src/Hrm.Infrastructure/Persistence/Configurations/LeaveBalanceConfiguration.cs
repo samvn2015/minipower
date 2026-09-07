@@ -10,7 +10,7 @@ internal sealed class LeaveBalanceConfiguration : IEntityTypeConfiguration<Leave
 {
     public void Configure(EntityTypeBuilder<LeaveBalance> builder)
     {
-        builder.ToTable("lev_leave_balance");
+        builder.ToTable("lev_leave_balance", "lev");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EntitledDays).HasPrecision(5, 1);
         builder.Property(x => x.UsedDays).HasPrecision(5, 1);

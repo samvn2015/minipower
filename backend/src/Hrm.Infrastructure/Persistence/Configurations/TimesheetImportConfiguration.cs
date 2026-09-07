@@ -9,7 +9,7 @@ internal sealed class TimesheetImportBatchConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<TimesheetImportBatch> builder)
     {
-        builder.ToTable("tim_import_batch");
+        builder.ToTable("tim_import_batch", "tim");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PeriodYm).IsRequired().HasMaxLength(7);
         builder.Property(x => x.TemplateVersionCode).IsRequired().HasMaxLength(64);
@@ -24,7 +24,7 @@ internal sealed class TimesheetImportRowConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<TimesheetImportRow> builder)
     {
-        builder.ToTable("tim_import_row");
+        builder.ToTable("tim_import_row", "tim");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).HasMaxLength(64);
         builder.Property(x => x.WorkDays).HasPrecision(5, 2);
@@ -46,7 +46,7 @@ internal sealed class TimesheetPeriodConfiguration : IEntityTypeConfiguration<Ti
 {
     public void Configure(EntityTypeBuilder<TimesheetPeriod> builder)
     {
-        builder.ToTable("tim_period");
+        builder.ToTable("tim_period", "tim");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PeriodYm).IsRequired().HasMaxLength(7);
         builder.HasIndex(x => x.PeriodYm).IsUnique();
@@ -60,7 +60,7 @@ internal sealed class TimesheetLineConfiguration : IEntityTypeConfiguration<Time
 {
     public void Configure(EntityTypeBuilder<TimesheetLine> builder)
     {
-        builder.ToTable("tim_timesheet_line");
+        builder.ToTable("tim_timesheet_line", "tim");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.WorkDays).HasPrecision(5, 2);

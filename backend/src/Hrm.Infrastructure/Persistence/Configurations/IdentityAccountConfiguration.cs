@@ -11,7 +11,7 @@ internal sealed class IdentityAccountConfiguration : IEntityTypeConfiguration<Id
 {
     public void Configure(EntityTypeBuilder<IdentityAccount> builder)
     {
-        builder.ToTable("iam_identity_account");
+        builder.ToTable("iam_identity_account", "iam");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.IdpSubject).IsRequired().HasMaxLength(256);
         builder.HasIndex(x => x.IdpSubject).IsUnique();

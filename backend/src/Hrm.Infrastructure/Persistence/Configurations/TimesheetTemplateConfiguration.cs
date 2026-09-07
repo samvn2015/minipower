@@ -10,7 +10,7 @@ internal sealed class TimesheetTemplateVersionConfiguration : IEntityTypeConfigu
 {
     public void Configure(EntityTypeBuilder<TimesheetTemplateVersion> builder)
     {
-        builder.ToTable("tim_template_version");
+        builder.ToTable("tim_template_version", "tim");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.VersionCode).IsRequired().HasMaxLength(64);
         builder.HasIndex(x => x.VersionCode).IsUnique();
@@ -35,7 +35,7 @@ internal sealed class TimesheetTemplateColumnConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<TimesheetTemplateColumn> builder)
     {
-        builder.ToTable("tim_template_column");
+        builder.ToTable("tim_template_column", "tim");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.ColumnKey).IsRequired().HasMaxLength(64);
         builder.Property(x => x.DisplayName).IsRequired().HasMaxLength(256);

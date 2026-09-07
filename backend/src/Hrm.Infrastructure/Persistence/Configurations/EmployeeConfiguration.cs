@@ -10,7 +10,7 @@ internal sealed class EmployeeConfiguration : IEntityTypeConfiguration<Employee>
 {
     public void Configure(EntityTypeBuilder<Employee> builder)
     {
-        builder.ToTable("emp_employee");
+        builder.ToTable("emp_employee", "emp");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.HasIndex(x => x.EmployeeCode).IsUnique();
