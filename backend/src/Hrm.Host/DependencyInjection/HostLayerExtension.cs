@@ -2,6 +2,7 @@ using Asp.Versioning;
 using Hrm.Application.Common;
 using Hrm.Application.DependencyInjection;
 using Hrm.Domain.Repositories;
+using Hrm.Host.Middlewares;
 using Hrm.Host.Services;
 using Hrm.Infrastructure.DependencyInjection;
 using Hrm.Infrastructure.Persistence;
@@ -99,6 +100,11 @@ public static class HostLayerExtension
         app.UseAuthentication();
         app.UseAuthorization();
         app.UseCoreMiddleware<ApiResponseWrapperMiddleware>();
+
+        // S4 — phải nằm BÊN TRONG ApiResponseWrapper: wrapper bắt BusinessException để
+        // dựng response, nên middleware log đặt ngoài sẽ không bao giờ thấy exception.
+        // Ở đây nó thấy trước, ghi log, rồi ném lại cho wrapper xử lý như cũ.
+        app.UseMiddleware<BusinessRefusalLoggingMiddleware>();
         app.MapControllers();
         app.UseHealthChecks();
         return app;
