@@ -3,9 +3,10 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung OAS · DEC-ARC-010) |
+| 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4 sinh lại từ Swagger runtime, đóng doc-review **Blocker B3** |
 
 **OAS 3.0.3** · DOC-08/10/11 **Chốt** · ADR-001/002/007 **Accepted**.  
-**SoT machine:** [`openapi.yaml`](openapi.yaml). Nợ: Base URL thật; issuer OIDC; UUID vs long; full body FR. **Không** tự DOC-17. **Chưa** `02-baseline/`.
+**SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. Nợ: Base URL thật; issuer OIDC; full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
 
 ---
 
@@ -38,7 +39,8 @@ Mọi path công khai đi **LBS → Gateway**. Service phía sau không expose I
 |------------|-------|
 | Content-Type | `application/json` |
 | Date | ISO 8601 |
-| Pagination | `page`, `size` |
+| PK | **Guid** — chốt trong code, 56 migration đã áp (đóng TBD của v0.1) |
+| Pagination | `page`, `size` — **quy định, chưa hiện thực** (code-review S1) |
 | Correlation | `X-Request-Id` (GW) |
 
 Lỗi:
@@ -63,31 +65,41 @@ Lỗi:
 | 409 | Conflict (unique CCCD, chốt kỳ) |
 | 500 | Internal |
 
-## 4. Danh mục endpoint (khung)
+## 4. Danh mục endpoint
 
-Prefix Gateway. `{id}` = string (kiểu PK TBD DOC-11).
+`openapi.yaml` là **nguồn sự thật máy đọc**, sinh trực tiếp từ Swagger runtime của `Hrm.Host` (2026-09-07). Không duy trì danh mục tay song song — bản v0.1 làm vậy và lệch 16/82.
 
-| Method | Path | Summary | Auth | Trace |
-|--------|------|---------|------|-------|
-| GET | `/iam/me` | User + roles sau SSO | Bearer | IAM, ADR-002 |
-| GET | `/emp/employees/{id}` | Hồ sơ | Bearer | EMP |
-| PATCH | `/emp/employees/{id}` | Sửa hồ sơ (rule FR) | Bearer | EMP |
-| GET | `/lev/balances` | Quỹ phép | Bearer | LEV |
-| POST | `/lev/requests` | Nộp đơn | Bearer | LEV |
-| POST | `/lev/requests/{id}/c1` | LM C1 | Bearer | LEV |
-| POST | `/lev/requests/{id}/c2` | HR C2 trừ quỹ | Bearer | LEV |
-| POST | `/tim/imports` | Upload Excel | Bearer HR | TIM INT-003 |
-| POST | `/tim/periods/{ym}/close` | Chốt công | Bearer HR | TIM |
-| GET | `/pay/payslips/me` | Phiếu mình | Bearer NV | PAY NFR-002 |
-| GET | `/pay/payslips/{id}` | Phiếu (HR / chính chủ) | Bearer | PAY 403 LM |
-| POST | `/pay/periods/{ym}/run` | Tính lương | Bearer HR | PAY |
-| GET | `/prb/cases/{employeeId}` | Hồ sơ TV | Bearer | PRB |
-| POST | `/prb/cases/{employeeId}/propose` | LM đề xuất | Bearer LM | PRB |
-| POST | `/prb/cases/{employeeId}/decide` | HR chốt 3 mã | Bearer HR | PRB-AC-009 |
-| GET | `/lif/cases/{employeeId}` | On/off | Bearer | LIF |
-| POST | `/lif/cases/{employeeId}/locks` | Trigger N+3 (job/IT) | Bearer hệ thống | INT-004/005 |
+**Quy mô hiện tại: 82 path · 88 operation · 34 schema.**
 
-Chi tiết schema field = FR + catalog — **không** liệt kê hết trên DOC-12 v0.1.
+| Nhóm | Path | Operation | Ghi chú |
+|------|------|-----------|---------|
+| `/v1/emp` | 11 | 13 | Hồ sơ, catalog, đề nghị đổi LM |
+| `/v1/iam` | 6 | 6 | `me`, quản trị account |
+| `/v1/lev` | 12 | 12 | Quỹ phép, đơn, C1/C2 approve+reject |
+| `/v1/lif` | 15 | 17 | On/offboarding, checklist, khóa N+3 |
+| `/v1/pay` | 13 | 13 | Kỳ lương, phiếu, phụ cấp, export |
+| `/v1/prb` | 10 | 10 | Case TV, đánh giá, quyết định, master |
+| `/v1/tim` | 12 | 14 | Template, import, chốt/mở kỳ, thiết bị |
+| `/api` | 1 | 1 | `ping` |
+| `/dev` | 2 | 2 | **DEV/UAT only** — 404 ngoài Development |
+
+### 4.1 Sai lệch đã sửa so với v0.1
+
+v0.1 mô tả path **không trùng chữ** với route thật. Ghi lại để người đọc bản cũ không hiểu nhầm:
+
+| v0.1 (sai) | Route thật |
+|------------|-----------|
+| `GET /lev/balances` | `GET /v1/lev/leave-balances/me` |
+| `POST /lev/requests` | `POST /v1/lev/leave-requests` |
+| `POST /lev/requests/{id}/c1` | `POST /v1/lev/leave-requests/{id}/c1/approve` **và** `/c1/reject` |
+| `POST /lev/requests/{id}/c2` | `POST /v1/lev/leave-requests/{id}/c2/approve` **và** `/c2/reject` |
+| `GET /prb/cases/{employeeId}` | `GET /v1/prb/cases` — list, **không** tham số employeeId |
+| `POST /prb/cases/{id}/propose\|decide` | `POST /v1/prb/evaluations/{employeeId}/propose\|decide` |
+
+### 4.2 Nợ còn lại
+
+- **Phân trang chưa có ở bất kỳ endpoint nào** — §3 quy định `page`/`size`, code chưa hiện thực (code-review S1). Chưa đưa vào `openapi.yaml` vì chưa có trong runtime.
+- `/dev/*` xuất hiện trong OAS vì Swagger sinh từ runtime Development. Trên Prod hai path này trả 404.
 
 ## 5. Ghi chú endpoint nhạy cảm
 
