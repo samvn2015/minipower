@@ -4,6 +4,7 @@ using Hrm.Application.DependencyInjection;
 using Hrm.Domain.Repositories;
 using Hrm.Host.Services;
 using Hrm.Infrastructure.DependencyInjection;
+using Hrm.Infrastructure.Persistence;
 using Jarvis.Authentication;
 using Jarvis.Authentication.Jwt;
 using Jarvis.Domain;
@@ -67,6 +68,22 @@ public static class HostLayerExtension
 
         builder.AddCoreSwagger();
         builder.AddHealthChecks();
+
+        // Jarvis chỉ đăng ký liveness; readiness (SQL, Redis, …) là **việc của Host**.
+        // Trước đây /health/ready trả 0 check ⇒ luôn Healthy kể cả khi PostgreSQL chết,
+        // và LBS sẽ bơm traffic vào node không dùng được (ADR-010 §2 Active/Standby).
+        //
+        // Kiểm CẢ BẢY context: cùng một instance nhưng **role khác nhau** (ADR-011 W1c),
+        // nên đây cũng là chỗ phát hiện sai mật khẩu/thu hồi quyền của từng role —
+        // nếu không sẽ chỉ lộ ra khi người dùng bấm đúng module đó.
+        builder.Services.AddHealthChecks()
+            .AddDbContextCheck<IamDbContext>("db-iam", tags: [HealthCheckTags.Readiness])
+            .AddDbContextCheck<EmpDbContext>("db-emp", tags: [HealthCheckTags.Readiness])
+            .AddDbContextCheck<LevDbContext>("db-lev", tags: [HealthCheckTags.Readiness])
+            .AddDbContextCheck<TimDbContext>("db-tim", tags: [HealthCheckTags.Readiness])
+            .AddDbContextCheck<PayDbContext>("db-pay", tags: [HealthCheckTags.Readiness])
+            .AddDbContextCheck<PrbDbContext>("db-prb", tags: [HealthCheckTags.Readiness])
+            .AddDbContextCheck<LifDbContext>("db-lif", tags: [HealthCheckTags.Readiness]);
 
         return builder;
     }
