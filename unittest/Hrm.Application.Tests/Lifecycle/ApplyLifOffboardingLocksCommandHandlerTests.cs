@@ -106,7 +106,13 @@ public sealed class ApplyLifOffboardingLocksCommandHandlerTests
             new RunLifNPlus3LocksCommand("it-dev", new DateOnly(2026, 10, 1)));
         Assert.Equal(0, early.Locked);
         Assert.Equal(1, early.SkippedNotDue);
-        Assert.Empty(audit.Entries);
+
+        // Ý định gốc giữ nguyên: chưa tới N+3 thì KHÔNG được ghi audit *khoá truy cập*.
+        Assert.DoesNotContain(audit.Entries, e => e.Action == EmpAuditActions.LifOffboardingAccessLocked);
+
+        // Nhưng lần chạy vẫn phải để lại dấu vết (ADR-005 RK-06) — nếu không,
+        // "job chạy, chưa tới hạn" và "job không chạy" là một, và NFR-009 hỏng im lặng.
+        Assert.Contains(audit.Entries, e => e.Action == EmpAuditActions.LifNPlus3LocksJobRan);
 
         var due = await handler.HandleAsync(
             new RunLifNPlus3LocksCommand("it-dev", NPlus3));

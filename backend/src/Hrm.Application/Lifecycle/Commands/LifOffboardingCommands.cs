@@ -353,6 +353,17 @@ public sealed class RunLifNPlus3LocksCommandHandler(
             locked++;
         }
 
+        // ADR-005 RK-06 — dấu vết mỗi lần job chạy, kể cả khi không khoá case nào.
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LifNPlus3LocksJobRan,
+                null,
+                null,
+                request.ActorIdpSubject,
+                $"asOf={asOf:yyyy-MM-dd};locked={locked};skippedNotDue={skippedNotDue};"
+                + $"skippedAlready={skippedAlready};skippedNoN={skippedNoN}"),
+            cancellationToken);
+
         return new LifNPlus3LockRunResult(asOf, locked, skippedNotDue, skippedAlready, skippedNoN);
     }
 }
