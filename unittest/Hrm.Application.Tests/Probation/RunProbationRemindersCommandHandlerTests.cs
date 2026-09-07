@@ -43,6 +43,41 @@ public sealed class RunProbationRemindersCommandHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_ChayLai_CungNgay_KhongNhacTrung()
+    {
+        // RK-07 (ADR-005) — job chạy bằng endpoint do bộ lập lịch NGOÀI gọi, nên gọi lại
+        // là chuyện bình thường: scheduler retry, người bấm hai lần, deploy lại giữa chừng.
+        // NFR-009 nói "0 sót 0 trễ" nhưng KHÔNG nói gì về trùng — test này khoá phần đó.
+        var empId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var repo = new FakeReminderRepo();
+        var handler = new RunProbationRemindersCommandHandler(
+            new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
+            new FakeEmployees([
+                new EmployeeSnapshot(
+                    empId, "MNV-TV", "TV", null, "tv@company.local", null, null, null, null, null,
+                    new EmployeeContractSnapshot("PROBATION", new DateOnly(2026, 1, 1), new DateOnly(2026, 6, 30), true),
+                    null,
+                    EmployeeStatus.Active)
+            ]),
+            repo,
+            new FakeHostRoleGate(active: true));
+
+        var asOfT15 = new DateOnly(2026, 6, 15);
+
+        var first = await handler.HandleAsync(new RunProbationRemindersCommand("local-dev", asOfT15));
+        var second = await handler.HandleAsync(new RunProbationRemindersCommand("local-dev", asOfT15));
+
+        Assert.Equal(1, first.T15Created);
+        Assert.Equal(0, first.SkippedAlreadyExists);
+
+        Assert.Equal(0, second.T15Created);
+        Assert.Equal(1, second.SkippedAlreadyExists);
+
+        // Bằng chứng thật: vẫn đúng MỘT nhắc sau hai lần chạy.
+        Assert.Single(repo.Items);
+    }
+
+    [Fact]
     public async Task HandleAsync_AsOfT7_NoLm_AssignsHrPool()
     {
         var empId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
