@@ -218,3 +218,22 @@
 - Affects: ADR-010 v0.2 · DOC-13 NFR-012 · DOC-17 · quan hệ khách hàng
 - Trace: DEC-ARC-017 · DEC-ARC-016 · OQ-ARC-008 · OQ-ARC-009
 - Confidence: cao *(dữ kiện từ PGD)* · thấp *(chưa có văn bản gốc từ khách trong assets/)*
+
+### DEC-ARC-019 — Backup sang máy Standby; khách đã ký; lý do bỏ DR/DC là chi phí · [2026-09-07]
+- Status: accepted *(PGD: «backup sang máy standby» · «khách có văn bản xác nhận đã hiểu, bỏ do chi phí quá cao»)*
+- Context: ADR-010 v0.2 để mở hai điểm — đích lưu backup, và văn bản xác nhận của khách.
+- Options: *(bổ sung dữ kiện, không chọn phương án)*
+- Decision:
+  - **Đích backup = máy Standby** (cùng DC). ADR-010 §4 · DOC-17 §2.2 · NFR-012d.
+  - **Khách đã ký văn bản** hiểu hệ quả → rủi ro kỳ vọng đóng.
+  - **Lý do bỏ DR/DC = chi phí hai site quá cao** (không phải gánh ops như v0.1 suy đoán).
+- Why: khách chịu chi phí, chọn mức bảo vệ thấp hơn.
+- Consequences:
+  - **RK-01 mở (OQ-ARC-012 · chặn go-live):** Standby ở cùng DC ⇒ mất DC là **mất luôn backup**. **NFR-012c hiện không thể đạt**; mất DC = **mất dữ liệu**, không phải ngừng phục vụ tạm thời.
+  - **Lệch phạm vi văn bản khách đã ký:** khách xác nhận ở mức *"ngừng phục vụ đến khi restore"*, không phải *"mất dữ liệu"*. Chọn (a) thì phải xác nhận lại với khách ở đúng mức.
+  - Hai lựa chọn cho PGD: **(a)** chấp nhận mất dữ liệu, phát biểu lại ADR-010 §6 + DOC-13 NFR-012c + xác nhận lại với khách · **(b)** thêm bản sao lạnh ngoài DC — rẻ hơn DR site nhiều bậc, giữ nguyên ý nghĩa §2.2.
+  - Runbook "mất cả DC" trong DOC-17 §8 **treo** đến khi giải OQ-ARC-012.
+  - Văn bản khách nên đưa vào `assets/public/` để trace (hiện chưa có file).
+- Affects: ADR-010 v0.3 · DOC-13 NFR-012c/d · DOC-17 §2.2 + §8 · OQ-ARC-012 · quan hệ khách hàng
+- Trace: DEC-ARC-017 · DEC-ARC-018 · OQ-ARC-002 · RK-01
+- Confidence: cao *(dữ kiện từ PGD)* · **RK-01 là suy luận kỹ thuật, tin cậy cao**

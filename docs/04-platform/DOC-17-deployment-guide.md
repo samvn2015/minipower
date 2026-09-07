@@ -50,12 +50,14 @@ Khách hàng yêu cầu bỏ DC dự phòng (DEC-ARC-018), nên đây là **cơ 
 |-----|---------|
 | **Phạm vi** | Toàn bộ DB-per-service + secrets vault + cấu hình hạ tầng |
 | **Chu kỳ** | **TBD** — Ops/IT |
-| **Nơi lưu** | **TBD** — có off-site ngoài DC hay không? Nếu không, mất DC là mất luôn backup |
+| **Nơi lưu** | **Máy Standby, cùng DC** (ADR-010 §4 · DEC-ARC-019) — **không** off-site |
 | **Mã hóa at-rest** | Bắt buộc (PII + lương) — thuật toán TBD, xem DOC-13 NFR-S06 |
 | **Verify** | **Restore thử định kỳ** — backup chưa restore thử là backup chưa tồn tại. Tần suất TBD |
 | **RTO-restore** | **TBD giờ** (NFR-012c) — đo bằng diễn tập, không ước lượng trên giấy |
 
-> ⚠️ **Rủi ro đã ghi nhận (ADR-010 §6):** trong thời gian restore, HRM **ngừng phục vụ**. PGD chấp nhận có ý thức; cần khách xác nhận bằng văn bản đã hiểu hệ quả này.
+> ⚠️ **RK-01 (ADR-010 · OQ-ARC-012) — chưa giải:** backup nằm **cùng DC** với Active. Cứu được hỏng ổ đĩa và hỏng dữ liệu logic, **không** cứu được mất cả DC — khi đó backup mất theo. Nghĩa là **NFR-012c hiện không thể đạt** và mất DC = **mất dữ liệu**, không phải ngừng phục vụ tạm thời.
+>
+> Khách đã ký văn bản xác nhận ở mức *"ngừng phục vụ đến khi restore"*. Nếu PGD chọn phương án (a) — chấp nhận mất dữ liệu — thì **phải xác nhận lại với khách ở đúng mức đó**. Phương án (b) là thêm một bản sao lạnh ngoài DC, rẻ hơn DR site nhiều bậc.
 
 ## 3. Điều kiện tiên quyết
 
@@ -131,7 +133,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 |---------|--------|
 | Smoke fail | Failover về Active cũ trong **RTO-failover TBD phút** (NFR-012b) |
 | Data lỗi | Stop LBS + restore backup N DB (thứ tự TBD) |
-| **Mất cả DC** | Không còn site để promote — dựng lại hạ tầng + **restore từ backup store**, trong **RTO-restore TBD giờ** (NFR-012c). Runbook chi tiết ☐ nợ Ops/IT |
+| **Mất cả DC** | Không còn site để promote, và backup nằm cùng DC (RK-01) → **hiện không có đường khôi phục**. Chờ PGD quyết OQ-ARC-012 trước khi viết runbook |
 
 | Step | Action | Owner |
 |------|--------|-------|

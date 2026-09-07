@@ -49,8 +49,8 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 |--------|-------------|--------|
 | NFR-012a | Uptime | **TBD** — BRD không chốt %; pattern 24/7 + Active/Standby **một DC** (ADR-010) |
 | NFR-012b | **RTO-failover** — Active hỏng, Standby cùng DC tiếp quản | **TBD phút** |
-| NFR-012c | **RTO-restore** — mất cả DC, khôi phục từ backup | **TBD giờ** — lớn hơn NFR-012b nhiều bậc |
-| NFR-012d | Chu kỳ backup + nơi lưu (off-site?) | **TBD** — Ops/IT (ADR-010 §4) |
+| NFR-012c | **RTO-restore** — mất cả DC, khôi phục từ backup | ⚠️ **hiện không thể đạt** — backup đặt cùng DC (RK-01 · OQ-ARC-012). Chờ PGD quyết |
+| NFR-012d | Chu kỳ backup | **TBD** — Ops/IT. Nơi lưu = **máy Standby cùng DC** (DEC-ARC-019), **không** off-site |
 | NFR-009 | Cảnh báo đúng hạn | 0 sót 0 trễ (BO-005) khi module EVT/PRB có FR |
 
 ### 3.3 Bảo mật
