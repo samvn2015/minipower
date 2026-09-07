@@ -300,3 +300,20 @@
 - Affects: ADR-011 W1 · OQ-ARC-011 *(đóng)* · OQ-DLV-003 · DOC-17 §2.1
 - Trace: AS-04 deliberation B1 · ADR-011 · DEC-ARC-022
 - Confidence: cao *(thực nghiệm)*
+
+### DEC-ARC-024 — W1 hoàn tất; audit theo phương án A · [2026-09-07]
+- Status: accepted *(PGD chọn A sau khi readiness-gate nêu 3 hướng)*
+- Context: W1a/W1b dựng hàng rào nhưng app vẫn nối bằng **một** role `admin` → grant nằm im. W1c tách context thì 4 module ghi audit (EMP/TIM/PRB/LIF, cộng PAY ở query) gặp vấn đề: `AppendAsync` gọi `SaveChanges` của chính DbContext, tách ra sẽ thành **hai transaction**; thêm nữa `IEmpAuditLogRepository` chỉ bind được **một** implementation.
+- Options: **A Map `EmpAuditLog` vào mọi context + tách interface theo module** · B Giữ audit trên `AppDbContext`, chấp nhận hai transaction · C Outbox trong context rồi job đẩy sang `shared`
+- Decision: chọn **A**
+- Why (loại B vì nghiệp vụ commit mà audit fail = sót audit, trái NFR-005 *"0 sót"*; loại C vì thêm job + độ trễ cho thứ chưa cần)
+- Consequences:
+  - **Bảng audit vẫn là MỘT** ở schema `shared` — ①a và DEC-DLV-022/024 nguyên vẹn. Chỉ tách *đường vào*, không tách dữ liệu. `GET /v1/emp/audit-logs?action=` vẫn đọc đủ (đã kiểm).
+  - `EmpAuditLogRepositoryBase(DbContext)` dùng `Set<EmpAuditLog>()`; mỗi context một lớp con + interface đánh dấu (`ITimAuditLogRepository`…). Lệnh nghiệp vụ + audit **cùng một `SaveChanges`**.
+  - Sửa consumer: 2 file TIM · 1 PAY · 1 PRB · 1 LIF · 10 test fake. EMP giữ interface gốc.
+  - **W1 đóng:** 7/7 context có role riêng; 28/28 repository rời `AppDbContext`; `AppDbContext` chỉ còn là migration owner.
+  - **Bài học ghi lại:** map entity từ context khác kéo theo **cả closure navigation**, EF chỉ báo lúc runtime từng cái một (`Employee` → `EducationLevel` → `OrgUnit`). `LevDbContext` phải nạp trọn nhóm `emp` chỉ vì một JOIN lọc line manager → **lập luận mạnh nhất cho W3 thay JOIN bằng API**.
+  - **Đính chính khảo sát:** bản quét "0/28 repository chạm >1 context" **sai** (regex `\bEmployee\b` không khớp `db.Employees`). Đúng là **1/28** — `LeaveRequestRepository`.
+- Affects: 7 DbContext · 28 repository · 5 consumer Application · 10 test · ADR-011 W1 · OQ-ARC-016 *(đóng)*
+- Trace: ADR-011 W1 · DEC-ARC-022 · DEC-ARC-023 · readiness-gate 2026-09-07 (①a ②a ③ii)
+- Confidence: cao *(đo bằng pg_stat_activity + test + endpoint)*
