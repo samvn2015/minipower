@@ -4,6 +4,7 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (SAD khung · DEC-ARC-005) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.4 bỏ DC-DR theo **ADR-010** (DEC-ARC-017/018) |
+| 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ "saga TIM→PAY" và broker theo **ADR-005** (DEC-ARC-026) |
 
 **SEI** Views and Beyond · **Kruchten 4+1**.  
 **Tiền đề:** DOC-03 / 7× DOC-06 / DOC-13 **Chốt** (chưa `02-baseline/`). EVT + RPT **chưa SRS**.  
@@ -120,7 +121,7 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | IAM service | Role, 403, map SSO | .NET 9 |
 | EMP…LIF services | SoT module | .NET 9, DB riêng |
 | Notification | In-app + email/app | Service riêng |
-| Job | T-15, T-7, N+3 | Service riêng; broker ADR-005 |
+| Job | T-15, T-7, N+3 | Endpoint + **bộ lập lịch ngoài**, chỉ chạy trên Active (ADR-005 · ADR-010 §5). **Không** broker |
 | Adapters | Excel / mail / Git / CRM lock | Trên LIF/Job — DOC-10 |
 
 ### 4.2 Góc nhìn tiến trình (Runtime)
@@ -130,13 +131,13 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | Login | Client → LBS → GW → **SSO IdP** → IAM map role | Không cookie local thay SSO |
 | LEV C1→C2 trừ quỹ | Client → LBS → GW → LEV; notify async | OQ-010 ngoài SAD |
 | TIM import → chốt | GW → TIM; NFR-001 đo sau LBS+GW | 1 mẫu master |
-| PAY sau công chốt | TIM → (saga/outbox) → PAY | Phân tán — ADR-005 |
+| PAY sau công chốt | PAY **đọc guard** `GET /v1/tim/periods/{ym}`; TIM đọc ngược `GET /v1/pay/periods/{ym}` | **Không phải saga** — ADR-005; fail-closed |
 | PRB T-15/T-7 | Job service → PRB/EMP | Không LM → HR |
 | PRB HR chốt | GW → PRB → EMP hoặc LIF | 403 LM/NV chốt |
 | LIF N+3 | Job → LIF adapter Git/CRM | Secret IT |
 | Event CRM sales | **Cấm** tại GW và broker | Fail AC |
 
-Hàng đợi giữa service: **TBD ADR-005**.
+Hàng đợi giữa service: **không dùng broker ở MVP** (ADR-005 Accepted). Coupling TIM↔PAY là **đọc guard đồng bộ**, không có luồng ghi phân tán — soi code 2026-09-07. Mở lại khi xuất hiện luồng ghi thật sự trải nhiều context.
 
 ### 4.3 Góc nhìn phát triển (Module / Package)
 
@@ -214,7 +215,7 @@ Cấu trúc: **một repo hoặc nhiều repo / một service-deploy** *(ADR-001
 | ADR-003 | 24/7 + Active/Standby + DR/DC | **Accepted** — §3–5 **superseded** bởi ADR-010 — [file](DOC-09-adr/ADR-003-ha-dr-active-standby.md) |
 | ADR-010 | 24/7 + Active/Standby **một DC**; bỏ DR/DC *(khách yêu cầu)* | **Accepted** v0.2 — [file](DOC-09-adr/ADR-010-ha-single-dc-active-standby.md) |
 | ADR-004 | Mã hóa at-rest | Proposed |
-| ADR-005 | Broker job (in-process vs queue) | Proposed |
+| ADR-005 | Điều phối job; TIM↔PAY là guard đọc, **không** saga, **không** broker | **Accepted** — [file](DOC-09-adr/ADR-005-broker-va-coupling-tim-pay.md) |
 | ADR-006 | MFA | Proposed |
 | ADR-007 | **Lark** IdP Cty; OIDC-only MVP; Google/Apple/@lhqglobal.vn; không host IdP trong HRM | **Accepted** v0.2 — [file](DOC-09-adr/ADR-007-idp-oidc.md) |
 
@@ -225,7 +226,7 @@ Cấu trúc: **một repo hoặc nhiều repo / một service-deploy** *(ADR-001
 | R-001 | EVT/RPT chưa SRS → SAD thiếu luồng cảnh báo/báo cáo | Giữ chỗ; không API bịa |
 | R-002 | RTO/RPO **phút** chưa chốt | OQ-ARC-002; pattern 24/7+A/S+DR đã có ADR-003 |
 | R-003 | LBS/Git-CRM API vendor / Lark tenant-region chưa IT cung cấp | DOC-10 **Chốt** kèm nợ; LBS → DOC-17 |
-| R-007 | Saga TIM→PAY trên microservices | ADR-005; NFR-001 đo qua LBS+GW |
+| R-007 | ~~Saga TIM→PAY~~ — **đóng**: không có luồng ghi phân tán, chỉ là guard đọc chéo (ADR-005). Rủi ro còn lại: timeout/retry guard sau W3 (RK-05 · OQ-ARC-018) | ADR-005; NFR-001 đo lại qua LBS+GW sau W3 |
 | R-004 | Chưa `02-baseline/` req | SAD **Chốt** tài liệu; chưa baseline repo |
 | R-005 | Ban HR chưa ký | Nợ cổng nghiệp vụ |
 | R-006 | HTML MCP / DOC-16 trống | Không chặn SAD khung |

@@ -2,13 +2,13 @@
 
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
-| 0.1 | 2026-09-07 | soạn nháp SA (trợ lý) | **Proposed** — chờ PGD chốt |
+| 0.1 | 2026-09-07 | soạn nháp SA (trợ lý) | **Accepted** — PGD chốt phương án **P** (DEC-ARC-026) |
 
 **Michael Nygard ADR** · 1 file / 1 quyết định. **Không** sửa khi Accepted — đảo = ADR mới.
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Proposed** — gỡ **RK-04**, tiền đề của [ADR-011](ADR-011-lo-trinh-tach-service.md) W3 |
+| **Status** | **Accepted** — PGD Dư Hùng 2026-09-07 (DEC-ARC-026). Đảo = ADR mới. Gỡ **RK-04**, tiền đề của [ADR-011](ADR-011-lo-trinh-tach-service.md) W3 |
 | **Date** | 2026-09-07 |
 | **Deciders** | Mr. Dư Hùng, PGD (A) |
 | **Consulted** | SA · Dev (SH-010) · Ops/IT |
@@ -44,7 +44,7 @@ Soi code 2026-09-07 (`PayrollPeriodCommands`, `TimesheetImportCommands`):
 
 Về job: hôm nay **không có `BackgroundService`/`IHostedService` nào**. T-15/T-7 và N+3 chạy bằng **endpoint được gọi từ ngoài** (`POST /v1/prb/jobs/reminders/run`, `POST /v1/lif/offboarding/jobs/nplus3-locks`). Bộ lập lịch nằm ngoài hệ thống.
 
-### Quyết định *(đề xuất — chờ PGD)*
+### Quyết định
 
 **1. Bỏ khái niệm saga TIM↔PAY.** Thay bằng **đọc trạng thái chéo qua API** khi PAY tách service (W3):
 
@@ -71,7 +71,7 @@ Ràng buộc quyết định là **năng lực vận hành** (DOC-14 A-01/R-01, 
 
 | Option | Pros | Cons |
 |--------|------|------|
-| **P — Đọc guard qua API, không broker** *(đề xuất)* | Đúng hình dạng coupling thật; không thêm hạ tầng; hợp năng lực ops | PAY phụ thuộc TIM lúc chạy — cần fail-closed + timeout rõ ràng |
+| **P — Đọc guard qua API, không broker** *(chọn)* | Đúng hình dạng coupling thật; không thêm hạ tầng; hợp năng lực ops | PAY phụ thuộc TIM lúc chạy — cần fail-closed + timeout rõ ràng |
 | Q — Message broker + saga | Chuẩn microservices sách vở | **Giải bài toán không tồn tại**; thêm hệ thống phải vận hành; cửa sổ dữ liệu cũ trái nghiệp vụ chốt kỳ |
 | R — TIM publish sự kiện, PAY giữ read model | Giảm coupling runtime | Vẫn cần broker; read model có thể cũ đúng lúc chốt lương — rủi ro cao nhất |
 | S — Giữ đọc thẳng database chéo | Đơn giản nhất | **Loại** — phá hàng rào W1 vừa dựng, trái NFR-002 |
@@ -116,6 +116,6 @@ Ràng buộc quyết định là **năng lực vận hành** (DOC-14 A-01/R-01, 
 
 | Vai trò | Họ tên | Ngày | Kết quả |
 |---------|--------|------|---------|
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ Accepted · ☐ Rejected · ☐ Đổi phương án |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-09-07 | ☑ **Accepted** — phương án P (DEC-ARC-026) |
 | SA | | | ☐ |
 | Dev | | | ☐ |

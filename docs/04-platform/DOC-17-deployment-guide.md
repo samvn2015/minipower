@@ -4,6 +4,7 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (DevOps/SA soạn) | **Chốt** (DEC-DLV-007) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ DR/DC theo **ADR-010** (DEC-ARC-017/018); thêm backup/restore |
+| 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — thêm §2.3 bộ lập lịch job theo **ADR-005** (DEC-ARC-026) |
 
 **Runbook** · DOC-08 §4.4 · ADR-001/007/**010** **Accepted** *(ADR-003 §3–5 superseded)* · DOC-15 **Chốt** · DOC-16 **Chốt**.  
 **Cổng:** PGD chốt v0.1 (DEC-DLV-007). Sửa runbook đã chốt = CR. Nợ: URL, sản phẩm LBS, **Lark issuer OIDC** (tenant/region), **PostgreSQL version/host prod**, **RTO-failover / RTO-restore**, chu kỳ + nơi lưu backup, lệnh CI. **Không** khóa K8s. **Không** tự code. **Chưa** `02-baseline/`. Go-live **2027**. Chốt tài liệu ≠ go-live.
@@ -58,6 +59,25 @@ Khách hàng yêu cầu bỏ DC dự phòng (DEC-ARC-018), nên đây là **cơ 
 > ⚠️ **RK-01 (ADR-010 · OQ-ARC-012) — chưa giải:** backup nằm **cùng DC** với Active. Cứu được hỏng ổ đĩa và hỏng dữ liệu logic, **không** cứu được mất cả DC — khi đó backup mất theo. Nghĩa là **NFR-012c hiện không thể đạt** và mất DC = **mất dữ liệu**, không phải ngừng phục vụ tạm thời.
 >
 > Khách đã ký văn bản xác nhận ở mức *"ngừng phục vụ đến khi restore"*. Nếu PGD chọn phương án (a) — chấp nhận mất dữ liệu — thì **phải xác nhận lại với khách ở đúng mức đó**. Phương án (b) là thêm một bản sao lạnh ngoài DC, rẻ hơn DR site nhiều bậc.
+
+### 2.3 Bộ lập lịch job (ADR-005 · RK-06)
+
+Backend **không có** `BackgroundService`/`IHostedService` nào (soi code 2026-09-07). Job chạy bằng endpoint, do một bộ lập lịch **bên ngoài** gọi:
+
+| Job | Endpoint | Nghiệp vụ |
+|---|---|---|
+| PRB nhắc T-15 / T-7 | `POST /v1/prb/jobs/reminders/run` | NFR-009 — 0 sót 0 trễ |
+| LIF khoá N+3 | `POST /v1/lif/offboarding/jobs/nplus3-locks` | INT-004/005 |
+
+| Ràng buộc | Giá trị |
+|---|---|
+| **Chỉ chạy trên Active** | Bộ lập lịch trỏ vào **LBS**, LBS chỉ bơm vào Active (ADR-010 §5) — không trỏ thẳng node |
+| **Idempotent theo ngày** | Gọi lại cùng ngày **không** được sinh nhắc trùng. `LifAccessLockOutbox` có `idempotencyKey`; PRB reminder **chưa kiểm** — RK-07 |
+| **Sản phẩm lập lịch** | **TBD** — cron OS / Jenkins / Jarvis worker (`OQ-ARC-017`) |
+| **Tần suất** | **TBD** |
+| **Giám sát** | **TBD** — job không chạy phải có cảnh báo, nếu không NFR-009 im lặng hỏng |
+
+> ⚠️ Đây là **thành phần ngoài hệ thống** nhưng NFR-009 phụ thuộc vào nó. Chưa chốt ba dòng TBD trên thì cảnh báo TV/SN/lễ chưa có gì bảo đảm.
 
 ## 3. Điều kiện tiên quyết
 

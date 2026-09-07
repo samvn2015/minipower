@@ -4,6 +4,7 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung OAS · DEC-ARC-010) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4 sinh lại từ Swagger runtime, đóng doc-review **B3** (PGD ký · DEC-ARC-021) |
+| 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.3 đánh dấu hợp đồng liên service theo **ADR-005** (DEC-ARC-026) |
 
 **OAS 3.0.1** *(Swashbuckle sinh — khớp dòng đầu `openapi.yaml`)* · DOC-08/10/11 · ADR-001/002/007 **Accepted**.  
 **SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. Nợ: Base URL thật; issuer OIDC; full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
@@ -97,6 +98,17 @@ v0.1 mô tả path **không trùng chữ** với route thật. Ghi lại để n
 | `POST /lev/requests/{id}/c2` | `POST /v1/lev/leave-requests/{id}/c2/approve` **và** `/c2/reject` |
 | `GET /prb/cases/{employeeId}` | `GET /v1/prb/cases` — list, **không** tham số employeeId |
 | `POST /prb/cases/{id}/propose\|decide` | `POST /v1/prb/evaluations/{employeeId}/propose\|decide` |
+
+### 4.3 Hợp đồng liên service (ADR-005)
+
+Hai endpoint dưới **không chỉ** phục vụ client — từ W3 (ADR-011) chúng là **hợp đồng giữa hai service**, dùng làm guard đọc chéo thay cho saga:
+
+| Endpoint | Ai gọi | Dùng làm gì |
+|---|---|---|
+| `GET /v1/tim/periods/{ym}` | **PAY** | Chặn tính lương khi kỳ công chưa `Closed` (PAY-FR-001) |
+| `GET /v1/pay/periods/{ym}` | **TIM** | Chặn mở khoá kỳ công khi lương đã chạy |
+
+**Fail-closed:** lỗi hoặc timeout ⇒ **từ chối** thao tác, không đoán trạng thái. Đổi shape hai endpoint này là **breaking change liên service**, không phải sửa API nội bộ. Timeout/retry: `OQ-ARC-018`.
 
 ### 4.2 Nợ còn lại
 

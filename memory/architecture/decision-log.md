@@ -334,3 +334,20 @@
 - Affects: ADR-005 (mới) · ADR-011 W3 *(gỡ RK-04)* · DOC-08 §4.5/§5 · DOC-12 · DOC-17
 - Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-022
 - Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hiệu năng hop mạng sau W3)*
+
+### DEC-ARC-026 — ADR-005 Accepted: bỏ saga, không broker · [2026-09-07]
+- Status: accepted *(PGD chốt phương án P)*
+- Context: RK-04 chặn ADR-011 W3. DOC-08 mang giả định "saga TIM→PAY" từ 2026-08-26, chưa ai đối chiếu code.
+- Options: **P Đọc guard qua API, không broker** · Q Broker + saga · R Publish event + read model · S Đọc thẳng DB chéo
+- Decision: chọn **P** → ADR-005 **Proposed → Accepted**
+- Why (loại Q/R vì thêm hệ thống trạng thái phải backup/giám sát/khôi phục trong khi đội ops chưa có, và đưa vào cửa sổ dữ liệu cũ đúng chỗ nghiệp vụ chốt kỳ không chấp nhận; loại S vì phá hàng rào W1)
+- Consequences:
+  - **RK-04 đóng** — W3 hết chặn về mặt kiến trúc; còn OQ-ARC-014 (khách).
+  - **DOC-08 v0.3**: §4.2 dòng Job, §4.5 luồng PAY-sau-công-chốt, §5 hàng đợi, bảng ADR, và **R-007 đóng** — giả định saga đã được gỡ khỏi tài liệu.
+  - **DOC-12 v0.3 §4.3**: `GET /v1/tim/periods/{ym}` và `GET /v1/pay/periods/{ym}` thành **hợp đồng liên service** — đổi shape là breaking change, không phải sửa API nội bộ.
+  - **DOC-17 v0.3 §2.3**: tài liệu hoá bộ lập lịch job — trước đây **không có ở đâu cả** dù NFR-009 phụ thuộc vào nó.
+  - Guard **fail-closed**; job chỉ chạy trên Active qua LBS (ADR-010 §5); job phải idempotent theo ngày.
+  - Nợ mới: RK-05/OQ-ARC-018 timeout+retry guard (chốt ở W3) · RK-06/OQ-ARC-017 sản phẩm lập lịch · **RK-07 idempotency `POST /v1/prb/jobs/reminders/run` chưa kiểm** — gọi hai lần có thể nhắc trùng, NFR-009 không nói gì về trùng.
+- Affects: ADR-005 · ADR-011 W3 · DOC-08 v0.3 · DOC-12 v0.3 · DOC-17 v0.3 · NFR-009
+- Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-025
+- Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hop mạng sau W3)*
