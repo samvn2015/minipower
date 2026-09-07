@@ -7,3 +7,7 @@
 - [ ] {OQ-ARC-005} Broker giữa microservices (TIM→PAY saga) · intent: job · hoãn 2026-08-26 · chặn: không
 - [ ] {OQ-ARC-006} Sản phẩm **LBS** · intent: deploy · 2026-08-26 · chặn: không (DOC-17)
 - [ ] {OQ-ARC-007} MFA bắt buộc sau SSO? · intent: IAM · hoãn 2026-08-26 · chặn: không
+- [ ] {OQ-ARC-008} **Lý do gốc chỉ đạo microservices** — kỹ thuật (scale/cô lập) hay yêu cầu từ mInvoice/khách? · intent: ADR mới thay ADR-001 · 2026-09-07 · **chặn: có** (không trả lời thì mọi phương án kiến trúc là đoán) · [deliberation B1](../../brainstorm/2026-09-07-arc-b1-monolith-vs-microservices.md)
+- [ ] {OQ-ARC-009} **Đội ops cho 7 service + DR hai DC** — đến từ đâu, khi nào? DOC-14 R-01/A-01 ghi chưa có · intent: ADR mới · 2026-09-07 · **chặn: có**
+- [ ] {OQ-ARC-010} Tải thật cuối tháng (số NV chấm công đồng thời) — chưa đo, NFR-001 chưa verify trên kiến trúc hiện tại · intent: quyết đơn vị scale · 2026-09-07 · chặn: không
+- [ ] {OQ-ARC-011} Tách schema/DB theo bounded context trong **một** deploy có đạt NFR-002 không? (AS-04, tin cậy vừa) · intent: phương án kiến trúc · 2026-09-07 · chặn: không
