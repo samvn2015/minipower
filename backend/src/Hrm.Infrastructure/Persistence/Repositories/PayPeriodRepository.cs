@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class PayPeriodRepository(AppDbContext db) : IPayPeriodRepository
+internal sealed class PayPeriodRepository(PayDbContext db) : IPayPeriodRepository
 {
     public async Task<bool> IsClosedAsync(string periodYm, CancellationToken cancellationToken = default)
     {

@@ -69,6 +69,16 @@ public static class InfrastructureLayerExtension
         builder.Services.AddCoreDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        // ADR-011 W1c — PAY nối bằng role riêng (hrm_app_pay), chỉ thấy schema `pay`.
+        // Thiếu cấu hình thì rơi về connection chung: hàng rào không có tác dụng nhưng
+        // ứng dụng vẫn chạy — chủ ý, để W1c triển khai dần từng context.
+        var payConnectionString = builder.Configuration.GetConnectionString("PayDbContext");
+        if (string.IsNullOrWhiteSpace(payConnectionString))
+            payConnectionString = connectionString;
+
+        builder.Services.AddDbContext<PayDbContext>(options =>
+            options.UseNpgsql(payConnectionString));
+
         return builder;
     }
 }

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class PayAllowanceRepository(AppDbContext db) : IPayAllowanceRepository
+internal sealed class PayAllowanceRepository(PayDbContext db) : IPayAllowanceRepository
 {
     public async Task<IReadOnlyList<PayAllowanceCatalogSnapshot>> ListCatalogAsync(
         CancellationToken cancellationToken = default)

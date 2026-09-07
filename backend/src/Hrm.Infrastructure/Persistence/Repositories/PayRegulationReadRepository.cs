@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class PayRegulationReadRepository(AppDbContext db) : IPayRegulationReadRepository
+internal sealed class PayRegulationReadRepository(PayDbContext db) : IPayRegulationReadRepository
 {
     public async Task<PayRegulationSnapshot?> FindByCodeAsync(
         string code,
