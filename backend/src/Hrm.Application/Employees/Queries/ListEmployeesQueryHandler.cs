@@ -6,14 +6,16 @@ using Hrm.Domain.Shared.Constants;
 using Jarvis.Application.Contracts.Queries;
 using Jarvis.Domain.Shared.ExceptionHandling;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Application.Employees.Queries;
 
 public sealed class ListEmployeesQueryHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees)
-    : IAsyncQueryHandler<ListEmployeesQuery, IReadOnlyList<EmployeeListItemDto>>
+    : IAsyncQueryHandler<ListEmployeesQuery, PagedResult<EmployeeListItemDto>>
 {
-    public async Task<IReadOnlyList<EmployeeListItemDto>> HandleAsync(
+    public async Task<PagedResult<EmployeeListItemDto>> HandleAsync(
         ListEmployeesQuery query,
         CancellationToken cancellationToken = default)
     {
@@ -28,14 +30,19 @@ public sealed class ListEmployeesQueryHandler(
         if (!IamAccessGuard.IsHrOrIt(actor))
             throw new ForbiddenException(HrmErrorCodes.Forbidden, "Chỉ HR/IT xem danh sách NV (EMP-FR-012).");
 
-        var items = await employees.ListAsync(cancellationToken).ConfigureAwait(false);
-        return items.Select(static e => new EmployeeListItemDto(
+        var paged = await employees
+            .ListPagedAsync(PageRequest.From(query.Page, query.Size), cancellationToken)
+            .ConfigureAwait(false);
+
+        return new PagedResult<EmployeeListItemDto>(
+            paged.Items.Select(static e => new EmployeeListItemDto(
             e.Id,
             e.EmployeeCode,
             e.FullName,
             e.EmailCty,
             e.OrgUnitCode,
             e.Contract is not null,
-            e.Status.ToString())).ToArray();
+            e.Status.ToString())).ToArray(),
+            paged.Total);
     }
 }

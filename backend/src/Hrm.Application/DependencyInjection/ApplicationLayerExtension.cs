@@ -30,6 +30,8 @@ using Jarvis.Application.Contracts.Queries;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Application.DependencyInjection;
 
 public static class ApplicationLayerExtension
@@ -45,7 +47,7 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<EmployeeDtoFactory>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetEmployeeQuery, EmployeeDto>, GetEmployeeQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetMyEmployeeQuery, EmployeeDto>, GetMyEmployeeQueryHandler>();
-        builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeesQuery, IReadOnlyList<EmployeeListItemDto>>, ListEmployeesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeesQuery, PagedResult<EmployeeListItemDto>>, ListEmployeesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEducationLevelsQuery, IReadOnlyList<EducationLevelDto>>, ListEducationLevelsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListContractTypesQuery, IReadOnlyList<EmpCatalogItemDto>>, ListContractTypesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeeAuditLogsQuery, IReadOnlyList<EmpAuditLogDto>>, ListEmployeeAuditLogsQueryHandler>();

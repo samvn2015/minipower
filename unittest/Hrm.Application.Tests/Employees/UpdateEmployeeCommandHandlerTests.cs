@@ -1,3 +1,4 @@
+using Hrm.Domain.Shared.Paging;
 using Hrm.Application.Employees.Commands;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
@@ -101,6 +102,12 @@ public sealed class UpdateEmployeeCommandHandlerTests
 
         public Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<EmployeeSnapshot>>([DevEmployee]);
+
+        public Task<PagedResult<EmployeeSnapshot>> ListPagedAsync(
+            PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PagedResult<EmployeeSnapshot>([], 0));
+
 
         public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<EmployeeSnapshot?>(id == EmployeeId ? DevEmployee : null);

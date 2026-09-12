@@ -1,3 +1,4 @@
+using Hrm.Domain.Shared.Paging;
 using Hrm.Application.Employees.Queries;
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
@@ -18,8 +19,9 @@ public sealed class ListEmployeesQueryHandlerTests
 
         var result = await handler.HandleAsync(new ListEmployeesQuery("local-dev"));
 
-        Assert.Single(result);
-        Assert.Equal("MNV-DEV", result[0].EmployeeCode);
+        Assert.Single(result.Items);
+        Assert.Equal("MNV-DEV", result.Items[0].EmployeeCode);
+        Assert.Equal(1, result.Total);
     }
 
     [Fact]
@@ -62,6 +64,14 @@ public sealed class ListEmployeesQueryHandlerTests
     {
         public Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(CancellationToken cancellationToken = default)
             => Task.FromResult(items);
+
+        public Task<PagedResult<EmployeeSnapshot>> ListPagedAsync(
+            PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PagedResult<EmployeeSnapshot>(
+                items.Skip(page.Skip).Take(page.Size).ToArray(),
+                items.Count));
+
 
         public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult(items.FirstOrDefault(e => e.Id == id));
