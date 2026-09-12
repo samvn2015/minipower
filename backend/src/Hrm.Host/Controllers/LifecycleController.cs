@@ -21,7 +21,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListLifOffboardingQuery, IReadOnlyList<LifOffboardingDto>>(
-            new ListLifOffboardingQuery(User.GetIdpSubject()),
+            new ListLifOffboardingQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -34,7 +34,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetLifOffboardingQuery, LifOffboardingDto>(
-            new GetLifOffboardingQuery(User.GetIdpSubject(), id),
+            new GetLifOffboardingQuery(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -46,7 +46,7 @@ public sealed class LifecycleController(
     {
         var dto = await commands.DispatchAsync<CreateLifOffboardingCommand, LifOffboardingDto>(
             new CreateLifOffboardingCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.EmployeeId,
                 body.ResignationSignedDate,
                 body.Note),
@@ -61,7 +61,7 @@ public sealed class LifecycleController(
         CancellationToken cancellationToken)
     {
         var dto = await commands.DispatchAsync<ConfirmLifOffboardingNCommand, LifOffboardingDto>(
-            new ConfirmLifOffboardingNCommand(User.GetIdpSubject(), id, body.LastWorkingDayN),
+            new ConfirmLifOffboardingNCommand(User.RequireIdpSubject(), id, body.LastWorkingDayN),
             cancellationToken);
         return Ok(dto);
     }
@@ -71,7 +71,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> GetChecklist(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetLifOffChecklistQuery, LifOffChecklistBoardDto>(
-            new GetLifOffChecklistQuery(User.GetIdpSubject(), id),
+            new GetLifOffChecklistQuery(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -84,7 +84,7 @@ public sealed class LifecycleController(
         CancellationToken cancellationToken)
     {
         var dto = await commands.DispatchAsync<UpsertLifOffChecklistTickCommand, LifOffChecklistBoardDto>(
-            new UpsertLifOffChecklistTickCommand(User.GetIdpSubject(), id, itemCode, body.IsChecked),
+            new UpsertLifOffChecklistTickCommand(User.RequireIdpSubject(), id, itemCode, body.IsChecked),
             cancellationToken);
         return Ok(dto);
     }
@@ -93,7 +93,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> Close(Guid id, CancellationToken cancellationToken)
     {
         var dto = await commands.DispatchAsync<CloseLifOffboardingCommand, LifOffboardingDto>(
-            new CloseLifOffboardingCommand(User.GetIdpSubject(), id),
+            new CloseLifOffboardingCommand(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -112,7 +112,7 @@ public sealed class LifecycleController(
 
         var dto = await commands.DispatchAsync<ApplyLifOffboardingLocksCommand, LifOffboardingDto>(
             new ApplyLifOffboardingLocksCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 id,
                 asOf,
                 body?.EarlyCrReason),
@@ -132,7 +132,7 @@ public sealed class LifecycleController(
             asOf = d;
 
         var result = await commands.DispatchAsync<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>(
-            new RunLifNPlus3LocksCommand(User.GetIdpSubject(), asOf),
+            new RunLifNPlus3LocksCommand(User.RequireIdpSubject(), asOf),
             cancellationToken);
         return Ok(result);
     }
@@ -141,7 +141,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> ListOnboarding(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListLifOnboardingQuery, IReadOnlyList<LifOnboardingDto>>(
-            new ListLifOnboardingQuery(User.GetIdpSubject()),
+            new ListLifOnboardingQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -150,7 +150,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> GetOnboarding(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetLifOnboardingQuery, LifOnboardingDto>(
-            new GetLifOnboardingQuery(User.GetIdpSubject(), id),
+            new GetLifOnboardingQuery(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -161,7 +161,7 @@ public sealed class LifecycleController(
         CancellationToken cancellationToken)
     {
         var dto = await commands.DispatchAsync<CreateLifOnboardingCommand, LifOnboardingDto>(
-            new CreateLifOnboardingCommand(User.GetIdpSubject(), body.EmployeeId, body.Note),
+            new CreateLifOnboardingCommand(User.RequireIdpSubject(), body.EmployeeId, body.Note),
             cancellationToken);
         return CreatedAtAction(nameof(GetOnboarding), new { id = dto.Id }, dto);
     }
@@ -170,7 +170,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> GetOnChecklist(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetLifOnChecklistQuery, LifOffChecklistBoardDto>(
-            new GetLifOnChecklistQuery(User.GetIdpSubject(), id),
+            new GetLifOnChecklistQuery(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -183,7 +183,7 @@ public sealed class LifecycleController(
         CancellationToken cancellationToken)
     {
         var dto = await commands.DispatchAsync<UpsertLifOnChecklistTickCommand, LifOffChecklistBoardDto>(
-            new UpsertLifOnChecklistTickCommand(User.GetIdpSubject(), id, itemCode, body.IsChecked),
+            new UpsertLifOnChecklistTickCommand(User.RequireIdpSubject(), id, itemCode, body.IsChecked),
             cancellationToken);
         return Ok(dto);
     }
@@ -197,7 +197,7 @@ public sealed class LifecycleController(
     {
         var dto = await commands.DispatchAsync<MarkLifOnboardingProvisionedCommand, LifOnboardingDto>(
             new MarkLifOnboardingProvisionedCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 id,
                 systemCode,
                 body?.DeferGitToNPlus3 ?? false),
@@ -209,7 +209,7 @@ public sealed class LifecycleController(
     public async Task<IActionResult> CloseOnboarding(Guid id, CancellationToken cancellationToken)
     {
         var dto = await commands.DispatchAsync<CloseLifOnboardingCommand, LifOnboardingDto>(
-            new CloseLifOnboardingCommand(User.GetIdpSubject(), id),
+            new CloseLifOnboardingCommand(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }

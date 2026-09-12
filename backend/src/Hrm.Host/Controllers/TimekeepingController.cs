@@ -23,7 +23,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> GetActive(CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetActiveTimesheetTemplateQuery, TimesheetTemplateDto?>(
-            new GetActiveTimesheetTemplateQuery(User.GetIdpSubject()),
+            new GetActiveTimesheetTemplateQuery(User.RequireIdpSubject()),
             cancellationToken);
         return dto is null ? NotFound(new { message = "Chưa có mẫu Active." }) : Ok(dto);
     }
@@ -32,7 +32,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListTimesheetTemplatesQuery, IReadOnlyList<TimesheetTemplateDto>>(
-            new ListTimesheetTemplatesQuery(User.GetIdpSubject()),
+            new ListTimesheetTemplatesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -52,7 +52,7 @@ public sealed class TimekeepingController(
             .ToList();
 
         var result = await commands.DispatchAsync<CreateTimesheetTemplateCommand, TimesheetTemplateCreateResult>(
-            new CreateTimesheetTemplateCommand(User.GetIdpSubject(), body.VersionCode, body.Name, columns),
+            new CreateTimesheetTemplateCommand(User.RequireIdpSubject(), body.VersionCode, body.Name, columns),
             cancellationToken);
         return CreatedAtAction(nameof(GetActive), result);
     }
@@ -61,7 +61,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> Publish(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<PublishTimesheetTemplateCommand, TimesheetTemplatePublishResult>(
-            new PublishTimesheetTemplateCommand(User.GetIdpSubject(), id),
+            new PublishTimesheetTemplateCommand(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(result);
     }
@@ -83,7 +83,7 @@ public sealed class TimekeepingController(
 
         var result = await commands.DispatchAsync<PreviewTimesheetImportCommand, TimesheetImportBatchDto>(
             new PreviewTimesheetImportCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.PeriodYm,
                 body.TemplateVersionCode,
                 body.FileName,
@@ -96,7 +96,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> GetImport(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetTimesheetImportBatchQuery, TimesheetImportBatchDto>(
-            new GetTimesheetImportBatchQuery(User.GetIdpSubject(), id),
+            new GetTimesheetImportBatchQuery(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -105,7 +105,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> CommitImport(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<CommitTimesheetImportCommand, TimesheetCommitResult>(
-            new CommitTimesheetImportCommand(User.GetIdpSubject(), id),
+            new CommitTimesheetImportCommand(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(result);
     }
@@ -114,7 +114,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> ListPeriods(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListTimesheetPeriodsQuery, IReadOnlyList<TimesheetPeriodDto>>(
-            new ListTimesheetPeriodsQuery(User.GetIdpSubject()),
+            new ListTimesheetPeriodsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -123,7 +123,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> GetPeriod(string ym, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetTimesheetPeriodQuery, TimesheetPeriodDto>(
-            new GetTimesheetPeriodQuery(User.GetIdpSubject(), ym),
+            new GetTimesheetPeriodQuery(User.RequireIdpSubject(), ym),
             cancellationToken);
         return Ok(dto);
     }
@@ -132,7 +132,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> ClosePeriod(string ym, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<CloseTimesheetPeriodCommand, TimesheetCloseResult>(
-            new CloseTimesheetPeriodCommand(User.GetIdpSubject(), ym),
+            new CloseTimesheetPeriodCommand(User.RequireIdpSubject(), ym),
             cancellationToken);
         return Ok(result);
     }
@@ -141,7 +141,7 @@ public sealed class TimekeepingController(
     public async Task<IActionResult> UnlockPeriod(string ym, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<UnlockTimesheetPeriodCommand, TimesheetUnlockResult>(
-            new UnlockTimesheetPeriodCommand(User.GetIdpSubject(), ym),
+            new UnlockTimesheetPeriodCommand(User.RequireIdpSubject(), ym),
             cancellationToken);
         return Ok(result);
     }

@@ -37,7 +37,7 @@ public sealed class EmpCatalogController(IAsyncQueryDispatcher queries) : Contro
     public async Task<IActionResult> ListAuditLogs(Guid employeeId, CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListEmployeeAuditLogsQuery, IReadOnlyList<EmpAuditLogDto>>(
-            new ListEmployeeAuditLogsQuery(User.GetIdpSubject(), employeeId),
+            new ListEmployeeAuditLogsQuery(User.RequireIdpSubject(), employeeId),
             cancellationToken);
         return Ok(items);
     }
@@ -51,7 +51,7 @@ public sealed class EmpCatalogController(IAsyncQueryDispatcher queries) : Contro
         CancellationToken cancellationToken = default)
     {
         var items = await queries.DispatchAsync<ListAuditLogsByActionQuery, IReadOnlyList<EmpAuditLogDto>>(
-            new ListAuditLogsByActionQuery(User.GetIdpSubject(), action, take),
+            new ListAuditLogsByActionQuery(User.RequireIdpSubject(), action, take),
             cancellationToken);
         return Ok(items);
     }

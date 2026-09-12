@@ -33,7 +33,7 @@ public sealed class LeaveController(
         CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetMyLeaveBalanceQuery, LeaveBalanceDto>(
-            new GetMyLeaveBalanceQuery(User.GetIdpSubject(), year),
+            new GetMyLeaveBalanceQuery(User.RequireIdpSubject(), year),
             cancellationToken);
         return Ok(dto);
     }
@@ -42,7 +42,7 @@ public sealed class LeaveController(
     public async Task<IActionResult> ListMyRequests(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListMyLeaveRequestsQuery, IReadOnlyList<LeaveRequestDto>>(
-            new ListMyLeaveRequestsQuery(User.GetIdpSubject()),
+            new ListMyLeaveRequestsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -57,7 +57,7 @@ public sealed class LeaveController(
 
         var result = await commands.DispatchAsync<CreateLeaveRequestCommand, LeaveRequestCreateResult>(
             new CreateLeaveRequestCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.LeaveTypeCode,
                 body.FromDate,
                 body.ToDate,
@@ -76,7 +76,7 @@ public sealed class LeaveController(
     {
         var items = await queries
             .DispatchAsync<ListMyLeaveNotificationsQuery, IReadOnlyList<LeaveNotificationDto>>(
-                new ListMyLeaveNotificationsQuery(User.GetIdpSubject()),
+                new ListMyLeaveNotificationsQuery(User.RequireIdpSubject()),
                 cancellationToken);
         return Ok(items);
     }
@@ -87,7 +87,7 @@ public sealed class LeaveController(
         var items = await queries.DispatchAsync<
             ListPendingLeaveRequestsC1Query,
             IReadOnlyList<LeaveRequestPendingC1Dto>>(
-            new ListPendingLeaveRequestsC1Query(User.GetIdpSubject()),
+            new ListPendingLeaveRequestsC1Query(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -96,7 +96,7 @@ public sealed class LeaveController(
     public async Task<IActionResult> ApproveC1(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<ApproveLeaveRequestC1Command, LeaveRequestActionResult>(
-            new ApproveLeaveRequestC1Command(User.GetIdpSubject(), id),
+            new ApproveLeaveRequestC1Command(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(result);
     }
@@ -108,7 +108,7 @@ public sealed class LeaveController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<RejectLeaveRequestC1Command, LeaveRequestActionResult>(
-            new RejectLeaveRequestC1Command(User.GetIdpSubject(), id, body?.ReviewNote),
+            new RejectLeaveRequestC1Command(User.RequireIdpSubject(), id, body?.ReviewNote),
             cancellationToken);
         return Ok(result);
     }
@@ -119,7 +119,7 @@ public sealed class LeaveController(
         var items = await queries.DispatchAsync<
             ListPendingLeaveRequestsC2Query,
             IReadOnlyList<LeaveRequestPendingC1Dto>>(
-            new ListPendingLeaveRequestsC2Query(User.GetIdpSubject()),
+            new ListPendingLeaveRequestsC2Query(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -128,7 +128,7 @@ public sealed class LeaveController(
     public async Task<IActionResult> ApproveC2(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<ApproveLeaveRequestC2Command, LeaveRequestActionResult>(
-            new ApproveLeaveRequestC2Command(User.GetIdpSubject(), id),
+            new ApproveLeaveRequestC2Command(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(result);
     }
@@ -140,7 +140,7 @@ public sealed class LeaveController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<RejectLeaveRequestC2Command, LeaveRequestActionResult>(
-            new RejectLeaveRequestC2Command(User.GetIdpSubject(), id, body?.ReviewNote),
+            new RejectLeaveRequestC2Command(User.RequireIdpSubject(), id, body?.ReviewNote),
             cancellationToken);
         return Ok(result);
     }
@@ -149,7 +149,7 @@ public sealed class LeaveController(
     public async Task<IActionResult> Cancel(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<CancelLeaveRequestCommand, LeaveRequestActionResult>(
-            new CancelLeaveRequestCommand(User.GetIdpSubject(), id),
+            new CancelLeaveRequestCommand(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(result);
     }

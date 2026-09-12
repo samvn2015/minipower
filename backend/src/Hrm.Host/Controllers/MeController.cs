@@ -21,7 +21,7 @@ public sealed class MeController(IAsyncQueryDispatcher queries) : ControllerBase
     [Authorize]
     public async Task<IActionResult> Me(CancellationToken cancellationToken)
     {
-        var subject = User.GetIdpSubject();
+        var subject = User.RequireIdpSubject();
 
         var roleClaims = User.FindAll(ClaimTypes.Role)
             .Concat(User.FindAll("role"))

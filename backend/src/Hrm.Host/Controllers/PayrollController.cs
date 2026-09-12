@@ -21,7 +21,7 @@ public sealed class PayrollController(
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListPayrollPeriodsQuery, IReadOnlyList<PayPeriodDto>>(
-            new ListPayrollPeriodsQuery(User.GetIdpSubject()),
+            new ListPayrollPeriodsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -30,7 +30,7 @@ public sealed class PayrollController(
     public async Task<IActionResult> Get(string ym, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetPayrollPeriodQuery, PayPeriodDto>(
-            new GetPayrollPeriodQuery(User.GetIdpSubject(), ym),
+            new GetPayrollPeriodQuery(User.RequireIdpSubject(), ym),
             cancellationToken);
         return Ok(dto);
     }
@@ -40,7 +40,7 @@ public sealed class PayrollController(
     public async Task<IActionResult> Run(string ym, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<RunPayrollPeriodCommand, PayRunResult>(
-            new RunPayrollPeriodCommand(User.GetIdpSubject(), ym),
+            new RunPayrollPeriodCommand(User.RequireIdpSubject(), ym),
             cancellationToken);
         return Ok(result);
     }
@@ -50,7 +50,7 @@ public sealed class PayrollController(
     public async Task<IActionResult> Close(string ym, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<ClosePayrollPeriodCommand, PayRunResult>(
-            new ClosePayrollPeriodCommand(User.GetIdpSubject(), ym),
+            new ClosePayrollPeriodCommand(User.RequireIdpSubject(), ym),
             cancellationToken);
         return Ok(result);
     }
@@ -63,7 +63,7 @@ public sealed class PayrollController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<UpsertPayWorkdayCalendarCommand, PayWorkdayCalendarResult>(
-            new UpsertPayWorkdayCalendarCommand(User.GetIdpSubject(), ym, body.StandardWorkDays),
+            new UpsertPayWorkdayCalendarCommand(User.RequireIdpSubject(), ym, body.StandardWorkDays),
             cancellationToken);
         return Ok(result);
     }
@@ -74,7 +74,7 @@ public sealed class PayrollController(
     {
         var items = await queries
             .DispatchAsync<ListPayAllowanceCatalogQuery, IReadOnlyList<PayAllowanceCatalogDto>>(
-                new ListPayAllowanceCatalogQuery(User.GetIdpSubject()),
+                new ListPayAllowanceCatalogQuery(User.RequireIdpSubject()),
                 cancellationToken);
         return Ok(items);
     }
@@ -85,7 +85,7 @@ public sealed class PayrollController(
     {
         var items = await queries
             .DispatchAsync<ListPayMonthlyAllowancesQuery, IReadOnlyList<PayMonthlyAllowanceDto>>(
-                new ListPayMonthlyAllowancesQuery(User.GetIdpSubject(), ym),
+                new ListPayMonthlyAllowancesQuery(User.RequireIdpSubject(), ym),
                 cancellationToken);
         return Ok(items);
     }
@@ -98,7 +98,7 @@ public sealed class PayrollController(
     {
         var result = await commands.DispatchAsync<UpsertPayMonthlyAllowanceCommand, PayMonthlyAllowanceResult>(
             new UpsertPayMonthlyAllowanceCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.PeriodYm,
                 body.EmployeeCode,
                 body.Code,
@@ -115,7 +115,7 @@ public sealed class PayrollController(
     {
         var result = await commands.DispatchAsync<UpsertPayContractSalaryCommand, PayContractSalaryResult>(
             new UpsertPayContractSalaryCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.EmployeeCode,
                 body.Amount,
                 body.DependentCount),
@@ -128,7 +128,7 @@ public sealed class PayrollController(
     public async Task<IActionResult> ListMyPayslips(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListMyPayslipsQuery, IReadOnlyList<PayPayslipDto>>(
-            new ListMyPayslipsQuery(User.GetIdpSubject()),
+            new ListMyPayslipsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -138,7 +138,7 @@ public sealed class PayrollController(
     public async Task<IActionResult> GetPayslip(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetPayslipQuery, PayPayslipDto>(
-            new GetPayslipQuery(User.GetIdpSubject(), id),
+            new GetPayslipQuery(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(dto);
     }
@@ -151,7 +151,7 @@ public sealed class PayrollController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<RejectPayLineEditCommand, PayLineEditRejectedResult>(
-            new RejectPayLineEditCommand(User.GetIdpSubject(), ym, lineId),
+            new RejectPayLineEditCommand(User.RequireIdpSubject(), ym, lineId),
             cancellationToken);
         return Ok(result);
     }
@@ -165,7 +165,7 @@ public sealed class PayrollController(
     {
         var result = await commands.DispatchAsync<ExportPayrollPeriodCommand, PayExportResult>(
             new ExportPayrollPeriodCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 ym,
                 body.IncludePdf,
                 body.IncludeEmail,

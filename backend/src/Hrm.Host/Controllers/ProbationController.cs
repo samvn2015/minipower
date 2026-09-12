@@ -21,7 +21,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> ListCases(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationCasesQuery, IReadOnlyList<ProbationCaseDto>>(
-            new ListProbationCasesQuery(User.GetIdpSubject()),
+            new ListProbationCasesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -30,7 +30,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> GetMyMilestones(CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetMyProbationMilestonesQuery, ProbationMilestoneDto>(
-            new GetMyProbationMilestonesQuery(User.GetIdpSubject()),
+            new GetMyProbationMilestonesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -49,7 +49,7 @@ public sealed class ProbationController(
         }
 
         var result = await commands.DispatchAsync<RunProbationRemindersCommand, ProbationReminderRunResult>(
-            new RunProbationRemindersCommand(User.GetIdpSubject(), asOf),
+            new RunProbationRemindersCommand(User.RequireIdpSubject(), asOf),
             cancellationToken);
         return Ok(result);
     }
@@ -60,7 +60,7 @@ public sealed class ProbationController(
         CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>(
-            new ListProbationRemindersQuery(User.GetIdpSubject(), kind),
+            new ListProbationRemindersQuery(User.RequireIdpSubject(), kind),
             cancellationToken);
         return Ok(items);
     }
@@ -69,7 +69,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> ListOutcomes(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationOutcomesQuery, IReadOnlyList<ProbationMasterItemDto>>(
-            new ListProbationOutcomesQuery(User.GetIdpSubject()),
+            new ListProbationOutcomesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -78,7 +78,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> ListCriteria(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationCriteriaQuery, IReadOnlyList<ProbationMasterItemDto>>(
-            new ListProbationCriteriaQuery(User.GetIdpSubject()),
+            new ListProbationCriteriaQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -89,7 +89,7 @@ public sealed class ProbationController(
         var items = await queries.DispatchAsync<
             ListProbationExtendDurationsQuery,
             IReadOnlyList<ProbationExtendDurationDto>>(
-            new ListProbationExtendDurationsQuery(User.GetIdpSubject()),
+            new ListProbationExtendDurationsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -98,7 +98,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> ListEvaluations(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>(
-            new ListProbationEvaluationsQuery(User.GetIdpSubject()),
+            new ListProbationEvaluationsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -112,7 +112,7 @@ public sealed class ProbationController(
         var scores = body.Scores?.Select(s => new ProbationCriterionScoreInput(s.CriterionCode, s.Comment)).ToList();
         var dto = await commands.DispatchAsync<ProposeProbationEvaluationCommand, ProbationEvaluationDto>(
             new ProposeProbationEvaluationCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 employeeId,
                 body.OutcomeCode,
                 body.Note,
@@ -130,7 +130,7 @@ public sealed class ProbationController(
         var scores = body.Scores?.Select(s => new ProbationCriterionScoreInput(s.CriterionCode, s.Comment)).ToList();
         var dto = await commands.DispatchAsync<DecideProbationEvaluationCommand, ProbationEvaluationDto>(
             new DecideProbationEvaluationCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 employeeId,
                 body.OutcomeCode,
                 body.Note,

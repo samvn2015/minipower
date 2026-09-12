@@ -24,7 +24,7 @@ public sealed class LineManagerChangeRequestsController(
         var items = await queries.DispatchAsync<
             ListPendingLineManagerChangesQuery,
             IReadOnlyList<LineManagerChangeDto>>(
-            new ListPendingLineManagerChangesQuery(User.GetIdpSubject()),
+            new ListPendingLineManagerChangesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -33,7 +33,7 @@ public sealed class LineManagerChangeRequestsController(
     public async Task<IActionResult> Approve(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<ApproveLineManagerChangeCommand, LineManagerChangeResult>(
-            new ApproveLineManagerChangeCommand(User.GetIdpSubject(), id),
+            new ApproveLineManagerChangeCommand(User.RequireIdpSubject(), id),
             cancellationToken);
         return Ok(result);
     }
@@ -45,7 +45,7 @@ public sealed class LineManagerChangeRequestsController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<RejectLineManagerChangeCommand, LineManagerChangeResult>(
-            new RejectLineManagerChangeCommand(User.GetIdpSubject(), id, body?.ReviewNote),
+            new RejectLineManagerChangeCommand(User.RequireIdpSubject(), id, body?.ReviewNote),
             cancellationToken);
         return Ok(result);
     }
@@ -66,7 +66,7 @@ public sealed class EmployeeLineManagerChangeController(IAsyncCommandDispatcher 
     {
         var result = await commands.DispatchAsync<SubmitLineManagerChangeCommand, LineManagerChangeResult>(
             new SubmitLineManagerChangeCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 employeeId,
                 body.ProposedLineManagerEmployeeId),
             cancellationToken);

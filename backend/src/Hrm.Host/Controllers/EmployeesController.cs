@@ -26,7 +26,7 @@ public sealed class EmployeesController(
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListEmployeesQuery, IReadOnlyList<EmployeeListItemDto>>(
-            new ListEmployeesQuery(User.GetIdpSubject()),
+            new ListEmployeesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -35,7 +35,7 @@ public sealed class EmployeesController(
     public async Task<IActionResult> GetMe(CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetMyEmployeeQuery, EmployeeDto>(
-            new GetMyEmployeeQuery(User.GetIdpSubject()),
+            new GetMyEmployeeQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -47,7 +47,7 @@ public sealed class EmployeesController(
     {
         var result = await commands.DispatchAsync<CreateEmployeeCommand, EmployeeCreateResult>(
             new CreateEmployeeCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.EmployeeCode,
                 body.FullName,
                 body.Cccd,
@@ -65,7 +65,7 @@ public sealed class EmployeesController(
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetEmployeeQuery, EmployeeDto>(
-            new GetEmployeeQuery(id, User.GetIdpSubject()),
+            new GetEmployeeQuery(id, User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -86,7 +86,7 @@ public sealed class EmployeesController(
         var result = await commands.DispatchAsync<UpdateEmployeeCommand, EmployeeUpdateResult>(
             new UpdateEmployeeCommand(
                 id,
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.FullName,
                 body.EmailCty,
                 body.Cccd,
