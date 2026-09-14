@@ -1,10 +1,10 @@
 # Open questions — Architecture
 
 - [x] {OQ-ARC-001} PGD **Accepted** ADR-001 gói F (MS + GW + LBS + SSO) · 2026-08-26 · DEC-ARC-003
-- [ ] {OQ-ARC-002} **Số phút RTO / RPO** — **phát biểu lại theo ADR-010** (DEC-ARC-017): bỏ DR/DC nên RPO replicate xuyên site không còn đối tượng; cần **hai** con số RTO — failover trong DC, và restore khi mất DC. Thêm: chu kỳ backup + nơi lưu off-site (Ops/IT) · intent: NFR-012 · 2026-08-26, sửa 2026-09-07 · chặn: không (hợp đồng SLA)
+- [ ] {OQ-ARC-002} **Số phút RTO / RPO** *(trùng nội dung với OQ-DLV-004 — giữ một nơi khi chốt số)* — **phát biểu lại theo ADR-010** (DEC-ARC-017): bỏ DR/DC nên RPO replicate xuyên site không còn đối tượng; cần **hai** con số RTO — failover trong DC, và restore khi mất DC. Thêm: chu kỳ backup + nơi lưu off-site (Ops/IT) · intent: NFR-012 · 2026-08-26, sửa 2026-09-07 · chặn: không (hợp đồng SLA)
 - [ ] {OQ-ARC-003} Mã hóa at-rest / TLS policy · intent: SAD · hoãn 2026-08-26 · chặn: không
 - [x] {OQ-ARC-004} IdP = **Lark** (ADR-007 v0.2 · DEC-DLV-010 / DEC-ARC-015). Login: Google · Apple · `@lhqglobal.vn`. Còn issuer URL / tenant / region do IT (OQ-DLV-001) · không chặn DOC-12 khung
-- [ ] {OQ-ARC-005} Broker giữa microservices (TIM→PAY saga) · intent: job · hoãn 2026-08-26 · chặn: không
+- [x] {OQ-ARC-005} Broker giữa microservices (TIM→PAY saga) — **đóng 2026-09-07 bởi ADR-005 Accepted** (DEC-ARC-026): không có luồng ghi phân tán, TIM↔PAY là **guard đọc đồng bộ**; **không dùng broker ở MVP**. Nợ kế thừa: OQ-ARC-017 (bộ lập lịch job) · OQ-ARC-018 (timeout/retry guard)
 - [ ] {OQ-ARC-006} Sản phẩm **LBS** · intent: deploy · 2026-08-26 · chặn: không (DOC-17)
 - [ ] {OQ-ARC-007} MFA bắt buộc sau SSO? · intent: IAM · hoãn 2026-08-26 · chặn: không
 - [x] {OQ-ARC-008} **Lý do gốc chỉ đạo microservices** — **ý kiến khách hàng** (PGD trả lời 2026-09-07, DEC-ARC-016). Không phải lựa chọn kỹ thuật nội bộ → không tự đảo được, muốn đổi phải qua khách. *(nguyên văn câu hỏi:* — kỹ thuật (scale/cô lập) hay yêu cầu từ mInvoice/khách? · intent: ADR mới thay ADR-001 · 2026-09-07 · **chặn: có** (không trả lời thì mọi phương án kiến trúc là đoán) · [deliberation B1](../../brainstorm/2026-09-07-arc-b1-monolith-vs-microservices.md)
