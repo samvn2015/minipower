@@ -2,6 +2,7 @@ using Hrm.Domain.Lifecycle;
 using Hrm.Domain.Lifecycle.Entities;
 using Hrm.Domain.Lifecycle.Repositories;
 using Hrm.Infrastructure.Persistence;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;

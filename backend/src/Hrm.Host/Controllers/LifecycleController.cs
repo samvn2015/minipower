@@ -5,6 +5,8 @@ using Hrm.Host.Extensions;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
 using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
@@ -138,12 +140,18 @@ public sealed class LifecycleController(
     }
 
     [HttpGet("onboarding")]
-    public async Task<IActionResult> ListOnboarding(CancellationToken cancellationToken)
+    public async Task<IActionResult> ListOnboarding(
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? size = null)
     {
-        var items = await queries.DispatchAsync<ListLifOnboardingQuery, IReadOnlyList<LifOnboardingDto>>(
-            new ListLifOnboardingQuery(User.RequireIdpSubject()),
+        var result = await queries.DispatchAsync<ListLifOnboardingQuery, PagedResult<LifOnboardingDto>>(
+            new ListLifOnboardingQuery(User.RequireIdpSubject(), page, size),
             cancellationToken);
-        return Ok(items);
+
+        // S1 — body vẫn là mảng, tổng qua header: client cũ không phải sửa.
+        Response.Headers["X-Total-Count"] = result.Total.ToString(CultureInfo.InvariantCulture);
+        return Ok(result.Items);
     }
 
     [HttpGet("onboarding/{id:guid}")]
