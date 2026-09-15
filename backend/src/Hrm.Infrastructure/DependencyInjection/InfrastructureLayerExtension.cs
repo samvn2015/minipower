@@ -38,6 +38,10 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IEducationLevelReadRepository, EducationLevelReadRepository>();
         builder.Services.AddScoped<ISeniorityRuleReadRepository, SeniorityRuleReadRepository>();
         builder.Services.AddScoped<IEmpAuditLogRepository, EmpAuditLogRepository>();
+        builder.Services.AddScoped<ITimAuditLogRepository, TimAuditLogRepository>();
+        builder.Services.AddScoped<IPayAuditLogRepository, PayAuditLogRepository>();
+        builder.Services.AddScoped<IPrbAuditLogRepository, PrbAuditLogRepository>();
+        builder.Services.AddScoped<ILifAuditLogRepository, LifAuditLogRepository>();
         builder.Services.AddScoped<ILineManagerChangeRepository, LineManagerChangeRepository>();
         builder.Services.AddScoped<ILeaveTypeReadRepository, LeaveTypeReadRepository>();
         builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();
@@ -69,6 +73,40 @@ public static class InfrastructureLayerExtension
         builder.Services.AddCoreDbContext<AppDbContext>(options =>
             options.UseNpgsql(connectionString));
 
+        // ADR-011 W1c — PAY nối bằng role riêng (hrm_app_pay), chỉ thấy schema `pay`.
+        // Thiếu cấu hình thì rơi về connection chung: hàng rào không có tác dụng nhưng
+        // ứng dụng vẫn chạy — chủ ý, để W1c triển khai dần từng context.
+        var payConnectionString = builder.Configuration.GetConnectionString("PayDbContext");
+        if (string.IsNullOrWhiteSpace(payConnectionString))
+            payConnectionString = connectionString;
+
+        builder.Services.AddDbContext<PayDbContext>(options =>
+            options.UseNpgsql(payConnectionString));
+
+        AddContextConnection<IamDbContext>(builder, "IamDbContext", connectionString);
+        AddContextConnection<LevDbContext>(builder, "LevDbContext", connectionString);
+        AddContextConnection<EmpDbContext>(builder, "EmpDbContext", connectionString);
+        AddContextConnection<TimDbContext>(builder, "TimDbContext", connectionString);
+        AddContextConnection<PrbDbContext>(builder, "PrbDbContext", connectionString);
+        AddContextConnection<LifDbContext>(builder, "LifDbContext", connectionString);
+
         return builder;
+    }
+
+    /// <summary>
+    /// ADR-011 W1c — nối một bounded context bằng role riêng của nó.
+    /// Thiếu cấu hình thì rơi về connection chung: app vẫn chạy, hàng rào chưa hoạt động.
+    /// </summary>
+    private static void AddContextConnection<TContext>(
+        IHostApplicationBuilder builder,
+        string name,
+        string fallback)
+        where TContext : DbContext
+    {
+        var cs = builder.Configuration.GetConnectionString(name);
+        if (string.IsNullOrWhiteSpace(cs))
+            cs = fallback;
+
+        builder.Services.AddDbContext<TContext>(options => options.UseNpgsql(cs));
     }
 }

@@ -8,7 +8,7 @@ internal sealed class ProbationReminderConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<ProbationReminder> builder)
     {
-        builder.ToTable("prb_reminder");
+        builder.ToTable("prb_reminder", "prb");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Kind).HasConversion<string>().HasMaxLength(8);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);

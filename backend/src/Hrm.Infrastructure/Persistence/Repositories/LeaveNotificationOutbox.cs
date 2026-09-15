@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LeaveNotificationOutbox(AppDbContext db) : ILeaveNotificationOutbox
+internal sealed class LeaveNotificationOutbox(LevDbContext db) : ILeaveNotificationOutbox
 {
     public async Task PublishAsync(
         LeaveNotificationCreateModel model,

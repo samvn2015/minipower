@@ -9,7 +9,7 @@ internal sealed class LeaveRequestConfiguration : IEntityTypeConfiguration<Leave
 {
     public void Configure(EntityTypeBuilder<LeaveRequest> builder)
     {
-        builder.ToTable("lev_leave_request");
+        builder.ToTable("lev_leave_request", "lev");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.LeaveTypeCode).IsRequired().HasMaxLength(32);
         builder.Property(x => x.DayPart).HasConversion<string>().HasMaxLength(16);

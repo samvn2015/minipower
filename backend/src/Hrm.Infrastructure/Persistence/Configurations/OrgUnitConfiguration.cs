@@ -10,7 +10,7 @@ internal sealed class OrgUnitConfiguration : IEntityTypeConfiguration<OrgUnit>
 {
     public void Configure(EntityTypeBuilder<OrgUnit> builder)
     {
-        builder.ToTable("emp_org_unit");
+        builder.ToTable("emp_org_unit", "emp");
         builder.HasKey(x => x.Code);
         builder.Property(x => x.Code).HasMaxLength(32);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(256);

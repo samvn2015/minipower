@@ -10,7 +10,7 @@ internal sealed class EducationLevelConfiguration : IEntityTypeConfiguration<Edu
 {
     public void Configure(EntityTypeBuilder<EducationLevel> builder)
     {
-        builder.ToTable("emp_education_level");
+        builder.ToTable("emp_education_level", "emp");
         builder.HasKey(x => x.Code);
         builder.Property(x => x.Code).HasMaxLength(32);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(128);

@@ -1,3 +1,4 @@
+using Hrm.Domain.Shared.Paging;
 using Hrm.Application.Common;
 using Hrm.Application.Probation.Commands;
 using Hrm.Domain.Employees;
@@ -17,6 +18,7 @@ public sealed class RunProbationRemindersCommandHandlerTests
     {
         var empId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
         var repo = new FakeReminderRepo();
+        var audit = new FakeAudit();
         var handler = new RunProbationRemindersCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
             new FakeEmployees([
@@ -27,7 +29,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     EmployeeStatus.Active)
             ]),
             repo,
-            new FakeHostRoleGate(active: true));
+            new FakeHostRoleGate(active: true),
+            audit);
 
         // KT 2026-06-30 → T-15 = 2026-06-15
         var result = await handler.HandleAsync(
@@ -43,10 +46,75 @@ public sealed class RunProbationRemindersCommandHandlerTests
     }
 
     [Fact]
+    public async Task HandleAsync_KhongCoViecGi_VanGhiDauVetDaChay()
+    {
+        // ADR-005 RK-06 — chỗ hổng thật: một lần chạy KHÔNG sinh nhắc nào và một lần
+        // KHÔNG HỀ CHẠY trước đây là không phân biệt được. NFR-009 hỏng trong im lặng
+        // vì không ai biết job ngừng. Test khoá việc mọi lần chạy đều để lại dấu vết.
+        var repo = new FakeReminderRepo();
+        var audit = new FakeAudit();
+        var handler = new RunProbationRemindersCommandHandler(
+            new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
+            new FakeEmployees([]),          // không nhân viên nào → không có việc
+            repo,
+            new FakeHostRoleGate(active: true),
+            audit);
+
+        var result = await handler.HandleAsync(
+            new RunProbationRemindersCommand("local-dev", new DateOnly(2026, 6, 15)));
+
+        Assert.Equal(0, result.T15Created);
+        Assert.Empty(repo.Items);
+
+        // Không sinh nhắc, nhưng PHẢI có dấu vết đã chạy.
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(EmpAuditActions.ProbationRemindersJobRan, entry.Action);
+        Assert.Contains("asOf=2026-06-15", entry.Detail);
+    }
+
+    [Fact]
+    public async Task HandleAsync_ChayLai_CungNgay_KhongNhacTrung()
+    {
+        // RK-07 (ADR-005) — job chạy bằng endpoint do bộ lập lịch NGOÀI gọi, nên gọi lại
+        // là chuyện bình thường: scheduler retry, người bấm hai lần, deploy lại giữa chừng.
+        // NFR-009 nói "0 sót 0 trễ" nhưng KHÔNG nói gì về trùng — test này khoá phần đó.
+        var empId = Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa");
+        var repo = new FakeReminderRepo();
+        var audit = new FakeAudit();
+        var handler = new RunProbationRemindersCommandHandler(
+            new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
+            new FakeEmployees([
+                new EmployeeSnapshot(
+                    empId, "MNV-TV", "TV", null, "tv@company.local", null, null, null, null, null,
+                    new EmployeeContractSnapshot("PROBATION", new DateOnly(2026, 1, 1), new DateOnly(2026, 6, 30), true),
+                    null,
+                    EmployeeStatus.Active)
+            ]),
+            repo,
+            new FakeHostRoleGate(active: true),
+            audit);
+
+        var asOfT15 = new DateOnly(2026, 6, 15);
+
+        var first = await handler.HandleAsync(new RunProbationRemindersCommand("local-dev", asOfT15));
+        var second = await handler.HandleAsync(new RunProbationRemindersCommand("local-dev", asOfT15));
+
+        Assert.Equal(1, first.T15Created);
+        Assert.Equal(0, first.SkippedAlreadyExists);
+
+        Assert.Equal(0, second.T15Created);
+        Assert.Equal(1, second.SkippedAlreadyExists);
+
+        // Bằng chứng thật: vẫn đúng MỘT nhắc sau hai lần chạy.
+        Assert.Single(repo.Items);
+    }
+
+    [Fact]
     public async Task HandleAsync_AsOfT7_NoLm_AssignsHrPool()
     {
         var empId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
         var repo = new FakeReminderRepo();
+        var audit = new FakeAudit();
         var handler = new RunProbationRemindersCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
             new FakeEmployees([
@@ -57,7 +125,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     EmployeeStatus.Active)
             ]),
             repo,
-            new FakeHostRoleGate(active: true));
+            new FakeHostRoleGate(active: true),
+            audit);
 
         // T-7 = 2026-06-23
         var result = await handler.HandleAsync(
@@ -73,6 +142,7 @@ public sealed class RunProbationRemindersCommandHandlerTests
     {
         var empId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");
         var repo = new FakeReminderRepo();
+        var audit = new FakeAudit();
         var handler = new RunProbationRemindersCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
             new FakeEmployees([
@@ -83,7 +153,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     EmployeeStatus.Active)
             ]),
             repo,
-            new FakeHostRoleGate(active: true));
+            new FakeHostRoleGate(active: true),
+            audit);
 
         var result = await handler.HandleAsync(
             new RunProbationRemindersCommand("local-dev", new DateOnly(2026, 6, 15)));
@@ -98,6 +169,7 @@ public sealed class RunProbationRemindersCommandHandlerTests
     {
         var empId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
         var repo = new FakeReminderRepo();
+        var audit = new FakeAudit();
         var handler = new RunProbationRemindersCommandHandler(
             new FakeAccounts(["IAM-ROLE-HR"], "MNV-HR"),
             new FakeEmployees([
@@ -108,7 +180,8 @@ public sealed class RunProbationRemindersCommandHandlerTests
                     EmployeeStatus.Active)
             ]),
             repo,
-            new FakeHostRoleGate(active: false));
+            new FakeHostRoleGate(active: false),
+            audit);
 
         await Assert.ThrowsAsync<BadRequestException>(() =>
             handler.HandleAsync(new RunProbationRemindersCommand("local-dev", new DateOnly(2026, 6, 15))));
@@ -141,6 +214,12 @@ public sealed class RunProbationRemindersCommandHandlerTests
         public Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(CancellationToken cancellationToken = default) =>
             Task.FromResult(items);
 
+        public Task<PagedResult<EmployeeSnapshot>> ListPagedAsync(
+            PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PagedResult<EmployeeSnapshot>([], 0));
+
+
         public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default) =>
             Task.FromResult(items.FirstOrDefault(e => e.Id == id));
 
@@ -165,6 +244,28 @@ public sealed class RunProbationRemindersCommandHandlerTests
             Task.FromResult<EmployeeUniqueField?>(null);
     }
 
+    private sealed class FakeAudit : IPrbAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+    }
+
     private sealed class FakeReminderRepo : IProbationReminderRepository
     {
         public List<ProbationReminderCreateModel> Items { get; } = [];
@@ -185,9 +286,10 @@ public sealed class RunProbationRemindersCommandHandlerTests
             return Task.CompletedTask;
         }
 
-        public Task<IReadOnlyList<ProbationReminderSnapshot>> ListAsync(
-            ProbationReminderKind? kind = null,
+        public Task<PagedResult<ProbationReminderSnapshot>> ListPagedAsync(
+            ProbationReminderKind? kind,
+            PageRequest page,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<ProbationReminderSnapshot>>([]);
+            Task.FromResult(new PagedResult<ProbationReminderSnapshot>([], 0));
     }
 }

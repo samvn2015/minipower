@@ -26,7 +26,8 @@ public sealed class RunProbationRemindersCommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
     IProbationReminderRepository reminders,
-    IHostRoleGate hostRoleGate)
+    IHostRoleGate hostRoleGate,
+    IPrbAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RunProbationRemindersCommand, ProbationReminderRunResult>
 {
     public const string ChannelInAppAndEmail = "hrm-inapp+email";
@@ -137,6 +138,19 @@ public sealed class RunProbationRemindersCommandHandler(
 
         if (toCreate.Count > 0)
             await reminders.AddManyAsync(toCreate, cancellationToken);
+
+        // ADR-005 RK-06 — ghi dấu vết KỂ CẢ khi không sinh nhắc nào.
+        // Đây là thứ duy nhất phân biệt "job chạy, không có việc" với "job không chạy".
+        // Giám sát bám vào action này để cảnh báo khi quá hạn (NFR-009).
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.ProbationRemindersJobRan,
+                null,
+                null,
+                request.ActorIdpSubject,
+                $"asOf={asOf:yyyy-MM-dd};t15={t15};t7={t7};"
+                + $"skippedIncomplete={skippedIncomplete};skippedExists={skippedExists}"),
+            cancellationToken);
 
         return new ProbationReminderRunResult(asOf, t15, t7, skippedIncomplete, skippedExists);
     }

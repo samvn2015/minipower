@@ -1,3 +1,4 @@
+using Hrm.Domain.Shared.Paging;
 using Hrm.Application.Timekeeping;
 using Hrm.Application.Timekeeping.Commands;
 using Hrm.Domain.Employees;
@@ -85,7 +86,7 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
             handler.HandleAsync(new CommitTimesheetImportCommand("local-dev", Guid.NewGuid())));
     }
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ITimAuditLogRepository
     {
         public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default) =>
             Task.CompletedTask;
@@ -145,6 +146,12 @@ public sealed class PreviewTimesheetImportCommandHandlerTests
     {
         public Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<EmployeeSnapshot>>([]);
+
+        public Task<PagedResult<EmployeeSnapshot>> ListPagedAsync(
+            PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PagedResult<EmployeeSnapshot>([], 0));
+
 
         public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<EmployeeSnapshot?>(null);

@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class OrgUnitReadRepository(AppDbContext db) : IOrgUnitReadRepository
+internal sealed class OrgUnitReadRepository(EmpDbContext db) : IOrgUnitReadRepository
 {
     public async Task<bool> IsActiveAsync(string orgUnitCode, CancellationToken cancellationToken = default)
     {

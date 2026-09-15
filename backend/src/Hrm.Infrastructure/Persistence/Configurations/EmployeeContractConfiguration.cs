@@ -8,7 +8,7 @@ internal sealed class EmployeeContractConfiguration : IEntityTypeConfiguration<E
 {
     public void Configure(EntityTypeBuilder<EmployeeContract> builder)
     {
-        builder.ToTable("emp_contract");
+        builder.ToTable("emp_contract", "emp");
         builder.HasKey(x => x.Id);
         builder.HasIndex(x => x.EmployeeId).IsUnique();
         builder.Property(x => x.ContractType).IsRequired().HasMaxLength(32);

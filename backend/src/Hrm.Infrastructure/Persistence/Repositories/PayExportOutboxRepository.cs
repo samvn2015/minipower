@@ -4,7 +4,7 @@ using Hrm.Infrastructure.Persistence;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class PayExportOutboxRepository(AppDbContext db) : IPayExportOutboxRepository
+internal sealed class PayExportOutboxRepository(PayDbContext db) : IPayExportOutboxRepository
 {
     public async Task AddManyAsync(
         IReadOnlyList<PayExportOutboxCreateModel> rows,

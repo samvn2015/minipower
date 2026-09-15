@@ -8,7 +8,7 @@ internal sealed class PayWorkdayCalendarConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<PayWorkdayCalendar> builder)
     {
-        builder.ToTable("pay_workday_calendar");
+        builder.ToTable("pay_workday_calendar", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PeriodYm).IsRequired().HasMaxLength(7);
         builder.HasIndex(x => x.PeriodYm).IsUnique();

@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LeaveBalanceRepository(AppDbContext db) : ILeaveBalanceRepository
+internal sealed class LeaveBalanceRepository(LevDbContext db) : ILeaveBalanceRepository
 {
     public async Task<LeaveBalanceSnapshot?> FindByEmployeeAndYearAsync(
         Guid employeeId,

@@ -9,7 +9,7 @@ internal sealed class PayPeriodConfiguration : IEntityTypeConfiguration<PayPerio
 {
     public void Configure(EntityTypeBuilder<PayPeriod> builder)
     {
-        builder.ToTable("pay_period");
+        builder.ToTable("pay_period", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PeriodYm).IsRequired().HasMaxLength(7);
         builder.HasIndex(x => x.PeriodYm).IsUnique();
@@ -23,7 +23,7 @@ internal sealed class PayLineConfiguration : IEntityTypeConfiguration<PayLine>
 {
     public void Configure(EntityTypeBuilder<PayLine> builder)
     {
-        builder.ToTable("pay_line");
+        builder.ToTable("pay_line", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.WorkDays).HasPrecision(5, 2);

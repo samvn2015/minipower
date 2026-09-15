@@ -5,6 +5,8 @@ using Hrm.Host.Extensions;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
 using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
@@ -21,7 +23,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> ListCases(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationCasesQuery, IReadOnlyList<ProbationCaseDto>>(
-            new ListProbationCasesQuery(User.GetIdpSubject()),
+            new ListProbationCasesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -30,7 +32,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> GetMyMilestones(CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetMyProbationMilestonesQuery, ProbationMilestoneDto>(
-            new GetMyProbationMilestonesQuery(User.GetIdpSubject()),
+            new GetMyProbationMilestonesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -49,27 +51,32 @@ public sealed class ProbationController(
         }
 
         var result = await commands.DispatchAsync<RunProbationRemindersCommand, ProbationReminderRunResult>(
-            new RunProbationRemindersCommand(User.GetIdpSubject(), asOf),
+            new RunProbationRemindersCommand(User.RequireIdpSubject(), asOf),
             cancellationToken);
         return Ok(result);
     }
 
+    /// <summary>S1 — body vẫn là mảng, tổng qua <c>X-Total-Count</c> (tổng khớp bộ lọc <c>kind</c>).</summary>
     [HttpGet("reminders")]
     public async Task<IActionResult> ListReminders(
         [FromQuery] string? kind,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? size = null)
     {
-        var items = await queries.DispatchAsync<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>(
-            new ListProbationRemindersQuery(User.GetIdpSubject(), kind),
+        var result = await queries.DispatchAsync<ListProbationRemindersQuery, PagedResult<ProbationReminderDto>>(
+            new ListProbationRemindersQuery(User.RequireIdpSubject(), kind, page, size),
             cancellationToken);
-        return Ok(items);
+
+        Response.Headers["X-Total-Count"] = result.Total.ToString(CultureInfo.InvariantCulture);
+        return Ok(result.Items);
     }
 
     [HttpGet("masters/outcomes")]
     public async Task<IActionResult> ListOutcomes(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationOutcomesQuery, IReadOnlyList<ProbationMasterItemDto>>(
-            new ListProbationOutcomesQuery(User.GetIdpSubject()),
+            new ListProbationOutcomesQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -78,7 +85,7 @@ public sealed class ProbationController(
     public async Task<IActionResult> ListCriteria(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListProbationCriteriaQuery, IReadOnlyList<ProbationMasterItemDto>>(
-            new ListProbationCriteriaQuery(User.GetIdpSubject()),
+            new ListProbationCriteriaQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -89,18 +96,23 @@ public sealed class ProbationController(
         var items = await queries.DispatchAsync<
             ListProbationExtendDurationsQuery,
             IReadOnlyList<ProbationExtendDurationDto>>(
-            new ListProbationExtendDurationsQuery(User.GetIdpSubject()),
+            new ListProbationExtendDurationsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
 
     [HttpGet("evaluations")]
-    public async Task<IActionResult> ListEvaluations(CancellationToken cancellationToken)
+    public async Task<IActionResult> ListEvaluations(
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? size = null)
     {
-        var items = await queries.DispatchAsync<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>(
-            new ListProbationEvaluationsQuery(User.GetIdpSubject()),
+        var result = await queries.DispatchAsync<ListProbationEvaluationsQuery, PagedResult<ProbationEvaluationDto>>(
+            new ListProbationEvaluationsQuery(User.RequireIdpSubject(), page, size),
             cancellationToken);
-        return Ok(items);
+
+        Response.Headers["X-Total-Count"] = result.Total.ToString(CultureInfo.InvariantCulture);
+        return Ok(result.Items);
     }
 
     [HttpPost("evaluations/{employeeId:guid}/propose")]
@@ -112,7 +124,7 @@ public sealed class ProbationController(
         var scores = body.Scores?.Select(s => new ProbationCriterionScoreInput(s.CriterionCode, s.Comment)).ToList();
         var dto = await commands.DispatchAsync<ProposeProbationEvaluationCommand, ProbationEvaluationDto>(
             new ProposeProbationEvaluationCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 employeeId,
                 body.OutcomeCode,
                 body.Note,
@@ -130,7 +142,7 @@ public sealed class ProbationController(
         var scores = body.Scores?.Select(s => new ProbationCriterionScoreInput(s.CriterionCode, s.Comment)).ToList();
         var dto = await commands.DispatchAsync<DecideProbationEvaluationCommand, ProbationEvaluationDto>(
             new DecideProbationEvaluationCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 employeeId,
                 body.OutcomeCode,
                 body.Note,

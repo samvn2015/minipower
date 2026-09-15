@@ -10,7 +10,7 @@ internal sealed class PayRegulationConfiguration : IEntityTypeConfiguration<PayR
 {
     public void Configure(EntityTypeBuilder<PayRegulation> builder)
     {
-        builder.ToTable("pay_regulation");
+        builder.ToTable("pay_regulation", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(64);
         builder.HasIndex(x => x.Code).IsUnique();

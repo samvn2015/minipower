@@ -30,6 +30,8 @@ using Jarvis.Application.Contracts.Queries;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Application.DependencyInjection;
 
 public static class ApplicationLayerExtension
@@ -45,7 +47,7 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<EmployeeDtoFactory>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetEmployeeQuery, EmployeeDto>, GetEmployeeQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetMyEmployeeQuery, EmployeeDto>, GetMyEmployeeQueryHandler>();
-        builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeesQuery, IReadOnlyList<EmployeeListItemDto>>, ListEmployeesQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeesQuery, PagedResult<EmployeeListItemDto>>, ListEmployeesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEducationLevelsQuery, IReadOnlyList<EducationLevelDto>>, ListEducationLevelsQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListContractTypesQuery, IReadOnlyList<EmpCatalogItemDto>>, ListContractTypesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListEmployeeAuditLogsQuery, IReadOnlyList<EmpAuditLogDto>>, ListEmployeeAuditLogsQueryHandler>();
@@ -102,14 +104,14 @@ public static class ApplicationLayerExtension
 
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationCasesQuery, IReadOnlyList<ProbationCaseDto>>, ListProbationCasesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetMyProbationMilestonesQuery, ProbationMilestoneDto>, GetMyProbationMilestonesQueryHandler>();
-        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>, ListProbationRemindersQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationRemindersQuery, PagedResult<ProbationReminderDto>>, ListProbationRemindersQueryHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RunProbationRemindersCommand, ProbationReminderRunResult>, RunProbationRemindersCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<ProposeProbationEvaluationCommand, ProbationEvaluationDto>, ProposeProbationEvaluationCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<DecideProbationEvaluationCommand, ProbationEvaluationDto>, DecideProbationEvaluationCommandHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationOutcomesQuery, IReadOnlyList<ProbationMasterItemDto>>, ListProbationOutcomesQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationCriteriaQuery, IReadOnlyList<ProbationMasterItemDto>>, ListProbationCriteriaQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<ListProbationExtendDurationsQuery, IReadOnlyList<ProbationExtendDurationDto>>, ListProbationExtendDurationsQueryHandler>();
-        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>, ListProbationEvaluationsQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListProbationEvaluationsQuery, PagedResult<ProbationEvaluationDto>>, ListProbationEvaluationsQueryHandler>();
 
         builder.Services.AddScoped<IAsyncQueryHandler<ListLifOffboardingQuery, IReadOnlyList<LifOffboardingDto>>, ListLifOffboardingQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetLifOffboardingQuery, LifOffboardingDto>, GetLifOffboardingQueryHandler>();
@@ -120,7 +122,7 @@ public static class ApplicationLayerExtension
         builder.Services.AddScoped<IAsyncCommandHandler<CloseLifOffboardingCommand, LifOffboardingDto>, CloseLifOffboardingCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<ApplyLifOffboardingLocksCommand, LifOffboardingDto>, ApplyLifOffboardingLocksCommandHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>, RunLifNPlus3LocksCommandHandler>();
-        builder.Services.AddScoped<IAsyncQueryHandler<ListLifOnboardingQuery, IReadOnlyList<LifOnboardingDto>>, ListLifOnboardingQueryHandler>();
+        builder.Services.AddScoped<IAsyncQueryHandler<ListLifOnboardingQuery, PagedResult<LifOnboardingDto>>, ListLifOnboardingQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetLifOnboardingQuery, LifOnboardingDto>, GetLifOnboardingQueryHandler>();
         builder.Services.AddScoped<IAsyncQueryHandler<GetLifOnChecklistQuery, LifOffChecklistBoardDto>, GetLifOnChecklistQueryHandler>();
         builder.Services.AddScoped<IAsyncCommandHandler<CreateLifOnboardingCommand, LifOnboardingDto>, CreateLifOnboardingCommandHandler>();

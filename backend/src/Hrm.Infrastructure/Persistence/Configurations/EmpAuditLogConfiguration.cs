@@ -8,7 +8,7 @@ internal sealed class EmpAuditLogConfiguration : IEntityTypeConfiguration<EmpAud
 {
     public void Configure(EntityTypeBuilder<EmpAuditLog> builder)
     {
-        builder.ToTable("emp_audit_log");
+        builder.ToTable("emp_audit_log", "shared");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Action).IsRequired().HasMaxLength(64);
         builder.Property(x => x.ActorIdpSubject).IsRequired().HasMaxLength(128);

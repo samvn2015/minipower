@@ -1,3 +1,4 @@
+using Hrm.Domain.Shared.Paging;
 using Hrm.Application.Identity;
 using Hrm.Application.Tests.Employees;
 using Hrm.Domain.Employees;
@@ -107,6 +108,12 @@ public sealed class IdentityAccountProvisionerTests
     {
         public Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<EmployeeSnapshot>>([]);
+
+        public Task<PagedResult<EmployeeSnapshot>> ListPagedAsync(
+            PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PagedResult<EmployeeSnapshot>([], 0));
+
 
         public Task<EmployeeSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<EmployeeSnapshot?>(null);

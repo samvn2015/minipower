@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class EducationLevelReadRepository(AppDbContext db) : IEducationLevelReadRepository
+internal sealed class EducationLevelReadRepository(EmpDbContext db) : IEducationLevelReadRepository
 {
     public async Task<bool> IsActiveAsync(string code, CancellationToken cancellationToken = default)
     {

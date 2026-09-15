@@ -9,7 +9,7 @@ internal sealed class LifOnboardingCaseConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<LifOnboardingCase> builder)
     {
-        builder.ToTable("lif_onboarding_case");
+        builder.ToTable("lif_onboarding_case", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);
@@ -27,7 +27,7 @@ internal sealed class LifOnChecklistConfiguration :
 {
     public void Configure(EntityTypeBuilder<LifOnChecklistItem> builder)
     {
-        builder.ToTable("lif_on_checklist_item");
+        builder.ToTable("lif_on_checklist_item", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(64);
         builder.HasIndex(x => x.Code).IsUnique();
@@ -37,7 +37,7 @@ internal sealed class LifOnChecklistConfiguration :
 
     public void Configure(EntityTypeBuilder<LifOnChecklistTick> builder)
     {
-        builder.ToTable("lif_on_checklist_tick");
+        builder.ToTable("lif_on_checklist_tick", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.ItemCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.CheckedByIdpSubject).HasMaxLength(256);

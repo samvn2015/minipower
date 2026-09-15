@@ -42,7 +42,7 @@ public sealed class PublishTimesheetTemplateCommandHandlerTests
             handler.HandleAsync(new PublishTimesheetTemplateCommand("local-dev", DraftId)));
     }
 
-    private sealed class FakeAudit : IEmpAuditLogRepository
+    private sealed class FakeAudit : ITimAuditLogRepository
     {
         public List<EmpAuditLogEntry> Entries { get; } = [];
 

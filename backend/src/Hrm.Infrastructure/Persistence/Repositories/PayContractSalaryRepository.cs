@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class PayContractSalaryRepository(AppDbContext db) : IPayContractSalaryRepository
+internal sealed class PayContractSalaryRepository(PayDbContext db) : IPayContractSalaryRepository
 {
     public async Task<decimal> GetAmountAsync(Guid employeeId, CancellationToken cancellationToken = default)
     {

@@ -8,6 +8,8 @@ using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
 using Jarvis.Domain.Shared.ExceptionHandling;
 using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
@@ -22,20 +24,29 @@ public sealed class EmployeesController(
     IAsyncQueryDispatcher queries,
     IAsyncCommandDispatcher commands) : ControllerBase
 {
+    /// <summary>
+    /// S1 — <c>page</c>/<c>size</c> tuỳ chọn (DOC-12 §3). Body vẫn là **mảng** và tổng đi
+    /// qua header <c>X-Total-Count</c>, nên client cũ không phải sửa gì.
+    /// </summary>
     [HttpGet]
-    public async Task<IActionResult> List(CancellationToken cancellationToken)
+    public async Task<IActionResult> List(
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? size = null)
     {
-        var items = await queries.DispatchAsync<ListEmployeesQuery, IReadOnlyList<EmployeeListItemDto>>(
-            new ListEmployeesQuery(User.GetIdpSubject()),
+        var result = await queries.DispatchAsync<ListEmployeesQuery, PagedResult<EmployeeListItemDto>>(
+            new ListEmployeesQuery(User.RequireIdpSubject(), page, size),
             cancellationToken);
-        return Ok(items);
+
+        Response.Headers["X-Total-Count"] = result.Total.ToString(CultureInfo.InvariantCulture);
+        return Ok(result.Items);
     }
 
     [HttpGet("me")]
     public async Task<IActionResult> GetMe(CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetMyEmployeeQuery, EmployeeDto>(
-            new GetMyEmployeeQuery(User.GetIdpSubject()),
+            new GetMyEmployeeQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -47,7 +58,7 @@ public sealed class EmployeesController(
     {
         var result = await commands.DispatchAsync<CreateEmployeeCommand, EmployeeCreateResult>(
             new CreateEmployeeCommand(
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.EmployeeCode,
                 body.FullName,
                 body.Cccd,
@@ -65,7 +76,7 @@ public sealed class EmployeesController(
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetEmployeeQuery, EmployeeDto>(
-            new GetEmployeeQuery(id, User.GetIdpSubject()),
+            new GetEmployeeQuery(id, User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -86,7 +97,7 @@ public sealed class EmployeesController(
         var result = await commands.DispatchAsync<UpdateEmployeeCommand, EmployeeUpdateResult>(
             new UpdateEmployeeCommand(
                 id,
-                User.GetIdpSubject(),
+                User.RequireIdpSubject(),
                 body.FullName,
                 body.EmailCty,
                 body.Cccd,

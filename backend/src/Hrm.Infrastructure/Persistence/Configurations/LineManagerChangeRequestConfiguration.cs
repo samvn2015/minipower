@@ -9,7 +9,7 @@ internal sealed class LineManagerChangeRequestConfiguration : IEntityTypeConfigu
 {
     public void Configure(EntityTypeBuilder<LineManagerChangeRequest> builder)
     {
-        builder.ToTable("emp_line_manager_change");
+        builder.ToTable("emp_line_manager_change", "emp");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(32);
         builder.Property(x => x.RequestedByIdpSubject).IsRequired().HasMaxLength(256);

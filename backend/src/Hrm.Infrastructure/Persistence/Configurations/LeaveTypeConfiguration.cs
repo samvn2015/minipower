@@ -10,7 +10,7 @@ internal sealed class LeaveTypeConfiguration : IEntityTypeConfiguration<LeaveTyp
 {
     public void Configure(EntityTypeBuilder<LeaveType> builder)
     {
-        builder.ToTable("lev_leave_type");
+        builder.ToTable("lev_leave_type", "lev");
         builder.HasKey(x => x.Code);
         builder.Property(x => x.Code).HasMaxLength(32);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(128);

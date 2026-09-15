@@ -63,7 +63,7 @@ public sealed record PublishTimesheetTemplateCommand(string? ActorIdpSubject, Gu
 public sealed class PublishTimesheetTemplateCommandHandler(
     IIdentityAccountReadRepository accounts,
     ITimesheetTemplateRepository templates,
-    IEmpAuditLogRepository auditLogs)
+    ITimAuditLogRepository auditLogs)
     : IAsyncCommandHandler<PublishTimesheetTemplateCommand, TimesheetTemplatePublishResult>
 {
     public async Task<TimesheetTemplatePublishResult> HandleAsync(

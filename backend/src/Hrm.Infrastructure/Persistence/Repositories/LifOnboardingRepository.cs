@@ -2,11 +2,12 @@ using Hrm.Domain.Lifecycle;
 using Hrm.Domain.Lifecycle.Entities;
 using Hrm.Domain.Lifecycle.Repositories;
 using Hrm.Infrastructure.Persistence;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LifOnboardingRepository(AppDbContext db) : ILifOnboardingRepository
+internal sealed class LifOnboardingRepository(LifDbContext db) : ILifOnboardingRepository
 {
     public async Task<LifOnboardingSnapshot> CreateAsync(
         LifOnboardingCreateModel model,
@@ -35,6 +36,26 @@ internal sealed class LifOnboardingRepository(AppDbContext db) : ILifOnboardingR
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
         return rows.Select(Map).ToList();
+    }
+
+    public async Task<PagedResult<LifOnboardingSnapshot>> ListPagedAsync(
+        PageRequest page,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        var query = db.LifOnboardingCases.AsNoTracking().OrderByDescending(x => x.CreatedAtUtc);
+
+        // Tổng phải là tổng THẬT, đếm trước khi cắt trang.
+        var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
+
+        var rows = await query
+            .Skip(page.Skip)
+            .Take(page.Size)
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return new PagedResult<LifOnboardingSnapshot>(rows.Select(Map).ToList(), total);
     }
 
     public async Task<LifOnboardingSnapshot?> FindByIdAsync(
@@ -125,7 +146,7 @@ internal sealed class LifOnboardingRepository(AppDbContext db) : ILifOnboardingR
             x.ClosedAtUtc);
 }
 
-internal sealed class LifOnChecklistRepository(AppDbContext db) : ILifOnChecklistRepository
+internal sealed class LifOnChecklistRepository(LifDbContext db) : ILifOnChecklistRepository
 {
     public async Task<IReadOnlyList<LifOnChecklistItemSnapshot>> ListActiveItemsAsync(
         CancellationToken cancellationToken = default)

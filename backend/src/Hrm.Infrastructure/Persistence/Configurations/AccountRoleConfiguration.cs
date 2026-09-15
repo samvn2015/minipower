@@ -9,7 +9,7 @@ internal sealed class AccountRoleConfiguration : IEntityTypeConfiguration<Accoun
 {
     public void Configure(EntityTypeBuilder<AccountRole> builder)
     {
-        builder.ToTable("iam_account_role");
+        builder.ToTable("iam_account_role", "iam");
         builder.HasKey(x => new { x.AccountId, x.RoleCode });
         builder.Property(x => x.RoleCode).HasMaxLength(64);
 

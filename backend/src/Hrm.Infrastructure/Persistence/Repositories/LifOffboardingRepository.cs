@@ -2,11 +2,12 @@ using Hrm.Domain.Lifecycle;
 using Hrm.Domain.Lifecycle.Entities;
 using Hrm.Domain.Lifecycle.Repositories;
 using Hrm.Infrastructure.Persistence;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LifOffboardingRepository(AppDbContext db) : ILifOffboardingRepository
+internal sealed class LifOffboardingRepository(LifDbContext db) : ILifOffboardingRepository
 {
     public async Task<LifOffboardingSnapshot> CreateAsync(
         LifOffboardingCreateModel model,

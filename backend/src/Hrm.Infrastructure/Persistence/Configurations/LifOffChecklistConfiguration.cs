@@ -9,7 +9,7 @@ internal sealed class LifOffChecklistItemConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<LifOffChecklistItem> builder)
     {
-        builder.ToTable("lif_off_checklist_item");
+        builder.ToTable("lif_off_checklist_item", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(256);
@@ -22,7 +22,7 @@ internal sealed class LifOffChecklistTickConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<LifOffChecklistTick> builder)
     {
-        builder.ToTable("lif_off_checklist_tick");
+        builder.ToTable("lif_off_checklist_tick", "lif");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.ItemCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.CheckedByIdpSubject).HasMaxLength(256);

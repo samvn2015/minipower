@@ -23,7 +23,7 @@ public sealed class IamAccountsController(
     public async Task<IActionResult> List(CancellationToken cancellationToken)
     {
         var items = await queries.DispatchAsync<ListIdentityAccountsQuery, IReadOnlyList<IdentityAccountDto>>(
-            new ListIdentityAccountsQuery(User.GetIdpSubject()),
+            new ListIdentityAccountsQuery(User.RequireIdpSubject()),
             cancellationToken);
         return Ok(items);
     }
@@ -32,7 +32,7 @@ public sealed class IamAccountsController(
     public async Task<IActionResult> Get(Guid id, CancellationToken cancellationToken)
     {
         var dto = await queries.DispatchAsync<GetIdentityAccountQuery, IdentityAccountDto>(
-            new GetIdentityAccountQuery(id, User.GetIdpSubject()),
+            new GetIdentityAccountQuery(id, User.RequireIdpSubject()),
             cancellationToken);
         return Ok(dto);
     }
@@ -44,7 +44,7 @@ public sealed class IamAccountsController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<AssignAccountRoleCommand, IdentityAccountAdminResult>(
-            new AssignAccountRoleCommand(id, body.RoleCode, User.GetIdpSubject()),
+            new AssignAccountRoleCommand(id, body.RoleCode, User.RequireIdpSubject()),
             cancellationToken);
         return Ok(result);
     }
@@ -56,7 +56,7 @@ public sealed class IamAccountsController(
         CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<RemoveAccountRoleCommand, IdentityAccountAdminResult>(
-            new RemoveAccountRoleCommand(id, roleCode, User.GetIdpSubject()),
+            new RemoveAccountRoleCommand(id, roleCode, User.RequireIdpSubject()),
             cancellationToken);
         return Ok(result);
     }
@@ -65,7 +65,7 @@ public sealed class IamAccountsController(
     public async Task<IActionResult> Disable(Guid id, CancellationToken cancellationToken)
     {
         var result = await commands.DispatchAsync<DisableIdentityAccountCommand, IdentityAccountAdminResult>(
-            new DisableIdentityAccountCommand(id, User.GetIdpSubject()),
+            new DisableIdentityAccountCommand(id, User.RequireIdpSubject()),
             cancellationToken);
         return Ok(result);
     }

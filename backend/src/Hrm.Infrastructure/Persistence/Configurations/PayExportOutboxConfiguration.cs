@@ -10,7 +10,7 @@ internal sealed class PayExportOutboxConfiguration : IEntityTypeConfiguration<Pa
 {
     public void Configure(EntityTypeBuilder<PayExportOutbox> builder)
     {
-        builder.ToTable("pay_export_outbox");
+        builder.ToTable("pay_export_outbox", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PeriodYm).IsRequired().HasMaxLength(7);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);

@@ -1,11 +1,12 @@
 using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Entities;
 using Hrm.Domain.Employees.Repositories;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRepository
+internal sealed class EmployeeReadRepository(EmpDbContext db) : IEmployeeReadRepository
 {
     public async Task<IReadOnlyList<EmployeeSnapshot>> ListAsync(
         CancellationToken cancellationToken = default)
@@ -15,6 +16,27 @@ internal sealed class EmployeeReadRepository(AppDbContext db) : IEmployeeReadRep
             .OrderBy(e => e.EmployeeCode)
             .SelectSnapshots()
             .ToListAsync(cancellationToken);
+    }
+
+    public async Task<PagedResult<EmployeeSnapshot>> ListPagedAsync(
+        PageRequest page,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(page);
+
+        var query = db.Employees.AsNoTracking().OrderBy(e => e.EmployeeCode);
+
+        // Đếm trước khi phân trang — tổng phải là tổng THẬT, không phải số dòng trang này.
+        var total = await query.CountAsync(cancellationToken).ConfigureAwait(false);
+
+        var items = await query
+            .Skip(page.Skip)
+            .Take(page.Size)
+            .SelectSnapshots()
+            .ToListAsync(cancellationToken)
+            .ConfigureAwait(false);
+
+        return new PagedResult<EmployeeSnapshot>(items, total);
     }
 
     public async Task<EmployeeSnapshot?> FindByIdAsync(

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class PayWorkdayCalendarRepository(AppDbContext db) : IPayWorkdayCalendarRepository
+internal sealed class PayWorkdayCalendarRepository(PayDbContext db) : IPayWorkdayCalendarRepository
 {
     public async Task<decimal> ResolveStandardWorkDaysAsync(
         string periodYm,

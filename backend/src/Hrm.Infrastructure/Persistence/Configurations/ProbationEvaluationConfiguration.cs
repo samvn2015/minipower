@@ -9,7 +9,7 @@ internal sealed class ProbationOutcomeConfiguration : IEntityTypeConfiguration<P
 {
     public void Configure(EntityTypeBuilder<ProbationOutcome> builder)
     {
-        builder.ToTable("prb_outcome");
+        builder.ToTable("prb_outcome", "prb");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(32);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(128);
@@ -22,7 +22,7 @@ internal sealed class ProbationCriterionConfiguration : IEntityTypeConfiguration
 {
     public void Configure(EntityTypeBuilder<ProbationCriterion> builder)
     {
-        builder.ToTable("prb_criterion");
+        builder.ToTable("prb_criterion", "prb");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(256);
@@ -35,7 +35,7 @@ internal sealed class ProbationExtendDurationConfiguration : IEntityTypeConfigur
 {
     public void Configure(EntityTypeBuilder<ProbationExtendDuration> builder)
     {
-        builder.ToTable("prb_extend_duration");
+        builder.ToTable("prb_extend_duration", "prb");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(32);
         builder.Property(x => x.Name).IsRequired().HasMaxLength(128);
@@ -48,7 +48,7 @@ internal sealed class ProbationEvaluationConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<ProbationEvaluation> builder)
     {
-        builder.ToTable("prb_evaluation");
+        builder.ToTable("prb_evaluation", "prb");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Status).HasConversion<string>().HasMaxLength(16);

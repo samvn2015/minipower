@@ -40,7 +40,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("emp_education_level", (string)null);
+                    b.ToTable("emp_education_level", "emp");
 
                     b.HasData(
                         new
@@ -104,7 +104,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("OccurredAtUtc");
 
-                    b.ToTable("emp_audit_log", (string)null);
+                    b.ToTable("emp_audit_log", "shared");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Employees.Entities.Employee", b =>
@@ -171,7 +171,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("TaxId")
                         .IsUnique();
 
-                    b.ToTable("emp_employee", (string)null);
+                    b.ToTable("emp_employee", "emp");
 
                     b.HasData(
                         new
@@ -223,7 +223,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("emp_contract", (string)null);
+                    b.ToTable("emp_contract", "emp");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Employees.Entities.LineManagerChangeRequest", b =>
@@ -266,7 +266,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EmployeeId", "Status");
 
-                    b.ToTable("emp_line_manager_change", (string)null);
+                    b.ToTable("emp_line_manager_change", "emp");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Employees.Entities.OrgUnit", b =>
@@ -287,7 +287,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("emp_org_unit", (string)null);
+                    b.ToTable("emp_org_unit", "emp");
 
                     b.HasData(
                         new
@@ -322,7 +322,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("emp_seniority_rule", (string)null);
+                    b.ToTable("emp_seniority_rule", "emp");
 
                     b.HasData(
                         new
@@ -346,7 +346,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("RoleCode");
 
-                    b.ToTable("iam_account_role", (string)null);
+                    b.ToTable("iam_account_role", "iam");
 
                     b.HasData(
                         new
@@ -409,7 +409,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("IdpSubject")
                         .IsUnique();
 
-                    b.ToTable("iam_identity_account", (string)null);
+                    b.ToTable("iam_identity_account", "iam");
 
                     b.HasData(
                         new
@@ -453,7 +453,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasKey("RoleCode");
 
-                    b.ToTable("iam_role", (string)null);
+                    b.ToTable("iam_role", "iam");
 
                     b.HasData(
                         new
@@ -508,7 +508,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeId", "Year")
                         .IsUnique();
 
-                    b.ToTable("lev_leave_balance", (string)null);
+                    b.ToTable("lev_leave_balance", "lev");
 
                     b.HasData(
                         new
@@ -565,7 +565,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LeaveRequestId");
 
-                    b.ToTable("lev_notification_outbox", (string)null);
+                    b.ToTable("lev_notification_outbox", "lev");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Leave.Entities.LeaveRequest", b =>
@@ -651,7 +651,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("LeaveTypeCode");
 
-                    b.ToTable("lev_leave_request", (string)null);
+                    b.ToTable("lev_leave_request", "lev");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Leave.Entities.LeaveType", b =>
@@ -678,7 +678,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasKey("Code");
 
-                    b.ToTable("lev_leave_type", (string)null);
+                    b.ToTable("lev_leave_type", "lev");
 
                     b.HasData(
                         new
@@ -782,7 +782,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("CaseId");
 
-                    b.ToTable("lif_access_lock_outbox", (string)null);
+                    b.ToTable("lif_access_lock_outbox", "lif");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Lifecycle.Entities.LifOffChecklistItem", b =>
@@ -815,7 +815,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("lif_off_checklist_item", (string)null);
+                    b.ToTable("lif_off_checklist_item", "lif");
 
                     b.HasData(
                         new
@@ -885,7 +885,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("OffboardingCaseId", "ItemCode")
                         .IsUnique();
 
-                    b.ToTable("lif_off_checklist_tick", (string)null);
+                    b.ToTable("lif_off_checklist_tick", "lif");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Lifecycle.Entities.LifOffboardingCase", b =>
@@ -963,7 +963,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("lif_offboarding_case", (string)null);
+                    b.ToTable("lif_offboarding_case", "lif");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Lifecycle.Entities.LifOnChecklistItem", b =>
@@ -996,7 +996,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("lif_on_checklist_item", (string)null);
+                    b.ToTable("lif_on_checklist_item", "lif");
 
                     b.HasData(
                         new
@@ -1057,7 +1057,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("OnboardingCaseId", "ItemCode")
                         .IsUnique();
 
-                    b.ToTable("lif_on_checklist_tick", (string)null);
+                    b.ToTable("lif_on_checklist_tick", "lif");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Lifecycle.Entities.LifOnboardingCase", b =>
@@ -1128,7 +1128,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("Status");
 
-                    b.ToTable("lif_onboarding_case", (string)null);
+                    b.ToTable("lif_onboarding_case", "lif");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Payroll.Entities.PayAllowanceCatalog", b =>
@@ -1155,7 +1155,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("pay_allowance_catalog", (string)null);
+                    b.ToTable("pay_allowance_catalog", "pay");
 
                     b.HasData(
                         new
@@ -1223,7 +1223,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeId", "Code")
                         .IsUnique();
 
-                    b.ToTable("pay_contract_allowance", (string)null);
+                    b.ToTable("pay_contract_allowance", "pay");
 
                     b.HasData(
                         new
@@ -1262,7 +1262,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("pay_contract_salary", (string)null);
+                    b.ToTable("pay_contract_salary", "pay");
 
                     b.HasData(
                         new
@@ -1326,7 +1326,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PeriodYm");
 
-                    b.ToTable("pay_export_outbox", (string)null);
+                    b.ToTable("pay_export_outbox", "pay");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Payroll.Entities.PayLine", b =>
@@ -1411,7 +1411,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("PeriodId", "EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("pay_line", (string)null);
+                    b.ToTable("pay_line", "pay");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Payroll.Entities.PayMonthlyAllowance", b =>
@@ -1447,7 +1447,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("PeriodYm", "EmployeeId", "Code")
                         .IsUnique();
 
-                    b.ToTable("pay_monthly_allowance", (string)null);
+                    b.ToTable("pay_monthly_allowance", "pay");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Payroll.Entities.PayPeriod", b =>
@@ -1485,7 +1485,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("PeriodYm")
                         .IsUnique();
 
-                    b.ToTable("pay_period", (string)null);
+                    b.ToTable("pay_period", "pay");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Payroll.Entities.PayRegulation", b =>
@@ -1513,7 +1513,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("pay_regulation", (string)null);
+                    b.ToTable("pay_regulation", "pay");
 
                     b.HasData(
                         new
@@ -1601,7 +1601,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("PeriodYm")
                         .IsUnique();
 
-                    b.ToTable("pay_workday_calendar", (string)null);
+                    b.ToTable("pay_workday_calendar", "pay");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Probation.Entities.ProbationCriterion", b =>
@@ -1631,7 +1631,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("prb_criterion", (string)null);
+                    b.ToTable("prb_criterion", "prb");
 
                     b.HasData(
                         new
@@ -1718,7 +1718,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("EmployeeId", "Status");
 
-                    b.ToTable("prb_evaluation", (string)null);
+                    b.ToTable("prb_evaluation", "prb");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Probation.Entities.ProbationExtendDuration", b =>
@@ -1751,7 +1751,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("prb_extend_duration", (string)null);
+                    b.ToTable("prb_extend_duration", "prb");
 
                     b.HasData(
                         new
@@ -1801,7 +1801,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("Code")
                         .IsUnique();
 
-                    b.ToTable("prb_outcome", (string)null);
+                    b.ToTable("prb_outcome", "prb");
 
                     b.HasData(
                         new
@@ -1895,7 +1895,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("EmployeeId", "Kind", "ProbationEndDate")
                         .IsUnique();
 
-                    b.ToTable("prb_reminder", (string)null);
+                    b.ToTable("prb_reminder", "prb");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Timekeeping.Entities.TimesheetImportBatch", b =>
@@ -1947,7 +1947,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
 
                     b.HasIndex("PeriodYm");
 
-                    b.ToTable("tim_import_batch", (string)null);
+                    b.ToTable("tim_import_batch", "tim");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Timekeeping.Entities.TimesheetImportRow", b =>
@@ -2005,7 +2005,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("BatchId", "RowNumber")
                         .IsUnique();
 
-                    b.ToTable("tim_import_row", (string)null);
+                    b.ToTable("tim_import_row", "tim");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Timekeeping.Entities.TimesheetLine", b =>
@@ -2062,7 +2062,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("PeriodId", "EmployeeId")
                         .IsUnique();
 
-                    b.ToTable("tim_timesheet_line", (string)null);
+                    b.ToTable("tim_timesheet_line", "tim");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Timekeeping.Entities.TimesheetPeriod", b =>
@@ -2103,7 +2103,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("PeriodYm")
                         .IsUnique();
 
-                    b.ToTable("tim_period", (string)null);
+                    b.ToTable("tim_period", "tim");
                 });
 
             modelBuilder.Entity("Hrm.Domain.Timekeeping.Entities.TimesheetTemplateColumn", b =>
@@ -2141,7 +2141,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("TemplateVersionId", "ColumnKey")
                         .IsUnique();
 
-                    b.ToTable("tim_template_column", (string)null);
+                    b.ToTable("tim_template_column", "tim");
 
                     b.HasData(
                         new
@@ -2241,7 +2241,7 @@ namespace Hrm.Infrastructure.Persistence.Migrations
                     b.HasIndex("VersionCode")
                         .IsUnique();
 
-                    b.ToTable("tim_template_version", (string)null);
+                    b.ToTable("tim_template_version", "tim");
 
                     b.HasData(
                         new

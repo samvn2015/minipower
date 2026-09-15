@@ -1,5 +1,7 @@
 using Hrm.Domain.Lifecycle;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Domain.Lifecycle.Repositories;
 
 public sealed record LifOnboardingCreateModel(
@@ -41,7 +43,16 @@ public interface ILifOnboardingRepository
         LifOnboardingCreateModel model,
         CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Đọc TOÀN BỘ — dành cho job N+3 duyệt hết case. **Không** dùng cho endpoint API:
+    /// xem <c>ListPagedAsync</c> (code-review S1).
+    /// </summary>
     Task<IReadOnlyList<LifOnboardingSnapshot>> ListAsync(CancellationToken cancellationToken = default);
+
+    /// <summary>Một trang danh sách + tổng số dòng (S1).</summary>
+    Task<PagedResult<LifOnboardingSnapshot>> ListPagedAsync(
+        PageRequest page,
+        CancellationToken cancellationToken = default);
 
     Task<LifOnboardingSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

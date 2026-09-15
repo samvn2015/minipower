@@ -59,7 +59,7 @@ public sealed class CreateLifOffboardingCommandHandler(
 public sealed class ConfirmLifOffboardingNCommandHandler(
     IIdentityAccountReadRepository accounts,
     ILifOffboardingRepository offboardings,
-    IEmpAuditLogRepository auditLogs)
+    ILifAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ConfirmLifOffboardingNCommand, LifOffboardingDto>
 {
     public async Task<LifOffboardingDto> HandleAsync(
@@ -219,7 +219,7 @@ public sealed record RunLifNPlus3LocksCommand(
 public sealed class ApplyLifOffboardingLocksCommandHandler(
     IIdentityAccountReadRepository accounts,
     ILifOffboardingRepository offboardings,
-    IEmpAuditLogRepository auditLogs)
+    ILifAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ApplyLifOffboardingLocksCommand, LifOffboardingDto>
 {
     public async Task<LifOffboardingDto> HandleAsync(
@@ -272,7 +272,7 @@ public sealed class ApplyLifOffboardingLocksCommandHandler(
     }
 
     internal static Task AppendLockAuditAsync(
-        IEmpAuditLogRepository auditLogs,
+        ILifAuditLogRepository auditLogs,
         LifOffboardingSnapshot snap,
         string actorIdpSubject,
         CancellationToken cancellationToken) =>
@@ -292,7 +292,7 @@ public sealed class RunLifNPlus3LocksCommandHandler(
     IIdentityAccountReadRepository accounts,
     ILifOffboardingRepository offboardings,
     IHostRoleGate hostRoleGate,
-    IEmpAuditLogRepository auditLogs)
+    ILifAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RunLifNPlus3LocksCommand, LifNPlus3LockRunResult>
 {
     public async Task<LifNPlus3LockRunResult> HandleAsync(
@@ -352,6 +352,17 @@ public sealed class RunLifNPlus3LocksCommandHandler(
                 auditLogs, snap, request.ActorIdpSubject, cancellationToken);
             locked++;
         }
+
+        // ADR-005 RK-06 — dấu vết mỗi lần job chạy, kể cả khi không khoá case nào.
+        await auditLogs.AppendAsync(
+            new EmpAuditLogEntry(
+                EmpAuditActions.LifNPlus3LocksJobRan,
+                null,
+                null,
+                request.ActorIdpSubject,
+                $"asOf={asOf:yyyy-MM-dd};locked={locked};skippedNotDue={skippedNotDue};"
+                + $"skippedAlready={skippedAlready};skippedNoN={skippedNoN}"),
+            cancellationToken);
 
         return new LifNPlus3LockRunResult(asOf, locked, skippedNotDue, skippedAlready, skippedNoN);
     }

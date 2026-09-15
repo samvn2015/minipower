@@ -2,11 +2,12 @@ using Hrm.Domain.Probation;
 using Hrm.Domain.Probation.Entities;
 using Hrm.Domain.Probation.Repositories;
 using Hrm.Infrastructure.Persistence;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class ProbationReminderRepository(AppDbContext db) : IProbationReminderRepository
+internal sealed class ProbationReminderRepository(PrbDbContext db) : IProbationReminderRepository
 {
     public Task<bool> ExistsAsync(
         Guid employeeId,
@@ -45,17 +46,26 @@ internal sealed class ProbationReminderRepository(AppDbContext db) : IProbationR
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    public async Task<IReadOnlyList<ProbationReminderSnapshot>> ListAsync(
-        ProbationReminderKind? kind = null,
+    public async Task<PagedResult<ProbationReminderSnapshot>> ListPagedAsync(
+        ProbationReminderKind? kind,
+        PageRequest page,
         CancellationToken cancellationToken = default)
     {
+        ArgumentNullException.ThrowIfNull(page);
+
         var q = db.ProbationReminders.AsNoTracking().AsQueryable();
         if (kind is { } k)
             q = q.Where(x => x.Kind == k);
 
-        var rows = await q.OrderByDescending(x => x.CreatedAtUtc).ToListAsync(cancellationToken)
+        // Tổng đếm SAU khi lọc kind, TRƯỚC khi cắt trang — tổng phải khớp bộ lọc.
+        var total = await q.CountAsync(cancellationToken).ConfigureAwait(false);
+
+        var rows = await q.OrderByDescending(x => x.CreatedAtUtc)
+            .Skip(page.Skip)
+            .Take(page.Size)
+            .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
-        return rows.Select(x => new ProbationReminderSnapshot(
+        var items = rows.Select(x => new ProbationReminderSnapshot(
             x.Id,
             x.Kind,
             x.EmployeeId,
@@ -69,5 +79,7 @@ internal sealed class ProbationReminderRepository(AppDbContext db) : IProbationR
             x.EmailTo,
             x.Channel,
             x.CreatedAtUtc)).ToList();
+
+        return new PagedResult<ProbationReminderSnapshot>(items, total);
     }
 }

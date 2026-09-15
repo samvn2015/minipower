@@ -1,5 +1,7 @@
 using Hrm.Domain.Lifecycle;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Domain.Lifecycle.Repositories;
 
 public sealed record LifOffboardingCreateModel(
@@ -45,7 +47,13 @@ public interface ILifOffboardingRepository
 
     Task<IReadOnlyList<LifOffboardingSnapshot>> ListOpenAsync(CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Đọc TOÀN BỘ — dành cho job N+3 duyệt hết case. Endpoint <c>GET /v1/lif/offboarding</c>
+    /// dùng <see cref="ListOpenAsync"/> nên **không cần phân trang**: tập case đang mở có
+    /// giới hạn tự nhiên theo quy trình, không tích luỹ theo thời gian (code-review S1).
+    /// </summary>
     Task<IReadOnlyList<LifOffboardingSnapshot>> ListAsync(CancellationToken cancellationToken = default);
+
 
     Task<LifOffboardingSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
 

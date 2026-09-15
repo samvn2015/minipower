@@ -1,3 +1,4 @@
+using Hrm.Domain.Shared.Paging;
 using Hrm.Application.Lifecycle.Commands;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
@@ -89,6 +90,12 @@ public sealed class CloseLifOnboardingCommandHandlerTests
         public Task<IReadOnlyList<LifOnboardingSnapshot>> ListAsync(
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<LifOnboardingSnapshot>>([]);
+
+        public Task<PagedResult<LifOnboardingSnapshot>> ListPagedAsync(
+            PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new PagedResult<LifOnboardingSnapshot>([], 0));
+
 
         public Task<LifOnboardingSnapshot?> FindByIdAsync(
             Guid id,

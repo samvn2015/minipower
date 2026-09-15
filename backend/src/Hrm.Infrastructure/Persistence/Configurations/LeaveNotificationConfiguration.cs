@@ -8,7 +8,7 @@ internal sealed class LeaveNotificationConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<LeaveNotification> builder)
     {
-        builder.ToTable("lev_notification_outbox");
+        builder.ToTable("lev_notification_outbox", "lev");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EventType).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Channel).IsRequired().HasMaxLength(32);

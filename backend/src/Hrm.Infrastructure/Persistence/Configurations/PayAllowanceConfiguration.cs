@@ -11,7 +11,7 @@ internal sealed class PayAllowanceCatalogConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<PayAllowanceCatalog> builder)
     {
-        builder.ToTable("pay_allowance_catalog");
+        builder.ToTable("pay_allowance_catalog", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(64);
         builder.HasIndex(x => x.Code).IsUnique();
@@ -60,7 +60,7 @@ internal sealed class PayContractAllowanceConfiguration : IEntityTypeConfigurati
 {
     public void Configure(EntityTypeBuilder<PayContractAllowance> builder)
     {
-        builder.ToTable("pay_contract_allowance");
+        builder.ToTable("pay_contract_allowance", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Code).IsRequired().HasMaxLength(64);
@@ -83,7 +83,7 @@ internal sealed class PayMonthlyAllowanceConfiguration : IEntityTypeConfiguratio
 {
     public void Configure(EntityTypeBuilder<PayMonthlyAllowance> builder)
     {
-        builder.ToTable("pay_monthly_allowance");
+        builder.ToTable("pay_monthly_allowance", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.PeriodYm).IsRequired().HasMaxLength(7);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
@@ -97,7 +97,7 @@ internal sealed class PayContractSalaryConfiguration : IEntityTypeConfiguration<
 {
     public void Configure(EntityTypeBuilder<PayContractSalary> builder)
     {
-        builder.ToTable("pay_contract_salary");
+        builder.ToTable("pay_contract_salary", "pay");
         builder.HasKey(x => x.Id);
         builder.Property(x => x.EmployeeCode).IsRequired().HasMaxLength(64);
         builder.Property(x => x.Amount).HasPrecision(18, 2);

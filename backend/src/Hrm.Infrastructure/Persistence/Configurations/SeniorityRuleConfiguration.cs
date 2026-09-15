@@ -10,7 +10,7 @@ internal sealed class SeniorityRuleConfiguration : IEntityTypeConfiguration<Seni
 {
     public void Configure(EntityTypeBuilder<SeniorityRule> builder)
     {
-        builder.ToTable("emp_seniority_rule");
+        builder.ToTable("emp_seniority_rule", "emp");
         builder.HasKey(x => x.Code);
         builder.Property(x => x.Code).HasMaxLength(32);
         builder.Property(x => x.BasisType).HasConversion<string>().HasMaxLength(32);

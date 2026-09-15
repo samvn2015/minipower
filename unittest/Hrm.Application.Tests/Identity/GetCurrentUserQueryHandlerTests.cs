@@ -107,6 +107,12 @@ public sealed class GetCurrentUserQueryHandlerTests
             CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<Domain.Employees.Repositories.EmployeeSnapshot>>([]);
 
+        public Task<Hrm.Domain.Shared.Paging.PagedResult<Domain.Employees.Repositories.EmployeeSnapshot>> ListPagedAsync(
+            Hrm.Domain.Shared.Paging.PageRequest page,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(new Hrm.Domain.Shared.Paging.PagedResult<Domain.Employees.Repositories.EmployeeSnapshot>([], 0));
+
+
         public Task<Domain.Employees.Repositories.EmployeeSnapshot?> FindByIdAsync(
             Guid id,
             CancellationToken cancellationToken = default)

@@ -68,7 +68,7 @@ public sealed record GetPayslipQuery(string? ActorIdpSubject, Guid PayslipId) : 
 public sealed class GetPayslipQueryHandler(
     IIdentityAccountReadRepository accounts,
     IPayPeriodRepository payPeriods,
-    IEmpAuditLogRepository auditLogs)
+    IPayAuditLogRepository auditLogs)
     : IAsyncQueryHandler<GetPayslipQuery, PayPayslipDto>
 {
     public async Task<PayPayslipDto> HandleAsync(

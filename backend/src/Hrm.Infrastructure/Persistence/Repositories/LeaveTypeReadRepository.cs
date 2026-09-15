@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LeaveTypeReadRepository(AppDbContext db) : ILeaveTypeReadRepository
+internal sealed class LeaveTypeReadRepository(LevDbContext db) : ILeaveTypeReadRepository
 {
     public async Task<IReadOnlyList<LeaveTypeSnapshot>> ListActiveAsync(
         CancellationToken cancellationToken = default) =>

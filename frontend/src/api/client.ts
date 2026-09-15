@@ -117,6 +117,20 @@ function unwrap<T>(body: T | ApiEnvelope<T>): T {
   return body as T;
 }
 
+/** Đăng nhập username/password DEV/UAT — đối chiếu `DevAuth:Accounts` phía Host. */
+export async function loginWithPassword(username: string, password: string): Promise<string> {
+  const body = await apiFetch<{ accessToken: string } | ApiEnvelope<{ accessToken: string }>>(
+    "/dev/login",
+    { method: "POST", body: JSON.stringify({ username, password }) },
+  );
+  const token =
+    "accessToken" in body && typeof body.accessToken === "string"
+      ? body.accessToken
+      : unwrap(body as ApiEnvelope<{ accessToken: string }>).accessToken;
+  setStoredToken(token);
+  return token;
+}
+
 export async function fetchDevToken(sub: string, email?: string): Promise<string> {
   const params = new URLSearchParams({ sub });
   if (email) params.set("email", email);

@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-internal sealed class LeaveRequestRepository(AppDbContext db) : ILeaveRequestRepository
+internal sealed class LeaveRequestRepository(LevDbContext db) : ILeaveRequestRepository
 {
     public async Task<Guid> CreateAsync(
         LeaveRequestCreateModel model,
