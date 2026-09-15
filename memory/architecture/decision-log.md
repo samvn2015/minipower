@@ -167,3 +167,187 @@
 - Affects: identity · Gateway · DOC-10 · DOC-17 · `hrm-backend` JWT config
 - Trace: `docs/04-platform/DOC-09-adr/ADR-007-idp-oidc.md` · `memory/delivery/decision-log.md` DEC-DLV-010
 - Confidence: cao *(brand)* · vừa *(Lark federation Google/Apple)*
+
+### DEC-ARC-016 — Microservices là yêu cầu khách hàng; bỏ DR/DC · [2026-09-07]
+- Status: accepted *(PGD trả lời OQ-ARC-008 + OQ-ARC-009 sau [deliberation B1](../../brainstorm/2026-09-07-arc-b1-monolith-vs-microservices.md))*
+- Context: Deliberation B1 dừng ở hai câu chặn — lý do gốc chỉ đạo microservices, và đội ops cho 7 service + DR hai DC.
+- Options: *(không phải lựa chọn phương án — đây là PGD cung cấp dữ kiện còn thiếu)*
+- Decision:
+  - **OQ-ARC-008 → microservices là _ý kiến khách hàng_**, không phải lựa chọn kỹ thuật nội bộ.
+  - **OQ-ARC-009 → _không làm DR/DC_ nữa.**
+- Why: khách quyết kiến trúc mục tiêu; DR/DC bị loại khỏi phạm vi vận hành.
+- Consequences:
+  - **T1 gần như đã có đáp án:** không thể tự đảo ADR-001 sang monolith — đó là cam kết với khách. Muốn đổi phải qua kênh khách hàng, không phải CR nội bộ.
+  - **ADR-003 bị đảo một phần** — §3 (hai site DC-Prod/DC-DR), §4 (replicate Prod→DR), §5 (job disable trên DR) không còn áp dụng. ADR-003 ghi rõ *"Không sửa khi Accepted — đảo = ADR mới"* → **phải soạn ADR mới supersede**.
+  - **R-01 (DOC-14) nhẹ đi đáng kể** — bỏ site thứ hai là bỏ phần lớn gánh vận hành mà góc Operations lo nhất. Microservices trở nên khả thi hơn so với giả định trong deliberation.
+  - **OQ-ARC-002 / BLK-002 (RTO/RPO) đổi bản chất** — không còn DR site thì RPO replicate hết nghĩa; RTO tính theo khôi phục trong một DC.
+  - DOC-17 §DR và DOC-13 NFR-012 phải sửa theo ADR mới.
+  - **Chưa rõ:** bỏ DR/DC có kèm bỏ luôn cặp Active/Standby trong **một** DC (ADR-003 §2) không — cần PGD xác nhận trước khi soạn ADR.
+- Affects: ADR-001 · **ADR-003** · DOC-13 NFR-012 · DOC-17 · DOC-14 R-01 · memory/delivery BLK-002
+- Trace: OQ-ARC-008 · OQ-ARC-009 · DEC-ARC-003 · DEC-ARC-004 · deliberation B1
+- Confidence: cao *(dữ kiện từ PGD)* · vừa *(phạm vi đảo ADR-003 — còn câu hỏi Active/Standby)*
+
+### DEC-ARC-017 — ADR-010: 24/7 + A/S một DC, bỏ DR/DC · [2026-09-07]
+- Status: accepted *(PGD «vận hành 24/7, cặp active/standby trong cùng 1 DC»)*
+- Context: DEC-ARC-016 chốt bỏ DR/DC nhưng chưa rõ có bỏ luôn Active/Standby trong DC không. PGD xác nhận **giữ** 24/7 và A/S.
+- Options: G 24/7 + A/S + DR/DC hai site *(ADR-003)* · **K 24/7 + A/S một DC, backup/restore cho thảm họa** · J một DC chỉ RAID/backup · I Active/Active hai DC
+- Decision: chọn **K** → soạn **ADR-010**, supersede **ADR-003 §3–5**, giữ §1–2
+- Why (loại G vì đội ops hai site không tồn tại — DOC-14 R-01/A-01; loại J vì không đạt 24/7; loại I vì double-job, conflict chốt công/lương — đã loại từ ADR-003)
+- Consequences:
+  - Bỏ site thứ hai, bỏ replicate xuyên site, bỏ runbook chuyển site.
+  - Mất cả DC → **ngừng phục vụ đến khi restore**. Rủi ro PGD chấp nhận có ý thức.
+  - **NFR-012 tách hai loại RTO**: failover trong DC (nhanh) vs restore khi mất DC (chậm). RPO replicate xuyên site **không còn đối tượng** → OQ-ARC-002 / BLK-002 phải phát biểu lại chứ không chỉ điền số.
+  - Nợ mới: chu kỳ backup, nơi lưu off-site, thời gian restore mục tiêu — Ops/IT.
+  - Phương án K **không có** trong bảng options của ADR-003 (ADR-003 chỉ xét J); đây là điểm mới, không phải chọn lại phương án cũ.
+  - Nếu khách từng được cam kết DR/DC → là **thay đổi cam kết**, phải qua khách (cùng kênh với OQ-ARC-008).
+- Affects: **ADR-003 §3–5** · ADR-010 (mới) · DOC-13 NFR-012 · DOC-17 · DOC-08 SAD · DOC-14 R-01 · BLK-002
+- Trace: DEC-ARC-016 · DEC-ARC-004 · OQ-ARC-002 · OQ-ARC-009 · deliberation B1
+- Confidence: cao
+
+### DEC-ARC-018 — Bỏ DR/DC là yêu cầu khách hàng · ADR-010 v0.2 · [2026-09-07]
+- Status: accepted *(PGD «khách hàng yêu cầu bỏ DR/DC»)*
+- Context: ADR-010 v0.1 ghi rủi ro *"nếu khách từng được cam kết DR/DC thì đây là thay đổi cam kết"*. PGD làm rõ nguồn gốc.
+- Options: *(không chọn phương án — bổ sung dữ kiện nguồn gốc yêu cầu)*
+- Decision: bỏ DR/DC **do khách hàng yêu cầu**, không phải quyết định nội bộ cắt chi phí → ADR-010 lên **v0.2**
+- Why: đặt yêu cầu này cùng thẩm quyền với ràng buộc microservices (OQ-ARC-008) — cả hai từ khách
+- Consequences:
+  - **Rủi ro "vi phạm cam kết" đóng.** Ngược lại, **giữ** hai site mới là làm sai yêu cầu khách.
+  - Rủi ro còn lại chuyển thành **kỳ vọng**: cần khách xác nhận bằng văn bản đã hiểu hệ quả — mất DC là ngừng phục vụ đến khi restore.
+  - **Quan sát cần đưa lại khách:** khách yêu cầu microservices (tăng phức tạp vận hành) *đồng thời* bỏ DR/DC (giảm chịu thảm họa) — hai yêu cầu kéo ngược chiều. Không sai, nhưng nên xác nhận khách hiểu.
+  - DOC-02 luồng phê duyệt: cần dấu vết yêu cầu của khách trong `assets/` để trace, hiện **chưa có file gốc**.
+- Affects: ADR-010 v0.2 · DOC-13 NFR-012 · DOC-17 · quan hệ khách hàng
+- Trace: DEC-ARC-017 · DEC-ARC-016 · OQ-ARC-008 · OQ-ARC-009
+- Confidence: cao *(dữ kiện từ PGD)* · thấp *(chưa có văn bản gốc từ khách trong assets/)*
+
+### DEC-ARC-019 — Backup sang máy Standby; khách đã ký; lý do bỏ DR/DC là chi phí · [2026-09-07]
+- Status: accepted *(PGD: «backup sang máy standby» · «khách có văn bản xác nhận đã hiểu, bỏ do chi phí quá cao»)*
+- Context: ADR-010 v0.2 để mở hai điểm — đích lưu backup, và văn bản xác nhận của khách.
+- Options: *(bổ sung dữ kiện, không chọn phương án)*
+- Decision:
+  - **Đích backup = máy Standby** (cùng DC). ADR-010 §4 · DOC-17 §2.2 · NFR-012d.
+  - **Khách đã ký văn bản** hiểu hệ quả → rủi ro kỳ vọng đóng.
+  - **Lý do bỏ DR/DC = chi phí hai site quá cao** (không phải gánh ops như v0.1 suy đoán).
+- Why: khách chịu chi phí, chọn mức bảo vệ thấp hơn.
+- Consequences:
+  - **RK-01 mở (OQ-ARC-012 · chặn go-live):** Standby ở cùng DC ⇒ mất DC là **mất luôn backup**. **NFR-012c hiện không thể đạt**; mất DC = **mất dữ liệu**, không phải ngừng phục vụ tạm thời.
+  - **Lệch phạm vi văn bản khách đã ký:** khách xác nhận ở mức *"ngừng phục vụ đến khi restore"*, không phải *"mất dữ liệu"*. Chọn (a) thì phải xác nhận lại với khách ở đúng mức.
+  - Hai lựa chọn cho PGD: **(a)** chấp nhận mất dữ liệu, phát biểu lại ADR-010 §6 + DOC-13 NFR-012c + xác nhận lại với khách · **(b)** thêm bản sao lạnh ngoài DC — rẻ hơn DR site nhiều bậc, giữ nguyên ý nghĩa §2.2.
+  - Runbook "mất cả DC" trong DOC-17 §8 **treo** đến khi giải OQ-ARC-012.
+  - Văn bản khách nên đưa vào `assets/public/` để trace (hiện chưa có file).
+- Affects: ADR-010 v0.3 · DOC-13 NFR-012c/d · DOC-17 §2.2 + §8 · OQ-ARC-012 · quan hệ khách hàng
+- Trace: DEC-ARC-017 · DEC-ARC-018 · OQ-ARC-002 · RK-01
+- Confidence: cao *(dữ kiện từ PGD)* · **RK-01 là suy luận kỹ thuật, tin cậy cao**
+
+### DEC-ARC-020 — Mở ADR-011: lộ trình tách service theo wave · [2026-09-07]
+- Status: **proposed** *(chưa chốt — chờ PGD)*
+- Context: Deliberation B1 đã khung lại vấn đề; DEC-ARC-016 + ADR-010 gỡ hai câu chặn. Đích đến bị khoá bởi khách (microservices), câu còn lại là **lộ trình**.
+- Options: L Big bang tách 7 service · **M Hàng rào dữ liệu trước, tách deploy sau** · N Tách deploy trước, DB sau · O Giữ monolith
+- Decision: **đề xuất M** — chưa Accepted
+- Why (loại O vì trái yêu cầu khách; loại L vì đội chưa có, rủi ro trượt 2027 cao nhất; **loại N vì 7 service chung một DB = distributed monolith — vẫn không có hàng rào NFR-002 mà đã gánh trọn chi phí vận hành phân tán**)
+- Consequences:
+  - W1 tách schema + DB role theo bounded context → **NFR-002 có hàng rào thật sớm nhất, chi phí thấp nhất**, không phụ thuộc tiến độ tuyển người.
+  - W2 cưỡng chế ranh giới bằng assembly + test kiến trúc. W3 tách PAY + Gateway. W4+ phần còn lại.
+  - Hệ thống ở trạng thái **lai** nhiều wave → DOC-08 cần quy ước phân biệt *hiện tại* vs *đích đến*, nếu không doc-review chặn lần nữa.
+  - RK-02 W1 đụng 56 migration + 28 repository → slice riêng, có rollback.
+  - RK-03 khách có thể hiểu W1/W2 là "chưa làm" → cần trình lộ trình.
+  - **RK-04 ADR-005 (saga TIM→PAY) còn Proposed nhưng W3 cần** → phải chốt trước W3.
+- Affects: ADR-011 (mới) · DOC-08 · DOC-11 · DOC-12 · DOC-14 · ADR-005
+- Trace: deliberation B1 · DEC-ARC-016 · ADR-010 · doc-review 2026-09-07 Blocker B1/B2/B3
+- Confidence: vừa *(lộ trình hợp lý nhưng W1 chưa được xác minh kỹ thuật — OQ-ARC-011)*
+
+### DEC-ARC-021 — Ký DOC-11 v0.2 + DOC-12 v0.2 · [2026-09-07]
+- Status: accepted *(PGD ký sau regression doc-review)*
+- Context: Regression review đóng B2/B3 về nội dung nhưng mở Blocker F5 — hai DOC mang nhãn Chốt v0.2 mà chưa ai ký, không có DEC. Trợ lý đã hạ về Draft.
+- Options: A Giữ Draft đến khi có đội review · **B PGD ký v0.2 ngay** · C Rollback về v0.1
+- Decision: chọn **B** — ký v0.2, nhãn trở lại **Chốt**
+- Why (loại C vì v0.1 mô tả hệ thống không tồn tại; loại A vì không có đội review độc lập, giữ Draft chỉ trì hoãn)
+- Consequences:
+  - DOC-11 §9 và DOC-12 §9 thêm dòng ký **2026-09-07**; dòng v0.1 giữ nguyên làm lịch sử.
+  - F5 **đóng**. `02-baseline/` nay có phiên bản hợp lệ để lấy — nhưng vẫn chờ B1.
+  - 3 Minor của regression chưa sửa: DOC-11 §2 trỏ ADR đang Proposed *(nay đã Accepted — DEC-ARC-022)*, §3 sinh từ snapshot không phải DB thật, §4 tên khái niệm cũ.
+- Affects: DOC-11 v0.2 · DOC-12 v0.2 · BLK-004
+- Trace: doc-review regression 2026-09-07 F5 · DEC-ARC-008 · DEC-ARC-010
+- Confidence: cao
+
+### DEC-ARC-022 — ADR-011 Accepted: lộ trình wave (phương án M) · [2026-09-07]
+- Status: accepted *(PGD chốt)*
+- Context: B1 là Blocker cuối chặn baseline. ADR-011 dựng 4 phương án sau khi DEC-ARC-016 khoá đích đến và ADR-010 gỡ gánh DR/DC.
+- Options: L Big bang · **M Hàng rào dữ liệu trước, tách deploy sau** · N Tách deploy trước DB sau · O Giữ monolith
+- Decision: chọn **M** → ADR-011 **Proposed → Accepted**
+- Why (loại O trái yêu cầu khách; loại L vì đội chưa có, rủi ro trượt 2027 cao nhất; loại N vì 7 service chung một DB = distributed monolith, vẫn không có hàng rào NFR-002 mà đã gánh trọn chi phí vận hành)
+- Consequences:
+  - **B1 đóng về mặt quyết định nội bộ.** W1 (schema + DB role theo bounded context) là slice tiếp theo được phép mở.
+  - **OQ-ARC-014 VẪN MỞ** — ADR này là quyết định **nội bộ về cách đi**. Nếu khách đòi đủ 7 service tại go-live 2027 thì M sụp, phải quay lại L. **Cần trình khách trước khi mở W1.**
+  - RK-04: ADR-005 (saga TIM→PAY) còn Proposed, phải chốt trước W3.
+  - DOC-08 cần quy ước phân biệt *kiến trúc hiện tại* vs *đích đến*, nếu không doc-review chặn lại ở lần sau.
+  - RK-02: W1 đụng 56 migration + 28 repository → slice riêng, có rollback.
+- Affects: ADR-011 · DOC-08 · DOC-11 · DOC-12 · DOC-14 · ADR-005 · BLK-004
+- Trace: deliberation B1 · DEC-ARC-016 · ADR-010 · doc-review 2026-09-07 B1
+- Confidence: vừa *(lộ trình chốt, nhưng W1 chưa xác minh kỹ thuật — OQ-ARC-011 — và khách chưa xác nhận — OQ-ARC-014)*
+
+### DEC-ARC-023 — Xác minh OQ-ARC-011: schema + role đủ cho NFR-002 · [2026-09-07]
+- Status: accepted *(kết quả đo, không phải lựa chọn phương án)*
+- Context: ADR-011 W1 dựa trên AS-04 — tin cậy **vừa**, chưa ai kiểm. Sai giả định này thì cả W1 phải thiết kế lại, mà W1 đụng 56 migration + 28 repository (RK-02).
+- Options: *(đo, không chọn)*
+- Decision: **AS-04 đúng** — nâng tin cậy từ *vừa* lên **cao**. W1 giữ nguyên thiết kế.
+- Why: đo thật trên PostgreSQL 16.8, database riêng `hrm_oq011`, 8/8 case đúng kỳ vọng. Quan trọng nhất: **JOIN chéo bị chặn ở tầng DB** và role **không tự nâng quyền** được.
+- Consequences:
+  - **Hàng rào NFR-002 khả thi mà không cần tách service** — nền tảng của phương án M được xác nhận bằng thực nghiệm.
+  - **Phát hiện 1:** app role chỉ có `USAGE` thì **không migrate được** kể cả schema của mình. Cần chốt ở W1: (i) app role có `CREATE`, hay (ii) **migrator role riêng** — nghiêng (ii) vì DOC-17 §2.1 đã ghi *"Prod: pipeline migrate riêng"*. Đã kiểm: cấp `CREATE` **không** làm thủng hàng rào.
+  - **Phát hiện 2:** `pg_catalog` lộ **tên bảng** schema khác (không lộ cột, không lộ dữ liệu). Chuẩn PostgreSQL, không tắt được bằng GRANT. **Không** vi phạm NFR-002 — ghi để audit không bất ngờ.
+  - **Phát hiện 3:** role `admin` có `rolcreaterole=false` → W1 **cần DBA/superuser** provision schema + role. Gộp yêu cầu vào OQ-DLV-003 khi gửi IT.
+  - Database thử nghiệm đã **dọn sạch**; `hrm` thật không bị đụng.
+- Affects: ADR-011 W1 · OQ-ARC-011 *(đóng)* · OQ-DLV-003 · DOC-17 §2.1
+- Trace: AS-04 deliberation B1 · ADR-011 · DEC-ARC-022
+- Confidence: cao *(thực nghiệm)*
+
+### DEC-ARC-024 — W1 hoàn tất; audit theo phương án A · [2026-09-07]
+- Status: accepted *(PGD chọn A sau khi readiness-gate nêu 3 hướng)*
+- Context: W1a/W1b dựng hàng rào nhưng app vẫn nối bằng **một** role `admin` → grant nằm im. W1c tách context thì 4 module ghi audit (EMP/TIM/PRB/LIF, cộng PAY ở query) gặp vấn đề: `AppendAsync` gọi `SaveChanges` của chính DbContext, tách ra sẽ thành **hai transaction**; thêm nữa `IEmpAuditLogRepository` chỉ bind được **một** implementation.
+- Options: **A Map `EmpAuditLog` vào mọi context + tách interface theo module** · B Giữ audit trên `AppDbContext`, chấp nhận hai transaction · C Outbox trong context rồi job đẩy sang `shared`
+- Decision: chọn **A**
+- Why (loại B vì nghiệp vụ commit mà audit fail = sót audit, trái NFR-005 *"0 sót"*; loại C vì thêm job + độ trễ cho thứ chưa cần)
+- Consequences:
+  - **Bảng audit vẫn là MỘT** ở schema `shared` — ①a và DEC-DLV-022/024 nguyên vẹn. Chỉ tách *đường vào*, không tách dữ liệu. `GET /v1/emp/audit-logs?action=` vẫn đọc đủ (đã kiểm).
+  - `EmpAuditLogRepositoryBase(DbContext)` dùng `Set<EmpAuditLog>()`; mỗi context một lớp con + interface đánh dấu (`ITimAuditLogRepository`…). Lệnh nghiệp vụ + audit **cùng một `SaveChanges`**.
+  - Sửa consumer: 2 file TIM · 1 PAY · 1 PRB · 1 LIF · 10 test fake. EMP giữ interface gốc.
+  - **W1 đóng:** 7/7 context có role riêng; 28/28 repository rời `AppDbContext`; `AppDbContext` chỉ còn là migration owner.
+  - **Bài học ghi lại:** map entity từ context khác kéo theo **cả closure navigation**, EF chỉ báo lúc runtime từng cái một (`Employee` → `EducationLevel` → `OrgUnit`). `LevDbContext` phải nạp trọn nhóm `emp` chỉ vì một JOIN lọc line manager → **lập luận mạnh nhất cho W3 thay JOIN bằng API**.
+  - **Đính chính khảo sát:** bản quét "0/28 repository chạm >1 context" **sai** (regex `\bEmployee\b` không khớp `db.Employees`). Đúng là **1/28** — `LeaveRequestRepository`.
+- Affects: 7 DbContext · 28 repository · 5 consumer Application · 10 test · ADR-011 W1 · OQ-ARC-016 *(đóng)*
+- Trace: ADR-011 W1 · DEC-ARC-022 · DEC-ARC-023 · readiness-gate 2026-09-07 (①a ②a ③ii)
+- Confidence: cao *(đo bằng pg_stat_activity + test + endpoint)*
+
+### DEC-ARC-025 — Mở ADR-005: coupling TIM↔PAY không phải saga · [2026-09-07]
+- Status: **proposed** *(chưa chốt — chờ PGD)*
+- Context: RK-04 chặn ADR-011 W3. DOC-08 §4.5 ghi *"saga TIM→PAY"*, §5 ghi *"hàng đợi giữa service TBD"*.
+- Options: **P Đọc guard qua API, không broker** · Q Broker + saga · R TIM publish event, PAY giữ read model · S Đọc thẳng DB chéo
+- Decision: **đề xuất P** — chưa Accepted
+- Why: soi code cho thấy **không có luồng ghi nào trải trên cả hai context**. PAY→TIM và TIM→PAY đều là **đọc guard đồng bộ** (`FindPeriodByYmAsync`, `IPayPeriodGate`). Saga giải một bài toán **không tồn tại**. Loại S vì phá hàng rào W1. Loại Q/R vì thêm hệ thống trạng thái phải vận hành trong khi đội ops chưa có (DOC-14 A-01/R-01, ADR-010), và cửa sổ dữ liệu cũ trái ngữ nghĩa chốt kỳ.
+- Consequences:
+  - **DOC-08 §4.5 R-007 sai với hệ thống thật** — phải bỏ chữ "saga".
+  - Không broker ở MVP ⇒ không thêm thành phần cần A/S + backup (khớp ADR-010).
+  - `GET /v1/tim/periods/{ym}` và `GET /v1/pay/periods/{ym}` thành **hợp đồng liên service** từ W3.
+  - Guard **fail-closed**: gọi lỗi/timeout ⇒ từ chối thao tác, không đoán.
+  - **Phát hiện thêm:** không có `BackgroundService`/`IHostedService` nào. Job T-15/T-7/N+3 chạy bằng endpoint do **bộ lập lịch ngoài** gọi, chưa tài liệu hoá (RK-06 · OQ-ARC-017).
+  - RK-05 timeout/retry guard chéo (OQ-ARC-018) · RK-07 idempotency `POST /v1/prb/jobs/reminders/run` chưa kiểm, trùng nhắc là rủi ro NFR-009.
+- Affects: ADR-005 (mới) · ADR-011 W3 *(gỡ RK-04)* · DOC-08 §4.5/§5 · DOC-12 · DOC-17
+- Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-022
+- Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hiệu năng hop mạng sau W3)*
+
+### DEC-ARC-026 — ADR-005 Accepted: bỏ saga, không broker · [2026-09-07]
+- Status: accepted *(PGD chốt phương án P)*
+- Context: RK-04 chặn ADR-011 W3. DOC-08 mang giả định "saga TIM→PAY" từ 2026-08-26, chưa ai đối chiếu code.
+- Options: **P Đọc guard qua API, không broker** · Q Broker + saga · R Publish event + read model · S Đọc thẳng DB chéo
+- Decision: chọn **P** → ADR-005 **Proposed → Accepted**
+- Why (loại Q/R vì thêm hệ thống trạng thái phải backup/giám sát/khôi phục trong khi đội ops chưa có, và đưa vào cửa sổ dữ liệu cũ đúng chỗ nghiệp vụ chốt kỳ không chấp nhận; loại S vì phá hàng rào W1)
+- Consequences:
+  - **RK-04 đóng** — W3 hết chặn về mặt kiến trúc; còn OQ-ARC-014 (khách).
+  - **DOC-08 v0.3**: §4.2 dòng Job, §4.5 luồng PAY-sau-công-chốt, §5 hàng đợi, bảng ADR, và **R-007 đóng** — giả định saga đã được gỡ khỏi tài liệu.
+  - **DOC-12 v0.3 §4.3**: `GET /v1/tim/periods/{ym}` và `GET /v1/pay/periods/{ym}` thành **hợp đồng liên service** — đổi shape là breaking change, không phải sửa API nội bộ.
+  - **DOC-17 v0.3 §2.3**: tài liệu hoá bộ lập lịch job — trước đây **không có ở đâu cả** dù NFR-009 phụ thuộc vào nó.
+  - Guard **fail-closed**; job chỉ chạy trên Active qua LBS (ADR-010 §5); job phải idempotent theo ngày.
+  - Nợ mới: RK-05/OQ-ARC-018 timeout+retry guard (chốt ở W3) · RK-06/OQ-ARC-017 sản phẩm lập lịch · **RK-07 idempotency `POST /v1/prb/jobs/reminders/run` chưa kiểm** — gọi hai lần có thể nhắc trùng, NFR-009 không nói gì về trùng.
+- Affects: ADR-005 · ADR-011 W3 · DOC-08 v0.3 · DOC-12 v0.3 · DOC-17 v0.3 · NFR-009
+- Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-025
+- Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hop mạng sau W3)*
