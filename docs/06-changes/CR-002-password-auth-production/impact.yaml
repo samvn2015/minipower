@@ -1,0 +1,36 @@
+cr_id: CR-002
+title: Password auth vao Production — bo SSO (mo lai pham vi CR-001)
+status: approved
+change_type: modify
+reverses: CR-001
+modules:
+  - identity
+decision:
+  by: PGD
+  date: 2026-09-15
+  source: customer
+  ref: DEC-ARC-027
+affected_docs:
+  - { path: 04-platform/DOC-09-adr/ADR-007-idp-oidc.md, doc: ADR-007, action: supersede }
+  - { path: 04-platform/DOC-09-adr/ADR-001-stack-style-hosting.md, doc: ADR-001, action: modify }
+  - { path: 04-platform/DOC-11-data-model/DOC-11-data-model.md, doc: DOC-11, action: modify }
+  - { path: 04-platform/DOC-12-api-spec/DOC-12-api-specification.md, doc: DOC-12, action: modify }
+  - { path: 04-platform/DOC-12-api-spec/openapi.yaml, doc: DOC-12, action: modify }
+  - { path: 04-platform/DOC-13-nfr.md, doc: DOC-13, action: modify }
+  - { path: 04-platform/DOC-10-integration-specification.md, doc: DOC-10, action: modify }
+  - { path: 04-platform/DOC-17-deployment-guide.md, doc: DOC-17, action: modify }
+  - { path: 03-modules/identity/DOC-06-srs.md, doc: DOC-06, action: modify }
+  - { path: 03-modules/identity/DOC-07-acceptance-criteria.md, doc: DOC-07, action: modify }
+  - { path: 03-modules/identity/DOC-16-test-strategy.md, doc: DOC-16, action: modify }
+impact:
+  scope: true
+  timeline_days: null
+  regression_tests:
+    - IAM UAT §1
+    - IAM DOC-16 TC SSO (bo)
+code_gate:
+  blocked_until:
+    - identity DOC-06 FR dang nhap/doi/reset/khoa
+    - identity DOC-07 AC negative
+    - DOC-13 password policy + hash + lockout + rate limit
+baseline_target: null

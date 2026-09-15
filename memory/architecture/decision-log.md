@@ -351,3 +351,22 @@
 - Affects: ADR-005 · ADR-011 W3 · DOC-08 v0.3 · DOC-12 v0.3 · DOC-17 v0.3 · NFR-009
 - Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-025
 - Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hop mạng sau W3)*
+
+### DEC-ARC-027 — ADR-012: bỏ SSO, HRM tự quản password · [2026-09-15]
+- Status: accepted *(PGD «đã chốt bỏ không sử dụng Login web SSO» · nguồn: **khách hàng yêu cầu**)*
+- Context: SSO là nền từ 26-08 (ADR-007 Lark, ADR-001 §4, DOC-12 §2 cấm password, DOC-11 §3.1 không lưu hash). CR-001 xin password auth Prod ngày 07-09 và **bị từ chối** (DEC-DLV-025). Nay khách yêu cầu bỏ SSO.
+- Options: **T Password tự quản, không SSO** · U Giữ SSO đổi IdP · V Password + SSO song song · W Giữ ADR-007
+- Decision: chọn **T** → **ADR-012** supersede **ADR-007 toàn bộ** + **ADR-001 §4**; CR-001 mở lại thành **CR-002 Approved**
+- Why (khách quyết — ràng buộc thương mại, cùng thẩm quyền với DEC-ARC-016/018; loại U vì khách bỏ SSO chứ không đổi IdP; loại V vì hai luồng xác thực = hai bề mặt tấn công, không ai yêu cầu)
+- Consequences:
+  - **OQ-DLV-001 (Lark JWKS) đóng** — blocker Prod lớn nhất từ 26-08 biến mất; go-live không còn chờ IT cấp issuer.
+  - **Lý do từ chối CR-001 vẫn đúng** (bề mặt tấn công tăng) — chỉ thẩm quyền đổi. Ghi rõ để không ai đọc lại tưởng hôm 07-09 sai.
+  - `POST /dev/login` **KHÔNG** thành cơ chế Prod — plaintext trong config, giữ 404 ngoài Development (ADR-012 §5, RK-09).
+  - DOC-11/12 vừa ký v0.2/v0.3 (DEC-ARC-021) **lệch lại** — phải sửa trước baseline.
+  - **Code chưa được mở**: thiếu IAM DOC-06/07 và DOC-13 policy (CR-002 §Tiền đề). Viết xác thực trước khi có policy = viết hai lần.
+  - Nợ mới: OQ-DLV-009 reset mật khẩu (RK-10) · OQ-DLV-010 policy · OQ-ARC-007 phát biểu lại (MFA sau password).
+  - **RK-08**: văn bản khách chưa có trong `assets/` — ba yêu cầu lớn nhất dự án (microservices, bỏ DR/DC, bỏ SSO) hiện chỉ truy được qua lời PGD.
+  - **Quan sát đưa lại khách** (không phải phản đối): ba yêu cầu này cộng lại = kiến trúc phân tán + không dự phòng thảm họa + tự gánh credential. Mỗi cái hợp lý riêng; cộng lại là gánh vận hành và bảo mật cao nhất trong các tổ hợp có thể — với đội ops chưa có (DOC-14 A-01).
+- Affects: ADR-012 · ADR-007 · ADR-001 §4 · CR-001 · CR-002 · DOC-10/11/12/13/17 · identity DOC-06/07/16 · OQ-DLV-001/009/010 · OQ-ARC-007
+- Trace: DEC-DLV-025 *(bị đảo)* · DEC-ARC-016 · DEC-ARC-018 · CR-001
+- Confidence: cao *(dữ kiện PGD)* · **thấp** *(chưa có văn bản khách — RK-08)*

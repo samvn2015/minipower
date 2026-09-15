@@ -2,7 +2,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Closed — Từ chối phần Production** (DEC-DLV-025 · 2026-09-07) |
+| **Status** | **Closed — Từ chối phần Production** (DEC-DLV-025 · 2026-09-07) — **đảo bởi [CR-002](../CR-002-password-auth-production/CR-002-password-auth-production.md)** 2026-09-15 theo yêu cầu khách. Hồ sơ từ chối giữ nguyên. |
 | **Type** | modify |
 | **Module(s)** | `identity` |
 | **Ngày** | 2026-09-07 |

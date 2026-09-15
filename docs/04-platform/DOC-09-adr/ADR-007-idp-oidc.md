@@ -9,7 +9,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Accepted** — PGD Dư Hùng 2026-08-26 |
+| **Status** | **Superseded** bởi [ADR-012](ADR-012-bo-sso-password-tu-quan.md) — 2026-09-15, khách yêu cầu bỏ SSO (DEC-ARC-027). Nội dung dưới giữ nguyên làm lịch sử. |
 | **Date** | 2026-08-26 |
 | **Deciders** | Mr. Dư Hùng, PGD (A) |
 | **Consulted** | IT/IAM SH-006 · SA |
