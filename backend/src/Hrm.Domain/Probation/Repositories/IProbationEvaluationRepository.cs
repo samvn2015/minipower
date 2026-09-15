@@ -1,5 +1,7 @@
 using Hrm.Domain.Probation;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Domain.Probation.Repositories;
 
 public sealed record ProbationOutcomeSnapshot(string Code, string Name, int SortOrder);
@@ -51,7 +53,10 @@ public interface IProbationEvaluationRepository
 
     Task<ProbationEvaluationSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<ProbationEvaluationSnapshot>> ListAsync(CancellationToken cancellationToken = default);
+    /// <summary>S1 — đánh giá tích luỹ theo mỗi lần thử việc → phân trang. Không có bản không giới hạn.</summary>
+    Task<PagedResult<ProbationEvaluationSnapshot>> ListPagedAsync(
+        PageRequest page,
+        CancellationToken cancellationToken = default);
 
     Task<ProbationEvaluationSnapshot> UpsertProposeAsync(
         Guid employeeId,

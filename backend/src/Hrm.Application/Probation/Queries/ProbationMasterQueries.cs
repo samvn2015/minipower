@@ -7,6 +7,8 @@ using Jarvis.Application.Contracts.Queries;
 using Jarvis.Domain.Shared.ExceptionHandling;
 using Jarvis.Domain.Shared.Messaging;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Application.Probation.Queries;
 
 public sealed record ListProbationOutcomesQuery(string ActorIdpSubject) : IQuery;
@@ -15,7 +17,7 @@ public sealed record ListProbationCriteriaQuery(string ActorIdpSubject) : IQuery
 
 public sealed record ListProbationExtendDurationsQuery(string ActorIdpSubject) : IQuery;
 
-public sealed record ListProbationEvaluationsQuery(string ActorIdpSubject) : IQuery;
+public sealed record ListProbationEvaluationsQuery(string ActorIdpSubject, int? Page = null, int? Size = null) : IQuery;
 
 public sealed class ListProbationOutcomesQueryHandler(
     IIdentityAccountReadRepository accounts,
@@ -75,16 +77,19 @@ public sealed class ListProbationExtendDurationsQueryHandler(
 public sealed class ListProbationEvaluationsQueryHandler(
     IIdentityAccountReadRepository accounts,
     IProbationEvaluationRepository evaluations)
-    : IAsyncQueryHandler<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>
+    : IAsyncQueryHandler<ListProbationEvaluationsQuery, PagedResult<ProbationEvaluationDto>>
 {
-    public async Task<IReadOnlyList<ProbationEvaluationDto>> HandleAsync(
+    public async Task<PagedResult<ProbationEvaluationDto>> HandleAsync(
         ListProbationEvaluationsQuery request,
         CancellationToken cancellationToken = default)
     {
         var actor = await accounts.FindByIdpSubjectAsync(request.ActorIdpSubject, cancellationToken)
             ?? throw new ForbiddenException(HrmErrorCodes.Forbidden, "Tài khoản không map.");
         PrbAccessGuard.RequireHrOrPgd(actor);
-        var rows = await evaluations.ListAsync(cancellationToken);
-        return rows.Select(s => ProbationEvaluationMapper.ToDto(s)).ToList();
+        var paged = await evaluations.ListPagedAsync(
+            PageRequest.From(request.Page, request.Size), cancellationToken);
+        return new PagedResult<ProbationEvaluationDto>(
+            paged.Items.Select(s => ProbationEvaluationMapper.ToDto(s)).ToList(),
+            paged.Total);
     }
 }

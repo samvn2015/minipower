@@ -286,9 +286,10 @@ public sealed class RunProbationRemindersCommandHandlerTests
             return Task.CompletedTask;
         }
 
-        public Task<IReadOnlyList<ProbationReminderSnapshot>> ListAsync(
-            ProbationReminderKind? kind = null,
+        public Task<PagedResult<ProbationReminderSnapshot>> ListPagedAsync(
+            ProbationReminderKind? kind,
+            PageRequest page,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<ProbationReminderSnapshot>>([]);
+            Task.FromResult(new PagedResult<ProbationReminderSnapshot>([], 0));
     }
 }

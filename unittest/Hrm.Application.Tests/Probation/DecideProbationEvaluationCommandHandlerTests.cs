@@ -216,9 +216,10 @@ public sealed class DecideProbationEvaluationCommandHandlerTests
             CancellationToken cancellationToken = default) =>
             Task.FromResult<ProbationEvaluationSnapshot?>(null);
 
-        public Task<IReadOnlyList<ProbationEvaluationSnapshot>> ListAsync(
+        public Task<PagedResult<ProbationEvaluationSnapshot>> ListPagedAsync(
+            PageRequest page,
             CancellationToken cancellationToken = default) =>
-            Task.FromResult<IReadOnlyList<ProbationEvaluationSnapshot>>([]);
+            Task.FromResult(new PagedResult<ProbationEvaluationSnapshot>([], 0));
 
         public Task<ProbationEvaluationSnapshot> UpsertProposeAsync(
             Guid employeeId,

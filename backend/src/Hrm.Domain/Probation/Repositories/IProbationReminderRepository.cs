@@ -1,3 +1,5 @@
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Domain.Probation.Repositories;
 
 public sealed record ProbationReminderCreateModel(
@@ -41,7 +43,13 @@ public interface IProbationReminderRepository
         IReadOnlyList<ProbationReminderCreateModel> rows,
         CancellationToken cancellationToken = default);
 
-    Task<IReadOnlyList<ProbationReminderSnapshot>> ListAsync(
-        ProbationReminderKind? kind = null,
+    /// <summary>
+    /// S1 — danh sách nhắc tích luỹ theo mỗi lần thử việc, không bao giờ xoá → phân trang.
+    /// Không có bản không giới hạn: job T-15/T-7 dùng <see cref="ExistsAsync"/> +
+    /// <see cref="AddManyAsync"/>, không duyệt danh sách này.
+    /// </summary>
+    Task<PagedResult<ProbationReminderSnapshot>> ListPagedAsync(
+        ProbationReminderKind? kind,
+        PageRequest page,
         CancellationToken cancellationToken = default);
 }

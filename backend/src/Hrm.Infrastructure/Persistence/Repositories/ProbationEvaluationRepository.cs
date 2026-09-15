@@ -2,6 +2,7 @@ using Hrm.Domain.Probation;
 using Hrm.Domain.Probation.Entities;
 using Hrm.Domain.Probation.Repositories;
 using Hrm.Infrastructure.Persistence;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.EntityFrameworkCore;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
@@ -91,14 +92,21 @@ internal sealed class ProbationEvaluationRepository(PrbDbContext db) : IProbatio
         return row is null ? null : Map(row);
     }
 
-    public async Task<IReadOnlyList<ProbationEvaluationSnapshot>> ListAsync(
+    public async Task<PagedResult<ProbationEvaluationSnapshot>> ListPagedAsync(
+        PageRequest page,
         CancellationToken cancellationToken = default)
     {
-        var rows = await db.ProbationEvaluations.AsNoTracking()
-            .OrderByDescending(x => x.DecidedAtUtc ?? x.ProposedAtUtc ?? DateTime.MinValue)
+        ArgumentNullException.ThrowIfNull(page);
+
+        var q = db.ProbationEvaluations.AsNoTracking()
+            .OrderByDescending(x => x.DecidedAtUtc ?? x.ProposedAtUtc ?? DateTime.MinValue);
+
+        var total = await q.CountAsync(cancellationToken).ConfigureAwait(false);
+        var rows = await q.Skip(page.Skip).Take(page.Size)
             .ToListAsync(cancellationToken)
             .ConfigureAwait(false);
-        return rows.Select(Map).ToList();
+
+        return new PagedResult<ProbationEvaluationSnapshot>(rows.Select(Map).ToList(), total);
     }
 
     public async Task<ProbationEvaluationSnapshot> UpsertProposeAsync(

@@ -5,6 +5,8 @@ using Hrm.Host.Extensions;
 using Jarvis.Application.Contracts.Commands;
 using Jarvis.Application.Contracts.Queries;
 using Microsoft.AspNetCore.Authorization;
+using System.Globalization;
+using Hrm.Domain.Shared.Paging;
 using Microsoft.AspNetCore.Mvc;
 
 namespace Hrm.Host.Controllers;
@@ -54,15 +56,20 @@ public sealed class ProbationController(
         return Ok(result);
     }
 
+    /// <summary>S1 — body vẫn là mảng, tổng qua <c>X-Total-Count</c> (tổng khớp bộ lọc <c>kind</c>).</summary>
     [HttpGet("reminders")]
     public async Task<IActionResult> ListReminders(
         [FromQuery] string? kind,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? size = null)
     {
-        var items = await queries.DispatchAsync<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>(
-            new ListProbationRemindersQuery(User.RequireIdpSubject(), kind),
+        var result = await queries.DispatchAsync<ListProbationRemindersQuery, PagedResult<ProbationReminderDto>>(
+            new ListProbationRemindersQuery(User.RequireIdpSubject(), kind, page, size),
             cancellationToken);
-        return Ok(items);
+
+        Response.Headers["X-Total-Count"] = result.Total.ToString(CultureInfo.InvariantCulture);
+        return Ok(result.Items);
     }
 
     [HttpGet("masters/outcomes")]
@@ -95,12 +102,17 @@ public sealed class ProbationController(
     }
 
     [HttpGet("evaluations")]
-    public async Task<IActionResult> ListEvaluations(CancellationToken cancellationToken)
+    public async Task<IActionResult> ListEvaluations(
+        CancellationToken cancellationToken,
+        [FromQuery] int? page = null,
+        [FromQuery] int? size = null)
     {
-        var items = await queries.DispatchAsync<ListProbationEvaluationsQuery, IReadOnlyList<ProbationEvaluationDto>>(
-            new ListProbationEvaluationsQuery(User.RequireIdpSubject()),
+        var result = await queries.DispatchAsync<ListProbationEvaluationsQuery, PagedResult<ProbationEvaluationDto>>(
+            new ListProbationEvaluationsQuery(User.RequireIdpSubject(), page, size),
             cancellationToken);
-        return Ok(items);
+
+        Response.Headers["X-Total-Count"] = result.Total.ToString(CultureInfo.InvariantCulture);
+        return Ok(result.Items);
     }
 
     [HttpPost("evaluations/{employeeId:guid}/propose")]

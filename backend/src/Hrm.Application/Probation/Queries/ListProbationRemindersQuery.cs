@@ -7,18 +7,22 @@ using Jarvis.Application.Contracts.Queries;
 using Jarvis.Domain.Shared.ExceptionHandling;
 using Jarvis.Domain.Shared.Messaging;
 
+using Hrm.Domain.Shared.Paging;
+
 namespace Hrm.Application.Probation.Queries;
 
 public sealed record ListProbationRemindersQuery(
     string ActorIdpSubject,
-    string? Kind) : IQuery;
+    string? Kind,
+    int? Page = null,
+    int? Size = null) : IQuery;
 
 public sealed class ListProbationRemindersQueryHandler(
     IIdentityAccountReadRepository accounts,
     IProbationReminderRepository reminders)
-    : IAsyncQueryHandler<ListProbationRemindersQuery, IReadOnlyList<ProbationReminderDto>>
+    : IAsyncQueryHandler<ListProbationRemindersQuery, PagedResult<ProbationReminderDto>>
 {
-    public async Task<IReadOnlyList<ProbationReminderDto>> HandleAsync(
+    public async Task<PagedResult<ProbationReminderDto>> HandleAsync(
         ListProbationRemindersQuery request,
         CancellationToken cancellationToken = default)
     {
@@ -34,8 +38,9 @@ public sealed class ListProbationRemindersQueryHandler(
             kind = parsed;
         }
 
-        var rows = await reminders.ListAsync(kind, cancellationToken);
-        return rows.Select(r => new ProbationReminderDto(
+        var paged = await reminders.ListPagedAsync(
+            kind, PageRequest.From(request.Page, request.Size), cancellationToken);
+        var items = paged.Items.Select(r => new ProbationReminderDto(
             r.Id,
             r.Kind.ToString(),
             r.EmployeeId,
@@ -49,5 +54,7 @@ public sealed class ListProbationRemindersQueryHandler(
             r.EmailTo,
             r.Channel,
             r.CreatedAtUtc)).ToList();
+
+        return new PagedResult<ProbationReminderDto>(items, paged.Total);
     }
 }
