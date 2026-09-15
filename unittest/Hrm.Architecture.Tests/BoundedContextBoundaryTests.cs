@@ -45,7 +45,10 @@ public sealed class BoundedContextBoundaryTests
 
         // ②a — LEV JOIN sang emp để lọc hàng đợi C1/C2 theo line manager.
         // Map Employee kéo theo cả closure navigation → phải liệt kê đủ.
-        // Đây là món nợ W3 phải trả bằng API, xem ADR-011.
+        //
+        // Lưu ý: sau khi siết OQ-ARC-015, role hrm_app_lev chỉ ĐỌC ĐƯỢC 4 cột của
+        // emp_employee và KHÔNG có quyền trên 5 bảng còn lại — model map rộng hơn
+        // quyền thật. Đây là món nợ W3 phải trả bằng API, xem ADR-011.
         [typeof(LevDbContext)] =
         [
             "Employee", "EmployeeContract", "EducationLevel",

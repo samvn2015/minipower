@@ -14,6 +14,17 @@ namespace Hrm.Infrastructure.Persistence;
 /// line manager (<c>LeaveRequestRepository</c>). Đây là truy cập **được phép** theo quyết định
 /// ②a — <c>hrm_app_lev</c> có SELECT trên schema <c>emp</c>, EMP là golden record (DOC-11 §4).
 /// <see cref="Employees"/> map **chỉ để đọc**; mọi thay đổi hồ sơ đi qua context EMP.
+///
+/// <para>⚠️ <b>Bẫy cần biết (OQ-ARC-015):</b> từ bản siết quyền, <c>hrm_app_lev</c> chỉ được
+/// đọc <b>4 cột</b> của <c>emp.emp_employee</c> (<c>Id</c>, <c>EmployeeCode</c>,
+/// <c>FullName</c>, <c>LineManagerEmployeeId</c>) và <b>không</b> có quyền trên
+/// <c>emp_contract</c>, <c>emp_education_level</c>, <c>emp_org_unit</c>,
+/// <c>emp_seniority_rule</c>, <c>emp_lm_change_request</c> — dù model vẫn map chúng
+/// (bắt buộc, vì closure navigation của <c>Employee</c>).
+///
+/// Nghĩa là: truy vấn nào từ context này <c>Include()</c> hoặc chiếu thêm cột EMP sẽ nhận
+/// <c>permission denied</c> lúc chạy. Lỗi **ồn**, không im lặng — nhưng người thêm truy vấn
+/// mới cần biết trước. Cần thêm dữ liệu EMP thì gọi qua <c>IEmployeeReadRepository</c>.</para>
 /// </summary>
 public class LevDbContext(DbContextOptions<LevDbContext> options) : DbContext(options)
 {
