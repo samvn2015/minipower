@@ -383,3 +383,22 @@
 - Affects: RK-08 · DEC-ARC-016/018/027 · OQ-ARC-012 · assets/public
 - Trace: DEC-ARC-027
 - Confidence: vừa *(chờ file)*
+
+### DEC-ARC-029 — ADR-013: chủ đầu tư **không cần** ba chức năng — microservices cũng bỏ · [2026-09-16]
+- Status: accepted *(PGD: «chủ đầu tư đã trả lời bằng vb là không cần ba chức năng, vb đang gửi qua đường bưu điện» · hỏi lại: ba chức năng = **microservices + DR/DC + SSO**)*
+- Context: DEC-ARC-028 ghi văn bản khách *"chốt cả ba yêu cầu"* — hiểu là **xác nhận** microservices là yêu cầu. Nay PGD nói rõ: khách trả lời **không cần** cả ba. Với DR/DC và SSO, đây là xác nhận lại ADR-010/012. Với **microservices** là đảo chiều: ràng buộc DEC-ARC-016 *(«microservices là ý kiến khách hàng»)* **rút**. Đây là điều deliberation B1 (UN-03) hỏi từ 07-09 và nay có đáp án: **khách không đòi**.
+- Options: **X modular monolith có hàng rào W1+W2, không GW, giữ LBS** · Y tiếp tục ADR-011 W3/W4 dù không ai cần · Z gỡ W1/W2 về một `AppDbContext` một role · Y′ giữ Gateway trước monolith
+- Decision: chọn **X** → **ADR-013** supersede **ADR-001 §1/§2/§5**, **ADR-002 toàn bộ**, **ADR-011 W3/W4+**. W1/W2 **giữ** làm kiến trúc đích. LBS giữ (cho A/S, ADR-010). ADR-005 giữ; guard TIM↔PAY nay trong process.
+- Why (khách không cần ≠ cấm → chọn monolith vì bằng chứng kỹ thuật đã nghiêng về đó từ B1: monolith đã chạy 7 Must, đội ops chưa có (A-01), hàng rào NFR-002 đã đạt bằng W1 mà không cần tách service; loại Y vì gánh phân tán không ai yêu cầu; loại Z vì bỏ thứ đã xác minh và đã trả giá; loại Y′ vì GW không làm được gì middleware host chưa làm)
+- Consequences:
+  - **Sửa cách đọc DEC-ARC-028**: không phải *"chốt cả ba yêu cầu"* mà là *"không cần cả ba chức năng"*. DEC-ARC-028 giữ nguyên, đọc kèm mục này. Nội dung dòng đăng ký `assets/public/README.md` sửa theo.
+  - **Trạng thái hiện tại = đích.** Hết "trạng thái lai"; nguyên nhân gốc Blocker B1 (doc-review 07-09) **đóng hẳn**.
+  - **Đóng không cần giải:** RK-03 · RK-04 · RK-05 · OQ-ARC-013 · OQ-ARC-014 · OQ-ARC-018.
+  - **Nợ tài liệu lớn:** DOC-08 viết lại §1.4/§4.0–4.2/§4.4/§6/R-007 (lần 4) · DOC-11 §1.2 · DOC-12 §1 · DOC-13 NFR-001 · DOC-14 WBS wave · DOC-17 §2/§4/§5/§8. **Chưa sửa** — slice riêng, SA. RK-13: không sửa trước baseline thì doc-review chặn lần ba.
+  - **Code: không làm gì.** Không gỡ W1/W2. Không W3. Nợ CI (test kiến trúc phải chạy tự động) — RK-12.
+  - Nợ mới: **RK-11** blast radius một process · **RK-12** GRANT "tiện tay" phá hàng rào im lặng · **RK-13** DOC-08 chưa viết lại trước baseline.
+  - **RK-08 vẫn mở** — văn bản qua **bưu điện**, chưa có ngày tới. ADR-013 Accepted trên lời PGD. Khi nhận: đối chiếu đúng chữ *"không cần"* cho **cả ba** mục + RK-01. Nếu văn bản không nói tới microservices → đảo ADR-013 bằng ADR mới.
+  - Quan sát DEC-ARC-027 (*ba yêu cầu = gánh cao nhất*) nhẹ đi: phần phân tán biến mất. Còn hai gánh khách chọn có văn bản: không DR (RK-01), tự gánh credential (ADR-012).
+- Affects: ADR-013 · ADR-001 · ADR-002 · ADR-011 · ADR-005 *(ghi chú)* · DOC-08/11/12/13/14/17 · OQ-ARC-013/014/018 · OQ-DLV-002 *(lý do đổi)* · RK-03/04/05/08/11/12/13 · assets/public
+- Trace: DEC-ARC-016 *(đảo vế microservices)* · DEC-ARC-022 *(W3/W4 bị thay)* · DEC-ARC-028 *(sửa cách đọc)* · deliberation B1 UN-03
+- Confidence: cao *(dữ kiện PGD, hỏi lại một lần)* · **thấp** *(văn bản chưa tới — RK-08)*

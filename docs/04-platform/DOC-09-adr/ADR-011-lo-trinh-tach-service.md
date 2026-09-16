@@ -8,7 +8,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Accepted** — PGD Dư Hùng 2026-09-07 (DEC-ARC-022). Đảo = ADR mới. Giải Blocker B1 của [doc-review 2026-09-07](../../../memory/delivery/doc-review-2026-09-07-doc11-12.md) |
+| **Status** | **Accepted** — PGD Dư Hùng 2026-09-07 (DEC-ARC-022). Đảo = ADR mới. **W3 / W4+ superseded bởi [ADR-013](ADR-013-modular-monolith-kien-truc-dich.md) (2026-09-16) — chủ đầu tư không cần microservices; W1/W2 đã xong và giữ làm kiến trúc đích. OQ-ARC-013/014 đóng.** Giải Blocker B1 của [doc-review 2026-09-07](../../../memory/delivery/doc-review-2026-09-07-doc11-12.md) |
 | **Date** | 2026-09-07 |
 | **Deciders** | Mr. Dư Hùng, PGD (A) |
 | **Consulted** | SA · Ops/IT (SH-006) · Dev (SH-010) · khách hàng *(ràng buộc microservices)* |

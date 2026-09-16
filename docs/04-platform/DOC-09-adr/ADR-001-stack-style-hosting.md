@@ -8,7 +8,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Accepted** — PGD Dư Hùng 2026-08-26 gói F. Đảo = ADR mới. |
+| **Status** | **Accepted** — PGD Dư Hùng 2026-08-26 gói F. Đảo = ADR mới. **§1 (microservices), §2 (Gateway), §5 vế database-per-service superseded bởi [ADR-013](ADR-013-modular-monolith-kien-truc-dich.md) (2026-09-16); §4 (SSO) superseded bởi [ADR-012](ADR-012-bo-sso-password-tu-quan.md).** Còn hiệu lực: §3 LBS · §5 .NET 9 · §6 hosting. |
 | **Date** | 2026-08-26 |
 | **Deciders** | Mr. Dư Hùng, PGD (A) |
 | **Consulted** | SA · Dev/Tester (SH-010) · IT/IAM (SH-006) |
