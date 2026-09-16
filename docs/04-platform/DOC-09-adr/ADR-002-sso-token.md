@@ -8,7 +8,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **Status** | **Accepted** — PGD Dư Hùng 2026-08-26 |
+| **Status** | **Superseded** bởi [ADR-013](ADR-013-modular-monolith-kien-truc-dich.md) (2026-09-16) — vế SSO/IdP mất hiệu lực từ ADR-012, vế Gateway từ ADR-013. Điểm còn giá trị (IAM DB = SoT role · Bearer JWT HRM ký · không token trên URL) phát biểu lại ở ADR-013 §7. *(gốc: Accepted — PGD Dư Hùng 2026-08-26)* |
 | **Date** | 2026-08-26 |
 | **Deciders** | Mr. Dư Hùng, PGD (A) |
 | **Consulted** | SA · IAM/IT (SH-006) |

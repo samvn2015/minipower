@@ -2,15 +2,18 @@
 
 | ADR ID | Title | Status | File |
 |--------|-------|--------|------|
-| ADR-001 | Microservices + Gateway + LBS + SSO | **Accepted** | [ADR-001-stack-style-hosting.md](ADR-001-stack-style-hosting.md) |
-| ADR-002 | Token SSO tại GW + IAM | **Accepted** | [ADR-002-sso-token.md](ADR-002-sso-token.md) |
+| ADR-001 | ~~Microservices + Gateway~~ + LBS + ~~SSO~~ + .NET 9 + private | **Accepted** — chỉ còn **§3 LBS, §6 hosting**; §1/§2/§5 superseded bởi ADR-013, §4 bởi ADR-012 | [ADR-001-stack-style-hosting.md](ADR-001-stack-style-hosting.md) |
+| ADR-002 | Token SSO tại GW + IAM | **Superseded** bởi ADR-013 (2026-09-16) — SSO đã mất từ ADR-012, GW mất từ ADR-013; điểm còn giá trị phát biểu lại ở ADR-013 §7 | [ADR-002-sso-token.md](ADR-002-sso-token.md) |
 | ADR-003 | 24/7 Active/Standby + DR/DC | **Accepted** — §3–5 (DR/DC) **superseded** bởi ADR-010 | [ADR-003-ha-dr-active-standby.md](ADR-003-ha-dr-active-standby.md) |
-| ADR-005 | Điều phối job; coupling TIM↔PAY **không phải saga**; không broker ở MVP | **Accepted** | [ADR-005-broker-va-coupling-tim-pay.md](ADR-005-broker-va-coupling-tim-pay.md) |
-| ADR-007 | **Lark** IdP OIDC; Google/Apple/@lhqglobal.vn; không host HRM | **Accepted** v0.2 | [ADR-007-idp-oidc.md](ADR-007-idp-oidc.md) |
+| ADR-005 | Điều phối job; coupling TIM↔PAY **không phải saga**; không broker ở MVP | **Accepted** — guard nay gọi trong process; RK-05/OQ-ARC-018 không phát sinh (ADR-013) | [ADR-005-broker-va-coupling-tim-pay.md](ADR-005-broker-va-coupling-tim-pay.md) |
+| ADR-007 | **Lark** IdP OIDC; Google/Apple/@lhqglobal.vn; không host HRM | **Superseded** bởi ADR-012 (2026-09-15) | [ADR-007-idp-oidc.md](ADR-007-idp-oidc.md) |
 | ADR-008 | React + Go + K8s (đảo stack) | **Rejected** | [ADR-008-react-go-k8s.md](ADR-008-react-go-k8s.md) |
 | ADR-009 | PostgreSQL SoT (vs Mongo) | **Accepted** | [ADR-009-postgresql.md](ADR-009-postgresql.md) |
 | ADR-010 | 24/7 + A/S trong **một** DC; bỏ DR/DC *(khách yêu cầu)* | **Accepted** v0.2 — supersede ADR-003 §3–5 | [ADR-010-ha-single-dc-active-standby.md](ADR-010-ha-single-dc-active-standby.md) |
 
-| ADR-011 | Lộ trình monolith → microservices theo wave | **Accepted** — chờ khách xác nhận OQ-ARC-014 | [ADR-011-lo-trinh-tach-service.md](ADR-011-lo-trinh-tach-service.md) |
+| ADR-011 | Lộ trình monolith → microservices theo wave | **Accepted** — **W1/W2 giữ** (đã xong); **W3/W4+ superseded** bởi ADR-013; OQ-ARC-014 đóng | [ADR-011-lo-trinh-tach-service.md](ADR-011-lo-trinh-tach-service.md) |
+
+| ADR-012 | **Bỏ SSO** — HRM tự quản username/password *(khách yêu cầu)* | **Accepted** — supersede ADR-007, ADR-001 §4 | [ADR-012-bo-sso-password-tu-quan.md](ADR-012-bo-sso-password-tu-quan.md) |
+| ADR-013 | **Không cần microservices** — modular monolith có hàng rào là kiến trúc đích; không GW, giữ LBS *(chủ đầu tư: không cần)* | **Accepted** — supersede ADR-001 §1/§2/§5, ADR-002, ADR-011 W3/W4+ | [ADR-013-modular-monolith-kien-truc-dich.md](ADR-013-modular-monolith-kien-truc-dich.md) |
 
 Mỗi quyết định = `ADR-{NNN}-{slug}.md` — khung: [template DOC-09](../../../templates/DOC-09-adr.md).

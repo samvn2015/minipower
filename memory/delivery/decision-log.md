@@ -292,3 +292,18 @@
 - Affects: identity · Hrm.Host/DevAuthController · DOC-17 checklist cutover
 - Trace: CR-001 · ADR-007 · DOC-12 §2 · DOC-11 §3.1 · DEC-DLV-011
 - Confidence: cao
+
+### DEC-DLV-026 — CR-002 Approved: password auth vào Production · [2026-09-15]
+- Status: accepted *(PGD, theo khách)* — **đảo DEC-DLV-025**
+- Context: DEC-DLV-025 (07-09) từ chối password auth Prod, giữ DEV/UAT. Khách yêu cầu bỏ SSO (ADR-012 · DEC-ARC-027).
+- Options: *(theo ADR-012)*
+- Decision: **CR-002 Approved** — thực hiện đúng bảng phạm vi Production của CR-001. CR-001 giữ nguyên làm hồ sơ từ chối.
+- Why: thẩm quyền đổi (khách), lý do kỹ thuật hôm 07-09 không đổi.
+- Consequences:
+  - **Gate code chưa mở** — chặn bởi 3 tiền đề: IAM DOC-06 FR · IAM DOC-07 AC negative · DOC-13 policy (hash, khoá, rate limit).
+  - Toàn bộ TC IAM giả định SSO → **UAT §1 chạy lại**.
+  - `POST /dev/login` giữ nguyên vai DEV/UAT; **không** tái dùng cho Prod.
+  - Reset mật khẩu là quy trình **HR**, chưa có (OQ-DLV-009).
+- Affects: identity · CR-002 · DEC-DLV-025 · OQ-DLV-001 *(đóng)* · UAT §1
+- Trace: DEC-ARC-027 · CR-001 · CR-002
+- Confidence: cao

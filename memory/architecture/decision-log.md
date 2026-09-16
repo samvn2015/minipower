@@ -351,3 +351,89 @@
 - Affects: ADR-005 · ADR-011 W3 · DOC-08 v0.3 · DOC-12 v0.3 · DOC-17 v0.3 · NFR-009
 - Trace: ADR-011 RK-04 · DOC-08 R-007 · DEC-ARC-025
 - Confidence: cao *(đọc code trực tiếp)* · vừa *(chưa đo hop mạng sau W3)*
+
+### DEC-ARC-027 — ADR-012: bỏ SSO, HRM tự quản password · [2026-09-15]
+- Status: accepted *(PGD «đã chốt bỏ không sử dụng Login web SSO» · nguồn: **khách hàng yêu cầu**)*
+- Context: SSO là nền từ 26-08 (ADR-007 Lark, ADR-001 §4, DOC-12 §2 cấm password, DOC-11 §3.1 không lưu hash). CR-001 xin password auth Prod ngày 07-09 và **bị từ chối** (DEC-DLV-025). Nay khách yêu cầu bỏ SSO.
+- Options: **T Password tự quản, không SSO** · U Giữ SSO đổi IdP · V Password + SSO song song · W Giữ ADR-007
+- Decision: chọn **T** → **ADR-012** supersede **ADR-007 toàn bộ** + **ADR-001 §4**; CR-001 mở lại thành **CR-002 Approved**
+- Why (khách quyết — ràng buộc thương mại, cùng thẩm quyền với DEC-ARC-016/018; loại U vì khách bỏ SSO chứ không đổi IdP; loại V vì hai luồng xác thực = hai bề mặt tấn công, không ai yêu cầu)
+- Consequences:
+  - **OQ-DLV-001 (Lark JWKS) đóng** — blocker Prod lớn nhất từ 26-08 biến mất; go-live không còn chờ IT cấp issuer.
+  - **Lý do từ chối CR-001 vẫn đúng** (bề mặt tấn công tăng) — chỉ thẩm quyền đổi. Ghi rõ để không ai đọc lại tưởng hôm 07-09 sai.
+  - `POST /dev/login` **KHÔNG** thành cơ chế Prod — plaintext trong config, giữ 404 ngoài Development (ADR-012 §5, RK-09).
+  - DOC-11/12 vừa ký v0.2/v0.3 (DEC-ARC-021) **lệch lại** — phải sửa trước baseline.
+  - **Code chưa được mở**: thiếu IAM DOC-06/07 và DOC-13 policy (CR-002 §Tiền đề). Viết xác thực trước khi có policy = viết hai lần.
+  - Nợ mới: OQ-DLV-009 reset mật khẩu (RK-10) · OQ-DLV-010 policy · OQ-ARC-007 phát biểu lại (MFA sau password).
+  - **RK-08**: văn bản khách chưa có trong `assets/` — ba yêu cầu lớn nhất dự án (microservices, bỏ DR/DC, bỏ SSO) hiện chỉ truy được qua lời PGD.
+  - **Quan sát đưa lại khách** (không phải phản đối): ba yêu cầu này cộng lại = kiến trúc phân tán + không dự phòng thảm họa + tự gánh credential. Mỗi cái hợp lý riêng; cộng lại là gánh vận hành và bảo mật cao nhất trong các tổ hợp có thể — với đội ops chưa có (DOC-14 A-01).
+- Affects: ADR-012 · ADR-007 · ADR-001 §4 · CR-001 · CR-002 · DOC-10/11/12/13/17 · identity DOC-06/07/16 · OQ-DLV-001/009/010 · OQ-ARC-007
+- Trace: DEC-DLV-025 *(bị đảo)* · DEC-ARC-016 · DEC-ARC-018 · CR-001
+- Confidence: cao *(dữ kiện PGD)* · **thấp** *(chưa có văn bản khách — RK-08)*
+
+### DEC-ARC-028 — Văn bản khách chốt cả ba yêu cầu (RK-08) · [2026-09-16]
+- Status: accepted *(PGD: «khách chốt rồi, đã gửi vb sang» · «văn bản này chốt cả ba yêu cầu»)*
+- Context: DEC-ARC-016 (microservices), DEC-ARC-018 (bỏ DR/DC), DEC-ARC-027 (bỏ SSO) đều ghi confidence **thấp** ở vế "chưa có văn bản khách". RK-08 mở từ 07-09.
+- Options: *(ghi nhận dữ kiện)*
+- Decision: **một** văn bản của khách chốt **cả ba** yêu cầu. Đăng ký chỗ tại `assets/public/README.md`, tên theo quy ước `2026-09-15_xac-nhan_khach-chot-3-yeu-cau.<ext>`.
+- Consequences:
+  - Ba DEC trên nâng vế confidence "văn bản khách" từ **thấp → vừa**: tồn tại theo PGD, **chưa** nằm trong repo.
+  - **RK-08 chưa đóng** — đóng khi file thật vào `assets/public/`. Đã tìm assets/, Downloads, Desktop, Documents gốc (2026-09-16): không có file mới từ 14-09.
+  - Khi có file, việc **phải làm**: đọc và đối chiếu **RK-01**. Văn bản DR/DC trước ký ở mức *"ngừng phục vụ đến khi restore"*; backup cùng DC nghĩa là **mất dữ liệu**. Nếu văn bản mới cũng dừng ở mức cũ thì OQ-ARC-012 vẫn lệch phạm vi.
+- Affects: RK-08 · DEC-ARC-016/018/027 · OQ-ARC-012 · assets/public
+- Trace: DEC-ARC-027
+- Confidence: vừa *(chờ file)*
+
+### DEC-ARC-029 — ADR-013: chủ đầu tư **không cần** ba chức năng — microservices cũng bỏ · [2026-09-16]
+- Status: accepted *(PGD: «chủ đầu tư đã trả lời bằng vb là không cần ba chức năng, vb đang gửi qua đường bưu điện» · hỏi lại: ba chức năng = **microservices + DR/DC + SSO**)*
+- Context: DEC-ARC-028 ghi văn bản khách *"chốt cả ba yêu cầu"* — hiểu là **xác nhận** microservices là yêu cầu. Nay PGD nói rõ: khách trả lời **không cần** cả ba. Với DR/DC và SSO, đây là xác nhận lại ADR-010/012. Với **microservices** là đảo chiều: ràng buộc DEC-ARC-016 *(«microservices là ý kiến khách hàng»)* **rút**. Đây là điều deliberation B1 (UN-03) hỏi từ 07-09 và nay có đáp án: **khách không đòi**.
+- Options: **X modular monolith có hàng rào W1+W2, không GW, giữ LBS** · Y tiếp tục ADR-011 W3/W4 dù không ai cần · Z gỡ W1/W2 về một `AppDbContext` một role · Y′ giữ Gateway trước monolith
+- Decision: chọn **X** → **ADR-013** supersede **ADR-001 §1/§2/§5**, **ADR-002 toàn bộ**, **ADR-011 W3/W4+**. W1/W2 **giữ** làm kiến trúc đích. LBS giữ (cho A/S, ADR-010). ADR-005 giữ; guard TIM↔PAY nay trong process.
+- Why (khách không cần ≠ cấm → chọn monolith vì bằng chứng kỹ thuật đã nghiêng về đó từ B1: monolith đã chạy 7 Must, đội ops chưa có (A-01), hàng rào NFR-002 đã đạt bằng W1 mà không cần tách service; loại Y vì gánh phân tán không ai yêu cầu; loại Z vì bỏ thứ đã xác minh và đã trả giá; loại Y′ vì GW không làm được gì middleware host chưa làm)
+- Consequences:
+  - **Sửa cách đọc DEC-ARC-028**: không phải *"chốt cả ba yêu cầu"* mà là *"không cần cả ba chức năng"*. DEC-ARC-028 giữ nguyên, đọc kèm mục này. Nội dung dòng đăng ký `assets/public/README.md` sửa theo.
+  - **Trạng thái hiện tại = đích.** Hết "trạng thái lai"; nguyên nhân gốc Blocker B1 (doc-review 07-09) **đóng hẳn**.
+  - **Đóng không cần giải:** RK-03 · RK-04 · RK-05 · OQ-ARC-013 · OQ-ARC-014 · OQ-ARC-018.
+  - **Nợ tài liệu lớn:** DOC-08 viết lại §1.4/§4.0–4.2/§4.4/§6/R-007 (lần 4) · DOC-11 §1.2 · DOC-12 §1 · DOC-13 NFR-001 · DOC-14 WBS wave · DOC-17 §2/§4/§5/§8. **Chưa sửa** — slice riêng, SA. RK-13: không sửa trước baseline thì doc-review chặn lần ba.
+  - **Code: không làm gì.** Không gỡ W1/W2. Không W3. Nợ CI (test kiến trúc phải chạy tự động) — RK-12.
+  - Nợ mới: **RK-11** blast radius một process · **RK-12** GRANT "tiện tay" phá hàng rào im lặng · **RK-13** DOC-08 chưa viết lại trước baseline.
+  - **RK-08 vẫn mở** — văn bản qua **bưu điện**, chưa có ngày tới. ADR-013 Accepted trên lời PGD. Khi nhận: đối chiếu đúng chữ *"không cần"* cho **cả ba** mục + RK-01. Nếu văn bản không nói tới microservices → đảo ADR-013 bằng ADR mới.
+  - Quan sát DEC-ARC-027 (*ba yêu cầu = gánh cao nhất*) nhẹ đi: phần phân tán biến mất. Còn hai gánh khách chọn có văn bản: không DR (RK-01), tự gánh credential (ADR-012).
+- Affects: ADR-013 · ADR-001 · ADR-002 · ADR-011 · ADR-005 *(ghi chú)* · DOC-08/11/12/13/14/17 · OQ-ARC-013/014/018 · OQ-DLV-002 *(lý do đổi)* · RK-03/04/05/08/11/12/13 · assets/public
+- Trace: DEC-ARC-016 *(đảo vế microservices)* · DEC-ARC-022 *(W3/W4 bị thay)* · DEC-ARC-028 *(sửa cách đọc)* · deliberation B1 UN-03
+- Confidence: cao *(dữ kiện PGD, hỏi lại một lần)* · **thấp** *(văn bản chưa tới — RK-08)*
+
+### DEC-ARC-030 — DOC-08 v0.4 Chốt: SAD mô tả một kiến trúc — modular monolith đang chạy · [2026-09-16]
+- Status: accepted *(PGD «ký v0.4»)*
+- Context: DOC-08 v0.3 vẫn vẽ 7 microservice + Gateway + DB-per-service + SSO IdP. ADR-012 (bỏ SSO) và ADR-013 (không cần microservices) làm §1.4, §2, §4.0–4.5, §5, §6, §7 lệch cùng lúc. Viết lại hai lần là phí → một bản v0.4 gộp cả hai.
+- Options: *(không có phương án — cập nhật DOC theo ADR đã Accepted)*
+- Decision: **DOC-08 v0.4 Chốt.** SAD từ nay mô tả **một** kiến trúc, soi từ `hrm/` 2026-09-16: một `Hrm.Host`, một instance PostgreSQL 8 schema / 7 role / migrator, LBS trước host cho A/S, không Gateway, đăng nhập HRM tự quản, TIM↔PAY guard trong process. Bỏ cặp "hiện tại / đích đến" của ADR-011.
+- Why (kiến trúc đích = kiến trúc đang chạy; DOC không được mô tả thứ chưa xây — đúng lỗi Blocker B1 hôm 07-09)
+- Consequences:
+  - **+AG-015** (ranh giới bằng cơ chế) · **+AG-016** (một deploy unit, không GW/DB-per-service/broker).
+  - §4.3 dùng **path thật** thay "nháp"; `w1-roles.sql` được nêu là SoT của GRANT.
+  - §4.5 thêm 3 kịch bản **đã kiểm** (token giả 401 · role LEV không đọc `pay.*` · mất DB → readiness 503).
+  - **Nói thẳng hai điều SAD cũ không có:** mobile **chưa có code** (R-013); Prod **chưa chạy được** (R-014). Login Prod chưa code (R-012).
+  - Rủi ro mới vào SAD: R-008 (RK-01 backup cùng DC) · R-009 (RK-08 văn bản khách) · R-010 (RK-11 blast radius) · R-011 (RK-12 GRANT im lặng).
+  - **Nợ kéo theo, chưa sửa:** DOC-11 §1.2/§3.1 · DOC-12 §1/§2/§4.3 *(hai endpoint `periods/{ym}` không còn là hợp đồng liên service)* · DOC-13 NFR-001 + mật khẩu · DOC-14 · DOC-17 §2/§4/§5/§8. RK-13: sửa trước baseline.
+- Affects: DOC-08 v0.4 · DOC-11 · DOC-12 · DOC-13 · DOC-14 · DOC-17
+- Trace: DEC-ARC-029 · DEC-ARC-027 · DEC-ARC-026 · ADR-011 *(hệ quả tiêu cực "trạng thái lai" — hết)*
+- Confidence: cao *(soi code trực tiếp)* · **thấp** *(vế văn bản khách — RK-08)*
+
+### DEC-ARC-031 — Ký DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 theo ADR-012/013 · [2026-09-16]
+- Status: accepted *(PGD «ký cả 4, merge»)*
+- Context: Sau DOC-08 v0.4 (DEC-ARC-030), bốn DOC platform còn mô tả DB-per-service, Gateway, OIDC/Lark, hợp đồng liên service. RK-13: không sửa trước baseline thì doc-review chặn lần ba.
+- Options: *(cập nhật DOC theo ADR đã Accepted; riêng DOC-13 §3.3 là chọn số)*
+- Decision:
+  - **DOC-11 v0.3** — schema/role/DbContext ghi trên từng §3.x; FK xuyên schema chỉ ID, ngoại lệ LEV→`emp` 4 cột; 5 cột password **chưa migration**; §6 bỏ replicate DR (sót từ v0.1).
+  - **DOC-12 v0.4** — bỏ GW/OIDC/JWKS; §2 ba endpoint auth ADR-012 (chưa code); §4.3 guard TIM↔PAY trong process, hai endpoint `periods/{ym}` là API thường; §3 phân trang đã hiện thực S1.
+  - **DOC-13 v0.3** — **+NFR-S07…S12**. **PGD chốt số theo đề xuất SA:** ≥12 ký tự, blocklist, không ép đổi định kỳ (NIST 800-63B); khoá 15′ sau 5 lần sai; Argon2id m=64MiB t=3 p=1 hoặc PBKDF2-SHA256 ≥600k; rate 10/phút/IP + 5/phút/username, 429, không lộ tài khoản tồn tại; reset một lần 24h ép đổi. **OQ-DLV-010 đóng.** +NFR-M03 ranh giới cưỡng chế, NFR-SC01 scale = nhân bản host.
+  - **DOC-17 v0.4** — 8 connection string + bẫy fallback `hrm_migrator`; `w1-roles.sql` sau khi đổi `CHANGE_ME_*`, `pg_hba` scram; secret ký JWT thay Lark; §7 kiểm **`/dev/login` → 404** (mục này trước chỉ là TODO ở CR-001 — ADR-012 RK-09 ghi "đã có" là chưa đúng, nay có thật).
+- Why (bốn DOC phải mô tả đúng hệ thống đang chạy và đích đã chốt; số mật khẩu lấy chuẩn công khai thay vì bịa)
+- Consequences:
+  - **Code login (CR-002) còn chặn bởi:** IAM DOC-06 FR + DOC-07 negative AC (BA) · OQ-DLV-009 quy trình reset · OQ-ARC-007 MFA. Policy **không** còn chặn.
+  - **Nợ mới nhìn thấy:** `openapi.yaml` chưa sinh lại sau S1 (4 endpoint thiếu `page`/`size`/`X-Total-Count`), Swagger title còn "HRM Gateway API" · guard khởi động Prod từ chối thiếu connection string **chưa code** · CI/Dockerfile/hosting SPA/OTEL collector chưa có.
+  - Mọi DOC platform giờ cùng một kiến trúc → có thể **chạy doc-review** lần ba cho `04-platform` trước khi mở `02-baseline/`.
+- Affects: DOC-11 · DOC-12 · DOC-13 · DOC-17 · OQ-DLV-010 · CR-002 §Tiền đề
+- Trace: DEC-ARC-029 · DEC-ARC-030 · DEC-ARC-027 · ADR-012 §6 · RK-13
+- Confidence: cao *(soi code)* · số mật khẩu: **vừa** *(chuẩn công khai, chưa pen test)*
