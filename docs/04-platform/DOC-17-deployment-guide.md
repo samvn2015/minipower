@@ -5,9 +5,10 @@
 | 0.1 | 2026-08-26 | Trịnh Yên (DevOps/SA soạn) | **Chốt** (DEC-DLV-007) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ DR/DC theo **ADR-010** (DEC-ARC-017/018); thêm backup/restore |
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — thêm §2.3 bộ lập lịch job theo **ADR-005** (DEC-ARC-026) |
+| 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — **ADR-013**: một host, một DB 8 schema / 7 role, không Gateway; **ADR-012**: bỏ Lark, secret ký JWT, kiểm `/dev/*` đóng trên Prod |
 
-**Runbook** · DOC-08 §4.4 · ADR-001/007/**010** **Accepted** *(ADR-003 §3–5 superseded)* · DOC-15 **Chốt** · DOC-16 **Chốt**.  
-**Cổng:** PGD chốt v0.1 (DEC-DLV-007). Sửa runbook đã chốt = CR. Nợ: URL, sản phẩm LBS, **Lark issuer OIDC** (tenant/region), **PostgreSQL version/host prod**, **RTO-failover / RTO-restore**, chu kỳ + nơi lưu backup, lệnh CI. **Không** khóa K8s. **Không** tự code. **Chưa** `02-baseline/`. Go-live **2027**. Chốt tài liệu ≠ go-live.
+**Runbook** · DOC-08 §4.4 v0.4 · **ADR-013** · **ADR-012** · **ADR-010** · ADR-009 · DOC-15 **Chốt** · DOC-16 **Chốt**.  
+**Cổng:** PGD chốt v0.1 (DEC-DLV-007). Sửa runbook đã chốt = CR. Nợ: URL, sản phẩm LBS, **PostgreSQL host prod**, **RTO-failover / RTO-restore**, chu kỳ + nơi lưu backup, **lệnh CI / Dockerfile (chưa có)**, **hosting SPA**, **OTEL collector**, **luồng login Prod chưa code** (CR-002). **Không** khóa K8s. **Không** tự code. **Chưa** `02-baseline/`. Go-live **2027**. Chốt tài liệu ≠ go-live.
 
 ---
 
@@ -25,7 +26,7 @@
 | Env | URL | Purpose | Infra |
 |-----|-----|---------|-------|
 | DEV | TBD | Build | Node đơn |
-| UAT | TBD | UAT sau LBS+GW | Gần Prod, không bắt buộc cặp A/S |
+| UAT | TBD | UAT sau LBS | Gần Prod, không bắt buộc cặp A/S |
 | PROD | TBD | 24/7 | **Một DC**: Active + Standby cùng DC; jobs chỉ trên Active |
 
 > **Không còn môi trường DR.** Khách hàng yêu cầu bỏ DC dự phòng (ADR-010 · DEC-ARC-018). Mất cả DC → khôi phục bằng **backup/restore** (§2.2), không phải promote site.
@@ -35,11 +36,13 @@
 | Mục | Giá trị |
 |-----|---------|
 | **Engine** | PostgreSQL **16+** (ADR-009) |
-| **Connection** | `ConnectionStrings:AppDbContext` — User Secrets / vault Prod · **không** commit password |
-| **Template** | `../hrm/backend/src/Hrm.Host/appsettings.Production.json` |
+| **Connection** | **8 chuỗi**, không phải một (ADR-011 W1 · ADR-013): `ConnectionStrings:{Iam,Emp,Lev,Tim,Pay,Prb,Lif}DbContext` mỗi cái một role `hrm_app_*`, + `AppDbContext` bằng `hrm_migrator` (chỉ migrate). Vault Prod · **không** commit password |
+| ⚠️ **Bẫy** | `AddContextConnection` **rơi về chuỗi `AppDbContext`** nếu thiếu chuỗi của context → app chạy bằng `hrm_migrator`, **hàng rào NFR-002 biến mất im lặng**. Prod phải có **guard khởi động** từ chối thiếu chuỗi (chưa code — nợ) và checklist §3 kiểm đủ 8 |
+| **Role / GRANT** | DBA chạy `../hrm/backend/scripts/w1-roles.sql` **sau khi đổi mọi `CHANGE_ME_*`**; `pg_hba.conf` = `scram-sha-256` (local dev dùng `trust` — **không** mang lên Prod) |
+| **Template** | `../hrm/backend/src/Hrm.Host/appsettings.Production.json` — hiện chỉ có `AppDbContext` + 3 placeholder TBD; **chưa chạy được** |
 | **Format** | `Host={host};Port=5432;Database=hrm;Username={user};Password={secret};Pooling=true;SSL Mode=Require` |
 | **Owner cung cấp** | IT/DBA: host, user, password, SSL policy |
-| **Migrate** | `AutoMigrate` chỉ DEV — Prod: pipeline migrate riêng (TBD CI) |
+| **Migrate** | `AutoMigrate` chỉ DEV — Prod: `dotnet ef database update --context AppDbContext` bằng `hrm_migrator`, chạy trên Standby trước failover (§5). Pipeline TBD CI |
 
 Local DEV: Postgres.app · `../hrm/backend/scripts/pg-local.sh` · User Secrets (xem `../hrm/README.md`).
 
@@ -49,7 +52,7 @@ Khách hàng yêu cầu bỏ DC dự phòng (DEC-ARC-018), nên đây là **cơ 
 
 | Mục | Giá trị |
 |-----|---------|
-| **Phạm vi** | Toàn bộ DB-per-service + secrets vault + cấu hình hạ tầng |
+| **Phạm vi** | **Một** database `hrm` (8 schema — backup một lần, không có thứ tự N DB) + secrets vault (chuỗi kết nối, `IssuerSigningKeys`) + cấu hình hạ tầng |
 | **Chu kỳ** | **TBD** — Ops/IT |
 | **Nơi lưu** | **Máy Standby, cùng DC** (ADR-010 §4 · DEC-ARC-019) — **không** off-site |
 | **Mã hóa at-rest** | Bắt buộc (PII + lương) — thuật toán TBD, xem DOC-13 NFR-S06 |
@@ -84,7 +87,11 @@ Backend **không có** `BackgroundService`/`IHostedService` nào (soi code 2026-
 | # | Item | Owner | Status |
 |---|------|-------|--------|
 | 1 | DOC-16 chương trình **Chốt** (DEC-DLV-004) + AC Must Pass | QC / PGD | ☑ DOC-16 · ☐ AC Pass |
-| 2 | **Lark** OIDC issuer + JWKS + App credentials (ADR-007 v0.2) | IT | ☐ |
+| 2 | **Secret ký JWT Prod** (`Authentication:Jwt:IssuerSigningKeys`) — sinh mới, ≥ 256 bit, **không** phải chuỗi dev trong `DevAuthController.DefaultSigningKey`; `Issuer`/`Audience` Prod | IT | ☐ |
+| 2a | `ASPNETCORE_ENVIRONMENT=Production` trên **mọi** node — sai là `POST /dev/login` / `GET /dev/token` mở với mật khẩu plaintext (ADR-012 §5 · RK-09) | DevOps | ☐ |
+| 2b | **8** connection string + `Cors` origin Prod + OTEL endpoint trong vault; 3 placeholder TBD của `appsettings.Production.json` đã thay | DevOps | ☐ |
+| 2c | Luồng login Prod **đã code** (CR-002) — chính sách DOC-13 S07…S10 chốt, IAM DOC-06/07 có | Dev / PGD | ☐ |
+| 2d | Hosting **SPA** frontend (static + reverse proxy `/v1` → host) — sản phẩm TBD | DevOps | ☐ |
 | 3 | Secrets Git/CRM/SMTP vault — không HR | IT | ☐ |
 | 4 | LBS health → chỉ Active | DevOps | ☐ |
 | 5 | **Backup job** chạy đúng chu kỳ + verify restore thử | DBA | ☐ |
@@ -92,33 +99,34 @@ Backend **không có** `BackgroundService`/`IHostedService` nào (soi code 2026-
 | 7 | Job scheduler disable trên **Standby** (cùng DC) | DevOps | ☐ |
 | 8 | Thông báo user | PM | ☐ |
 
-### 3.1 Lark OIDC (INT-001 · DEC-DLV-010)
+### 3.1 Xác thực (ADR-012 — thay cho Lark OIDC)
 
 | Mục | Giá trị |
 |-----|---------|
-| **IdP** | Lark (Feishu) — mail `@lhqglobal.vn` |
-| **Login MVP** | Google · Apple · mail công ty (IT cấu hình federation trên Lark) |
-| **HRM cần từ IT** | Tenant Lark · region (CN/Global) · discovery/issuer URL · JWKS · App ID/secret · Audience |
-| **Vault** | `Authentication:Jwt:Bearer:Authority` + client secret — **không** commit repo |
-| **Map IAM** | JWT `sub` → `iam_identity_account.IdpSubject`; roles từ PostgreSQL |
+| **Cơ chế** | Username/password **HRM tự quản** → JWT **HRM ký**. Không IdP, không JWKS, không `Authority` |
+| **Vault** | `IssuerSigningKeys` · `Issuer` · `Audience` — **không** commit repo; xoay khoá = mọi token cũ hết hạn (chấp nhận) |
+| **Map IAM** | JWT `sub` → `iam_identity_account.IdpSubject` (tên cột giữ); roles từ schema `iam` |
+| **Cấm trên Prod** | `POST /dev/login` · `GET /dev/token` — phải trả **404** (kiểm §7). Không bao giờ dùng `DevAuth:Accounts` ngoài Development |
+| **Chưa có** | `POST /v1/iam/auth/login` / `change-password` / `reset-password` — CR-002. **Không go-live được** khi chưa có |
 
 ## 4. Kiến trúc triển khai
 
 ```text
-Client → LBS (chỉ Active) → GW (OIDC) → MS ×7 + Job + Notif
-                              └── DB-per-service (backup định kỳ → backup store)
-Job T-15/T-7/N+3: ON chỉ Active
+Client (SPA tĩnh + mobile) → LBS/TLS (chỉ Active) → Hrm.Host ×1 (Active) [+ Standby nóng]
+                                                       └── PostgreSQL `hrm`: 8 schema, 7 role app + migrator
+                                                            └── backup định kỳ → backup store (cùng DC — RK-01)
+Bộ lập lịch (ngoài) → LBS → POST /v1/…/jobs/…   (chỉ Active — ADR-010 §5)
 ```
 
-Sản phẩm LBS / host **TBD**. Không giả định `kubectl`.
+**Một** deploy unit (`Hrm.Host`) + SPA tĩnh. **Không** Gateway (ADR-013). Sản phẩm LBS / host **TBD**. Không giả định `kubectl`. Scale ngang = thêm bản `Hrm.Host` sau LBS (JWT stateless).
 
 ## 5. Các bước triển khai (Prod lần đầu / release)
 
 | Step | Action | Command | Owner | Verify |
 |------|--------|---------|-------|--------|
 | 1 | Bảo trì / banner (nếu cần) | TBD | DevOps | User thấy |
-| 2 | Backup N DB Active | TBD | DBA | Backup ID |
-| 3 | Deploy **Standby** (app + migrate) | TBD CI | DevOps | Health Standby |
+| 2 | Backup DB `hrm` trên Active (một DB) | TBD | DBA | Backup ID |
+| 3 | Deploy **Standby**: `Hrm.Host` + `dotnet ef database update --context AppDbContext` bằng `hrm_migrator`; nếu GRANT đổi → chạy `w1-roles.sql` phần thay đổi | TBD CI | DevOps / DBA | `/health` readiness 7 `db-*` Healthy |
 | 4 | Smoke Standby **nội bộ** (không cắt user) | TC-smoke | QC | Pass |
 | 5 | Failover LBS → node mới Active | TBD | DevOps | `/iam/me` 200 |
 | 6 | Job ON chỉ Active mới; OFF cũ | TBD | DevOps | 0 job trên Standby |
@@ -138,10 +146,12 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 
 | Check | Expected | Pass |
 |-------|----------|------|
-| GW health | 200 | ☐ |
-| OIDC `/iam/me` | 200 JWT | ☐ |
-| NFR-002 | LM 403 phiếu cấp dưới | ☐ |
-| INT-001 | Login **Lark** (Google/Apple/@lhqglobal.vn) | ☐ |
+| `/health` liveness + readiness | 200, **7** check `db-iam…db-lif` Healthy | ☐ |
+| Login `POST /v1/iam/auth/login` → `GET /v1/iam/me` | 200 JWT *(khi CR-002 đã code)* | ☐ |
+| **`POST /dev/login` · `GET /dev/token`** | **404** — nếu 200/400 là sai `ASPNETCORE_ENVIRONMENT`, **dừng go-live** | ☐ |
+| Token giả / không `sub` | 401 | ☐ |
+| NFR-002 (app) | LM 403 phiếu cấp dưới | ☐ |
+| NFR-002 (DB) | `psql -U hrm_app_lev -c 'select 1 from pay.pay_line limit 1'` → *permission denied*; `pg_stat_activity` thấy **7** role `hrm_app_*`, **không** thấy `hrm_migrator` từ app | ☐ |
 | INT-004/005 | Dry-run lock **UAT** trước Prod | ☐ |
 | INT-006 | 0 request CRM sales | ☐ |
 | Job trên Standby | Count = 0 | ☐ |
@@ -152,7 +162,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 | Trigger | Action |
 |---------|--------|
 | Smoke fail | Failover về Active cũ trong **RTO-failover TBD phút** (NFR-012b) |
-| Data lỗi | Stop LBS + restore backup N DB (thứ tự TBD) |
+| Data lỗi | Stop LBS + restore backup DB `hrm` (một DB — không có thứ tự) |
 | **Mất cả DC** | Không còn site để promote, và backup nằm cùng DC (RK-01) → **hiện không có đường khôi phục**. Chờ PGD quyết OQ-ARC-012 trước khi viết runbook |
 
 | Step | Action | Owner |
@@ -184,6 +194,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 | Vai trò | Go / No-go | Ngày |
 |---------|------------|------|
 | Sponsor **(A)** | ☑ Chốt v0.1 (DEC-DLV-007) | 2026-08-26 |
+| Sponsor **(A)** | ☐ **ký v0.4** (ADR-012/013) | |
 | DevOps | ☐ Runbook khung; lệnh TBD | |
 | QC | ☐ Smoke/go-live khi execute | |
 | BA | Trịnh Yên 2026-08-26 soạn | |
