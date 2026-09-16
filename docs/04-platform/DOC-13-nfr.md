@@ -4,11 +4,11 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-25 | Trịnh Yên (BA) | **Chốt** (NFR platform · DEC-REQ-038) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — NFR-012 phát biểu lại theo **ADR-010** (DEC-ARC-017/018): bỏ DR/DC |
-| 0.3 | 2026-09-16 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — **+NFR-S07…S10** mật khẩu/khoá/hash/rate-limit theo **ADR-012** (số là **đề xuất SA**, PGD chốt = đóng OQ-DLV-010); NFR-001/003/SC01 theo **ADR-013** |
+| 0.3 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — **+NFR-S07…S12** mật khẩu/khoá/hash/rate-limit/reset/MFA theo **ADR-012**; **số §3.3 PGD chốt theo đề xuất SA** → OQ-DLV-010 đóng; NFR-001/003/SC01 theo **ADR-013** |
 
 **ISO/IEC 25010** · ISO/IEC/IEEE 29148 (phần NFR).  
 **Phạm vi:** cross-cutting HRM (leave, PAY, TIM, EMP, LIF đã có SRS/AC; PRB/EVT/RPT/IAM chưa SRS).  
-**Cổng:** PGD chốt v0.1 (DEC-REQ-038). Nợ: uptime %, **RTO-failover / RTO-restore**, chu kỳ backup, thuật toán mã hóa → DOC-08 · ADR-010; **chốt số NFR-S07…S10** (OQ-DLV-010) — **chặn code login** (CR-002); quy trình reset (OQ-DLV-009); MFA (OQ-ARC-007); DOC-16 load/pen; Ban HR ☐; module chưa SRS. **Chưa** `02-baseline/`. **Không** tự SAD/DOC-16.
+**Cổng:** PGD chốt v0.1 (DEC-REQ-038). Nợ: uptime %, **RTO-failover / RTO-restore**, chu kỳ backup, thuật toán mã hóa → DOC-08 · ADR-010; quy trình reset (OQ-DLV-009); MFA (OQ-ARC-007); DOC-16 load/pen; Ban HR ☐; module chưa SRS. **Chưa** `02-baseline/`. **Không** tự SAD/DOC-16.
 
 **Không:** bịa 99,9% uptime; pixel HTML; list field master; notify CRM bán hàng (đã cấm FR).
 
@@ -68,10 +68,10 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 | NFR-005 | Audit nghiệp vụ | Log không xóa tay NV |
 | NFR-006 | Git credential | LIF-FR-008 |
 | NFR-S06 | Mã hóa at-rest / TLS | TLS tại LBS; at-rest **TBD** ADR-004 — không đóng AES-256 trên NFR này |
-| NFR-S07 | Chính sách mật khẩu | **Đề xuất SA (chưa chốt):** tối thiểu **12** ký tự, tối đa 128; **không** ép độ phức tạp theo lớp ký tự; **blocklist** mật khẩu phổ biến + chứa username; **không** ép đổi định kỳ, chỉ ép đổi khi nghi lộ hoặc lần đầu (HR cấp). *Theo NIST SP 800-63B.* PGD chốt = OQ-DLV-010 |
-| NFR-S08 | Khoá tài khoản | **Đề xuất SA:** khoá **15 phút** sau **5** lần sai liên tiếp; đếm reset khi đăng nhập đúng; HR/IT mở khoá tay được; ghi audit mỗi lần khoá |
-| NFR-S09 | Hash mật khẩu | **Đề xuất SA:** **Argon2id** (m=64 MiB, t=3, p=1) *hoặc* PBKDF2-HMAC-SHA256 ≥ **600 000** vòng nếu Argon2 không sẵn trong stack — tham số lưu cùng hash để nâng cấp về sau; salt ngẫu nhiên ≥ 16 byte. **Cấm** MD5/SHA-1/SHA-256 trần |
-| NFR-S10 | Rate limit login | **Đề xuất SA:** **10 req/phút** theo IP **và** 5 req/phút theo username; trả 429; không tiết lộ tài khoản tồn tại hay không (cùng thông báo lỗi) |
+| NFR-S07 | Chính sách mật khẩu | **Chốt (DEC-ARC-031):** tối thiểu **12** ký tự, tối đa 128; **không** ép độ phức tạp theo lớp ký tự; **blocklist** mật khẩu phổ biến + chứa username; **không** ép đổi định kỳ, chỉ ép đổi khi nghi lộ hoặc lần đầu (HR cấp). *Theo NIST SP 800-63B.* |
+| NFR-S08 | Khoá tài khoản | **Chốt:** khoá **15 phút** sau **5** lần sai liên tiếp; đếm reset khi đăng nhập đúng; HR/IT mở khoá tay được; ghi audit mỗi lần khoá |
+| NFR-S09 | Hash mật khẩu | **Chốt:** **Argon2id** (m=64 MiB, t=3, p=1) *hoặc* PBKDF2-HMAC-SHA256 ≥ **600 000** vòng nếu Argon2 không sẵn trong stack — tham số lưu cùng hash để nâng cấp về sau; salt ngẫu nhiên ≥ 16 byte. **Cấm** MD5/SHA-1/SHA-256 trần |
+| NFR-S10 | Rate limit login | **Chốt:** **10 req/phút** theo IP **và** 5 req/phút theo username; trả 429; không tiết lộ tài khoản tồn tại hay không (cùng thông báo lỗi) |
 | NFR-S11 | Reset mật khẩu | Quy trình **HR/IT xác minh danh tính** → cấp mật khẩu tạm dùng một lần, hết hạn **24 h** (đề xuất), ép đổi khi đăng nhập. Ai xác minh, kênh nào → **OQ-DLV-009** |
 | NFR-S12 | MFA | **Chưa bắt** — *"MFA sau password?"* TOTP tự làm hay không có → OQ-ARC-007. Quyết trước go-live |
 
@@ -125,7 +125,7 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 | **Acceptance criteria** | IAM DOC-07 **chưa có** — phải gồm negative: sai N lần → khoá; mật khẩu trong blocklist → từ chối; 429 khi vượt rate; reset hết hạn → từ chối; log audit từng sự kiện. |
 | **Architectural impact** | `IdentityAccount` +5 cột (DOC-11 §3.1); 3 endpoint (DOC-12 §2); Jarvis có sẵn JWT, **chưa có** hash/policy — chọn thư viện khi code. |
 | **Test approach** | Unit (policy, hash) · API negative · pen test trước go-live (DOC-16) |
-| **Trạng thái** | Số là **đề xuất SA** — PGD chốt (OQ-DLV-010) **trước** khi mở code CR-002. |
+| **Trạng thái** | Số **đã chốt** (DEC-ARC-031, OQ-DLV-010 đóng). Còn chặn code: IAM DOC-06/07 (BA) và OQ-DLV-009 (reset). |
 
 ### NFR-002 — Cô lập lương
 
@@ -158,7 +158,7 @@ NFR nền tảng từ DOC-03 **Chốt** (CN-001…006, BRQ-006, BRQ-009) + AC-NF
 | Vai trò | Họ tên | Ngày | Baseline |
 |---------|--------|------|----------|
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-25 | **Chốt** v0.1 (DEC-REQ-038) |
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.3** — chốt số S07…S10 · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | **2026-09-16** | **Chốt v0.3** — số S07…S10 (DEC-ARC-031) · ☐ `02-baseline/` |
 | BA (R) | Trịnh Yên | 2026-08-25 | Soạn → PGD chốt |
 | Architect | | | ☐ Nợ DOC-08 (SLA/crypto) |
 | Business Owner | Ban HR | | ☐ Nợ |

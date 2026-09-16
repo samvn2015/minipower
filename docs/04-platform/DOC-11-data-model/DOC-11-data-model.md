@@ -4,7 +4,7 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung ER · DEC-ARC-008) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §2/§3 sinh lại từ schema thật, đóng doc-review **B2** (PGD ký · DEC-ARC-021) |
-| 0.3 | 2026-09-16 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — theo **ADR-013** (một DB, schema + role theo context — W1 đã xong) và **ADR-012** (bỏ SSO; lưu password hash) |
+| 0.3 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-013** (một DB, schema + role theo context — W1 đã xong) và **ADR-012** (bỏ SSO; lưu password hash) |
 
 **UML / ERD khái niệm** · DOC-08 **Chốt v0.4** · **ADR-013** một instance PostgreSQL, **schema + role theo bounded context** · **ADR-012** HRM tự quản password · ADR-009 PostgreSQL.  
 **Cổng:** PGD chốt v0.1 (DEC-ARC-008). Engine: **PostgreSQL** (ADR-009). Nợ: version/host/connection; UUID vs bigint; list field master; EVT/RPT. **Chưa** `02-baseline/`.
@@ -193,7 +193,7 @@ Khung **thực thể + ranh giới schema** (bounded context) cho 7 module Must.
 |---------|--------|------|----------|
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** khung v0.1 (DEC-ARC-008) |
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | **2026-09-07** | **Chốt v0.2** (DEC-ARC-021) |
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.3** · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | **2026-09-16** | **Chốt v0.3** (DEC-ARC-031) · ☐ `02-baseline/` |
 | SA | | 2026-08-26 | Soạn → PGD chốt |
 | BA (R) | Trịnh Yên | 2026-08-26 | Soạn |
 | Business Owner | Ban HR | | ☐ Nợ |

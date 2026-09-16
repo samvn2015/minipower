@@ -5,7 +5,7 @@
 | 0.1 | 2026-08-26 | Trịnh Yên (DevOps/SA soạn) | **Chốt** (DEC-DLV-007) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ DR/DC theo **ADR-010** (DEC-ARC-017/018); thêm backup/restore |
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — thêm §2.3 bộ lập lịch job theo **ADR-005** (DEC-ARC-026) |
-| 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — **ADR-013**: một host, một DB 8 schema / 7 role, không Gateway; **ADR-012**: bỏ Lark, secret ký JWT, kiểm `/dev/*` đóng trên Prod |
+| 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — **ADR-013**: một host, một DB 8 schema / 7 role, không Gateway; **ADR-012**: bỏ Lark, secret ký JWT, kiểm `/dev/*` đóng trên Prod |
 
 **Runbook** · DOC-08 §4.4 v0.4 · **ADR-013** · **ADR-012** · **ADR-010** · ADR-009 · DOC-15 **Chốt** · DOC-16 **Chốt**.  
 **Cổng:** PGD chốt v0.1 (DEC-DLV-007). Sửa runbook đã chốt = CR. Nợ: URL, sản phẩm LBS, **PostgreSQL host prod**, **RTO-failover / RTO-restore**, chu kỳ + nơi lưu backup, **lệnh CI / Dockerfile (chưa có)**, **hosting SPA**, **OTEL collector**, **luồng login Prod chưa code** (CR-002). **Không** khóa K8s. **Không** tự code. **Chưa** `02-baseline/`. Go-live **2027**. Chốt tài liệu ≠ go-live.
@@ -194,7 +194,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 | Vai trò | Go / No-go | Ngày |
 |---------|------------|------|
 | Sponsor **(A)** | ☑ Chốt v0.1 (DEC-DLV-007) | 2026-08-26 |
-| Sponsor **(A)** | ☐ **ký v0.4** (ADR-012/013) | |
+| Sponsor **(A)** | ☑ **Chốt v0.4** (DEC-ARC-031) | 2026-09-16 |
 | DevOps | ☐ Runbook khung; lệnh TBD | |
 | QC | ☐ Smoke/go-live khi execute | |
 | BA | Trịnh Yên 2026-08-26 soạn | |

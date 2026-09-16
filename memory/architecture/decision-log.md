@@ -419,3 +419,21 @@
 - Affects: DOC-08 v0.4 · DOC-11 · DOC-12 · DOC-13 · DOC-14 · DOC-17
 - Trace: DEC-ARC-029 · DEC-ARC-027 · DEC-ARC-026 · ADR-011 *(hệ quả tiêu cực "trạng thái lai" — hết)*
 - Confidence: cao *(soi code trực tiếp)* · **thấp** *(vế văn bản khách — RK-08)*
+
+### DEC-ARC-031 — Ký DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 theo ADR-012/013 · [2026-09-16]
+- Status: accepted *(PGD «ký cả 4, merge»)*
+- Context: Sau DOC-08 v0.4 (DEC-ARC-030), bốn DOC platform còn mô tả DB-per-service, Gateway, OIDC/Lark, hợp đồng liên service. RK-13: không sửa trước baseline thì doc-review chặn lần ba.
+- Options: *(cập nhật DOC theo ADR đã Accepted; riêng DOC-13 §3.3 là chọn số)*
+- Decision:
+  - **DOC-11 v0.3** — schema/role/DbContext ghi trên từng §3.x; FK xuyên schema chỉ ID, ngoại lệ LEV→`emp` 4 cột; 5 cột password **chưa migration**; §6 bỏ replicate DR (sót từ v0.1).
+  - **DOC-12 v0.4** — bỏ GW/OIDC/JWKS; §2 ba endpoint auth ADR-012 (chưa code); §4.3 guard TIM↔PAY trong process, hai endpoint `periods/{ym}` là API thường; §3 phân trang đã hiện thực S1.
+  - **DOC-13 v0.3** — **+NFR-S07…S12**. **PGD chốt số theo đề xuất SA:** ≥12 ký tự, blocklist, không ép đổi định kỳ (NIST 800-63B); khoá 15′ sau 5 lần sai; Argon2id m=64MiB t=3 p=1 hoặc PBKDF2-SHA256 ≥600k; rate 10/phút/IP + 5/phút/username, 429, không lộ tài khoản tồn tại; reset một lần 24h ép đổi. **OQ-DLV-010 đóng.** +NFR-M03 ranh giới cưỡng chế, NFR-SC01 scale = nhân bản host.
+  - **DOC-17 v0.4** — 8 connection string + bẫy fallback `hrm_migrator`; `w1-roles.sql` sau khi đổi `CHANGE_ME_*`, `pg_hba` scram; secret ký JWT thay Lark; §7 kiểm **`/dev/login` → 404** (mục này trước chỉ là TODO ở CR-001 — ADR-012 RK-09 ghi "đã có" là chưa đúng, nay có thật).
+- Why (bốn DOC phải mô tả đúng hệ thống đang chạy và đích đã chốt; số mật khẩu lấy chuẩn công khai thay vì bịa)
+- Consequences:
+  - **Code login (CR-002) còn chặn bởi:** IAM DOC-06 FR + DOC-07 negative AC (BA) · OQ-DLV-009 quy trình reset · OQ-ARC-007 MFA. Policy **không** còn chặn.
+  - **Nợ mới nhìn thấy:** `openapi.yaml` chưa sinh lại sau S1 (4 endpoint thiếu `page`/`size`/`X-Total-Count`), Swagger title còn "HRM Gateway API" · guard khởi động Prod từ chối thiếu connection string **chưa code** · CI/Dockerfile/hosting SPA/OTEL collector chưa có.
+  - Mọi DOC platform giờ cùng một kiến trúc → có thể **chạy doc-review** lần ba cho `04-platform` trước khi mở `02-baseline/`.
+- Affects: DOC-11 · DOC-12 · DOC-13 · DOC-17 · OQ-DLV-010 · CR-002 §Tiền đề
+- Trace: DEC-ARC-029 · DEC-ARC-030 · DEC-ARC-027 · ADR-012 §6 · RK-13
+- Confidence: cao *(soi code)* · số mật khẩu: **vừa** *(chuẩn công khai, chưa pen test)*

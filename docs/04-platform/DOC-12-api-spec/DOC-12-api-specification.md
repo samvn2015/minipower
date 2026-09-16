@@ -5,7 +5,7 @@
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung OAS · DEC-ARC-010) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4 sinh lại từ Swagger runtime, đóng doc-review **B3** (PGD ký · DEC-ARC-021) |
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.3 đánh dấu hợp đồng liên service theo **ADR-005** (DEC-ARC-026) |
-| 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — theo **ADR-012** (bỏ SSO, thêm auth endpoint — chưa code) và **ADR-013** (một host, không Gateway; §4.3 hết là hợp đồng liên service); §3 phân trang đã hiện thực (S1) |
+| 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-012** (bỏ SSO, thêm auth endpoint — chưa code) và **ADR-013** (một host, không Gateway; §4.3 hết là hợp đồng liên service); §3 phân trang đã hiện thực (S1) |
 
 **OAS 3.0.1** *(Swashbuckle sinh — khớp dòng đầu `openapi.yaml`)* · DOC-08 v0.4 · DOC-11 · **ADR-012** · **ADR-013** · ADR-005.  
 **SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. ⚠️ **Chưa sinh lại sau S1 phân trang (2026-09-15)** — 4 endpoint list đã có `page`/`size` + `X-Total-Count` mà file chưa phản ánh; nợ sinh lại. Nợ khác: Base URL thật; auth endpoint ADR-012 (chưa code); full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
@@ -162,6 +162,6 @@ v0.3 đánh dấu hai endpoint dưới là *hợp đồng giữa hai service* ch
 |---------|--------|------|----------|
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** khung v0.1 (DEC-ARC-010) |
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | **2026-09-07** | **Chốt v0.2** (DEC-ARC-021) |
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.4** · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | **2026-09-16** | **Chốt v0.4** (DEC-ARC-031) · ☐ `02-baseline/` |
 | SA | | 2026-08-26 | Soạn → PGD chốt |
 | BA (R) | Trịnh Yên | 2026-08-26 | Soạn |
