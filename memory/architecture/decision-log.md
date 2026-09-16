@@ -370,3 +370,16 @@
 - Affects: ADR-012 · ADR-007 · ADR-001 §4 · CR-001 · CR-002 · DOC-10/11/12/13/17 · identity DOC-06/07/16 · OQ-DLV-001/009/010 · OQ-ARC-007
 - Trace: DEC-DLV-025 *(bị đảo)* · DEC-ARC-016 · DEC-ARC-018 · CR-001
 - Confidence: cao *(dữ kiện PGD)* · **thấp** *(chưa có văn bản khách — RK-08)*
+
+### DEC-ARC-028 — Văn bản khách chốt cả ba yêu cầu (RK-08) · [2026-09-16]
+- Status: accepted *(PGD: «khách chốt rồi, đã gửi vb sang» · «văn bản này chốt cả ba yêu cầu»)*
+- Context: DEC-ARC-016 (microservices), DEC-ARC-018 (bỏ DR/DC), DEC-ARC-027 (bỏ SSO) đều ghi confidence **thấp** ở vế "chưa có văn bản khách". RK-08 mở từ 07-09.
+- Options: *(ghi nhận dữ kiện)*
+- Decision: **một** văn bản của khách chốt **cả ba** yêu cầu. Đăng ký chỗ tại `assets/public/README.md`, tên theo quy ước `2026-09-15_xac-nhan_khach-chot-3-yeu-cau.<ext>`.
+- Consequences:
+  - Ba DEC trên nâng vế confidence "văn bản khách" từ **thấp → vừa**: tồn tại theo PGD, **chưa** nằm trong repo.
+  - **RK-08 chưa đóng** — đóng khi file thật vào `assets/public/`. Đã tìm assets/, Downloads, Desktop, Documents gốc (2026-09-16): không có file mới từ 14-09.
+  - Khi có file, việc **phải làm**: đọc và đối chiếu **RK-01**. Văn bản DR/DC trước ký ở mức *"ngừng phục vụ đến khi restore"*; backup cùng DC nghĩa là **mất dữ liệu**. Nếu văn bản mới cũng dừng ở mức cũ thì OQ-ARC-012 vẫn lệch phạm vi.
+- Affects: RK-08 · DEC-ARC-016/018/027 · OQ-ARC-012 · assets/public
+- Trace: DEC-ARC-027
+- Confidence: vừa *(chờ file)*
