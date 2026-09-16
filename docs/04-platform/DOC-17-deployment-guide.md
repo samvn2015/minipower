@@ -186,7 +186,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 |------|------|------|
 | Sponsor | Mr. Dư Hùng, PGD | TBD |
 | DevOps on-call | TBD | TBD |
-| IT IdP (Lark) / Git / CRM | SH-006 | TBD |
+| IT Git / CRM / vault (không còn IdP — ADR-012) | SH-006 | TBD |
 | BA | Trịnh Yên | TBD |
 
 ## 11. Ký duyệt
