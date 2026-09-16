@@ -402,3 +402,20 @@
 - Affects: ADR-013 · ADR-001 · ADR-002 · ADR-011 · ADR-005 *(ghi chú)* · DOC-08/11/12/13/14/17 · OQ-ARC-013/014/018 · OQ-DLV-002 *(lý do đổi)* · RK-03/04/05/08/11/12/13 · assets/public
 - Trace: DEC-ARC-016 *(đảo vế microservices)* · DEC-ARC-022 *(W3/W4 bị thay)* · DEC-ARC-028 *(sửa cách đọc)* · deliberation B1 UN-03
 - Confidence: cao *(dữ kiện PGD, hỏi lại một lần)* · **thấp** *(văn bản chưa tới — RK-08)*
+
+### DEC-ARC-030 — DOC-08 v0.4 Chốt: SAD mô tả một kiến trúc — modular monolith đang chạy · [2026-09-16]
+- Status: accepted *(PGD «ký v0.4»)*
+- Context: DOC-08 v0.3 vẫn vẽ 7 microservice + Gateway + DB-per-service + SSO IdP. ADR-012 (bỏ SSO) và ADR-013 (không cần microservices) làm §1.4, §2, §4.0–4.5, §5, §6, §7 lệch cùng lúc. Viết lại hai lần là phí → một bản v0.4 gộp cả hai.
+- Options: *(không có phương án — cập nhật DOC theo ADR đã Accepted)*
+- Decision: **DOC-08 v0.4 Chốt.** SAD từ nay mô tả **một** kiến trúc, soi từ `hrm/` 2026-09-16: một `Hrm.Host`, một instance PostgreSQL 8 schema / 7 role / migrator, LBS trước host cho A/S, không Gateway, đăng nhập HRM tự quản, TIM↔PAY guard trong process. Bỏ cặp "hiện tại / đích đến" của ADR-011.
+- Why (kiến trúc đích = kiến trúc đang chạy; DOC không được mô tả thứ chưa xây — đúng lỗi Blocker B1 hôm 07-09)
+- Consequences:
+  - **+AG-015** (ranh giới bằng cơ chế) · **+AG-016** (một deploy unit, không GW/DB-per-service/broker).
+  - §4.3 dùng **path thật** thay "nháp"; `w1-roles.sql` được nêu là SoT của GRANT.
+  - §4.5 thêm 3 kịch bản **đã kiểm** (token giả 401 · role LEV không đọc `pay.*` · mất DB → readiness 503).
+  - **Nói thẳng hai điều SAD cũ không có:** mobile **chưa có code** (R-013); Prod **chưa chạy được** (R-014). Login Prod chưa code (R-012).
+  - Rủi ro mới vào SAD: R-008 (RK-01 backup cùng DC) · R-009 (RK-08 văn bản khách) · R-010 (RK-11 blast radius) · R-011 (RK-12 GRANT im lặng).
+  - **Nợ kéo theo, chưa sửa:** DOC-11 §1.2/§3.1 · DOC-12 §1/§2/§4.3 *(hai endpoint `periods/{ym}` không còn là hợp đồng liên service)* · DOC-13 NFR-001 + mật khẩu · DOC-14 · DOC-17 §2/§4/§5/§8. RK-13: sửa trước baseline.
+- Affects: DOC-08 v0.4 · DOC-11 · DOC-12 · DOC-13 · DOC-14 · DOC-17
+- Trace: DEC-ARC-029 · DEC-ARC-027 · DEC-ARC-026 · ADR-011 *(hệ quả tiêu cực "trạng thái lai" — hết)*
+- Confidence: cao *(soi code trực tiếp)* · **thấp** *(vế văn bản khách — RK-08)*
