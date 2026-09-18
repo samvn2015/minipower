@@ -14,7 +14,8 @@ namespace Hrm.Application.Identity.Admin.Commands;
 public sealed class AssignAccountRoleCommandHandler(
     IIdentityAccountReadRepository accounts,
     IIdentityAccountAdminRepository admin,
-    IIamAuditLogRepository auditLogs)
+    IIamAuditLogRepository auditLogs,
+    IIamAtomicScope scope)
     : IAsyncCommandHandler<AssignAccountRoleCommand, IdentityAccountAdminResult>
 {
     public async Task<IdentityAccountAdminResult> HandleAsync(
@@ -25,20 +26,27 @@ public sealed class AssignAccountRoleCommandHandler(
         await AuthorizeHrOrItAsync(command.ActorIdpSubject, cancellationToken).ConfigureAwait(false);
         ValidateRoleCode(command.RoleCode);
 
-        await admin.AssignRoleAsync(command.AccountId, command.RoleCode, cancellationToken)
-            .ConfigureAwait(false);
+        // M1/M2 (pass 4): một transaction; chỉ audit khi có thay đổi thật (không audit no-op).
+        return await scope.RunAsync(async ct =>
+        {
+            var changed = await admin.AssignRoleAsync(command.AccountId, command.RoleCode, ct)
+                .ConfigureAwait(false);
 
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.IamRoleAssigned,
-                    null,
-                    command.AccountId,
-                    command.ActorIdpSubject!,
-                    $"Role={command.RoleCode}"),
-                cancellationToken)
-            .ConfigureAwait(false);
+            if (changed)
+            {
+                await auditLogs.AppendAsync(
+                        new EmpAuditLogEntry(
+                            EmpAuditActions.IamRoleAssigned,
+                            null,
+                            command.AccountId,
+                            command.ActorIdpSubject!,
+                            $"Role={command.RoleCode}"),
+                        ct)
+                    .ConfigureAwait(false);
+            }
 
-        return await ToResultAsync(command.AccountId, cancellationToken).ConfigureAwait(false);
+            return await ToResultAsync(command.AccountId, ct).ConfigureAwait(false);
+        }, cancellationToken).ConfigureAwait(false);
     }
 
     internal static void ValidateRoleCode(string roleCode)
@@ -77,7 +85,8 @@ public sealed class AssignAccountRoleCommandHandler(
 public sealed class RemoveAccountRoleCommandHandler(
     IIdentityAccountReadRepository accounts,
     IIdentityAccountAdminRepository admin,
-    IIamAuditLogRepository auditLogs)
+    IIamAuditLogRepository auditLogs,
+    IIamAtomicScope scope)
     : IAsyncCommandHandler<RemoveAccountRoleCommand, IdentityAccountAdminResult>
 {
     public async Task<IdentityAccountAdminResult> HandleAsync(
@@ -89,33 +98,40 @@ public sealed class RemoveAccountRoleCommandHandler(
             command.ActorIdpSubject, cancellationToken, accounts).ConfigureAwait(false);
         AssignAccountRoleCommandHandler.ValidateRoleCode(command.RoleCode);
 
-        await admin.RemoveRoleAsync(command.AccountId, command.RoleCode, cancellationToken)
-            .ConfigureAwait(false);
+        return await scope.RunAsync(async ct =>
+        {
+            var changed = await admin.RemoveRoleAsync(command.AccountId, command.RoleCode, ct)
+                .ConfigureAwait(false);
 
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.IamRoleRemoved,
-                    null,
-                    command.AccountId,
-                    command.ActorIdpSubject!,
-                    $"Role={command.RoleCode}"),
-                cancellationToken)
-            .ConfigureAwait(false);
+            if (changed)
+            {
+                await auditLogs.AppendAsync(
+                        new EmpAuditLogEntry(
+                            EmpAuditActions.IamRoleRemoved,
+                            null,
+                            command.AccountId,
+                            command.ActorIdpSubject!,
+                            $"Role={command.RoleCode}"),
+                        ct)
+                    .ConfigureAwait(false);
+            }
 
-        var account = await admin.FindByIdAsync(command.AccountId, cancellationToken).ConfigureAwait(false)
-            ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"IdentityAccount {command.AccountId} không tồn tại.");
+            var account = await admin.FindByIdAsync(command.AccountId, ct).ConfigureAwait(false)
+                ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"IdentityAccount {command.AccountId} không tồn tại.");
 
-        return new IdentityAccountAdminResult(
-            account.AccountId,
-            account.Status.ToString(),
-            account.RoleCodes);
+            return new IdentityAccountAdminResult(
+                account.AccountId,
+                account.Status.ToString(),
+                account.RoleCodes);
+        }, cancellationToken).ConfigureAwait(false);
     }
 }
 
 public sealed class DisableIdentityAccountCommandHandler(
     IIdentityAccountReadRepository accounts,
     IIdentityAccountAdminRepository admin,
-    IIamAuditLogRepository auditLogs)
+    IIamAuditLogRepository auditLogs,
+    IIamAtomicScope scope)
     : IAsyncCommandHandler<DisableIdentityAccountCommand, IdentityAccountAdminResult>
 {
     public async Task<IdentityAccountAdminResult> HandleAsync(
@@ -129,25 +145,32 @@ public sealed class DisableIdentityAccountCommandHandler(
             .ConfigureAwait(false);
         IamAccessGuard.RequireIt(actor);
 
-        await admin.SetStatusAsync(command.AccountId, IdentityAccountStatus.Disabled, cancellationToken)
-            .ConfigureAwait(false);
+        return await scope.RunAsync(async ct =>
+        {
+            // Tài khoản không tồn tại → 404 TRƯỚC khi có bất kỳ dòng audit nào (M2).
+            var account = await admin.FindByIdAsync(command.AccountId, ct).ConfigureAwait(false)
+                ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"IdentityAccount {command.AccountId} không tồn tại.");
 
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.IamAccountDisabled,
-                    null,
-                    command.AccountId,
-                    command.ActorIdpSubject!,
-                    null),
-                cancellationToken)
-            .ConfigureAwait(false);
+            var changed = await admin.SetStatusAsync(command.AccountId, IdentityAccountStatus.Disabled, ct)
+                .ConfigureAwait(false);
 
-        var account = await admin.FindByIdAsync(command.AccountId, cancellationToken).ConfigureAwait(false)
-            ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"IdentityAccount {command.AccountId} không tồn tại.");
+            if (changed)
+            {
+                await auditLogs.AppendAsync(
+                        new EmpAuditLogEntry(
+                            EmpAuditActions.IamAccountDisabled,
+                            null,
+                            command.AccountId,
+                            command.ActorIdpSubject!,
+                            $"FromStatus={account.Status}"),
+                        ct)
+                    .ConfigureAwait(false);
+            }
 
-        return new IdentityAccountAdminResult(
-            account.AccountId,
-            account.Status.ToString(),
-            account.RoleCodes);
+            return new IdentityAccountAdminResult(
+                account.AccountId,
+                IdentityAccountStatus.Disabled.ToString(),
+                account.RoleCodes);
+        }, cancellationToken).ConfigureAwait(false);
     }
 }

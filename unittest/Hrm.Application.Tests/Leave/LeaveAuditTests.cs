@@ -12,49 +12,94 @@ using Jarvis.Domain.Shared.ExceptionHandling;
 
 namespace Hrm.Application.Tests.Leave;
 
-public sealed class ApproveLeaveRequestC1CommandHandlerTests
+public sealed class LeaveAuditTests
 {
     private static readonly Guid EmployeeId = Guid.Parse("bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb");
     private static readonly Guid LmEmployeeId = Guid.Parse("dddddddd-dddd-dddd-dddd-dddddddddddd");
     private static readonly Guid RequestId = Guid.Parse("99999999-9999-9999-9999-999999999999");
 
+    // Doc-review pass 4 M7: 5 handler LEV/IAM chưa có test audit. Ba của LEV ở đây.
+
     [Fact]
-    public async Task HandleAsync_LmApproves_MovesToPendingC2()
+    public async Task RejectC1_WritesAuditWithNoteInsideScope()
     {
         var audit = new FakeAudit();
-        var handler = new ApproveLeaveRequestC1CommandHandler(
+        var scope = new FakeAtomicScope();
+        var handler = new RejectLeaveRequestC1CommandHandler(
             new FakeAccountRepo("local-lm", "MNV-HO"),
             new FakeEmployeeRepo(),
             new FakeLeaveRequestRepo(),
+            audit,
+            scope);
+
+        var result = await handler.HandleAsync(new RejectLeaveRequestC1Command("local-lm", RequestId, "thiếu bàn giao"));
+
+        Assert.Equal("Rejected", result.Status);
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(EmpAuditActions.LeaveRequestC1Rejected, entry.Action);
+        Assert.Equal(EmployeeId, entry.EmployeeId);
+        Assert.Equal(RequestId, entry.RelatedId);
+        Assert.Equal("thiếu bàn giao", entry.Detail);
+        Assert.Equal(1, scope.Completed);
+    }
+
+    [Fact]
+    public async Task RejectC2_HrWritesAudit()
+    {
+        var audit = new FakeAudit();
+        var handler = new RejectLeaveRequestC2CommandHandler(
+            new FakeAccountRepo("local-dev", "MNV-DEV", ["IAM-ROLE-HR"]),
+            new FakeLeaveRequestRepo(LeaveRequestStatus.PendingC2),
+            audit,
+            new FakeAtomicScope());
+
+        var result = await handler.HandleAsync(new RejectLeaveRequestC2Command("local-dev", RequestId, null));
+
+        Assert.Equal("Rejected", result.Status);
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(EmpAuditActions.LeaveRequestC2Rejected, entry.Action);
+        Assert.Equal("local-dev", entry.ActorIdpSubject);
+    }
+
+    [Fact]
+    public async Task Cancel_OwnerWritesAuditWithFromStatus()
+    {
+        var audit = new FakeAudit();
+        var handler = new CancelLeaveRequestCommandHandler(
+            new FakeAccountRepo("local-dev", "MNV-DEV"),
+            new FakeEmployeeRepo(),
+            new FakeLeaveRequestRepo(LeaveRequestStatus.PendingC1),
             new FakeNotify(),
             audit,
             new FakeAtomicScope());
 
-        var result = await handler.HandleAsync(new ApproveLeaveRequestC1Command("local-lm", RequestId));
+        var result = await handler.HandleAsync(new CancelLeaveRequestCommand("local-dev", RequestId));
 
-        Assert.Equal("PendingC2", result.Status);
+        Assert.Equal("Cancelled", result.Status);
         var entry = Assert.Single(audit.Entries);
-        Assert.Equal(EmpAuditActions.LeaveRequestC1Approved, entry.Action);
+        Assert.Equal(EmpAuditActions.LeaveRequestCancelled, entry.Action);
         Assert.Equal(EmployeeId, entry.EmployeeId);
-        Assert.Equal("local-lm", entry.ActorIdpSubject);
+        Assert.Equal("FromStatus=PendingC1", entry.Detail);
     }
 
     [Fact]
-    public async Task HandleAsync_NvSelfApprove_ThrowsForbidden()
+    public async Task RejectC1_WrongState_NoAudit()
     {
-        var handler = new ApproveLeaveRequestC1CommandHandler(
-            new FakeAccountRepo("local-dev", "MNV-DEV"),
+        var audit = new FakeAudit();
+        var handler = new RejectLeaveRequestC1CommandHandler(
+            new FakeAccountRepo("local-lm", "MNV-HO"),
             new FakeEmployeeRepo(),
-            new FakeLeaveRequestRepo(),
-            new FakeNotify(),
-            new FakeAudit(),
+            new FakeLeaveRequestRepo(LeaveRequestStatus.PendingC2),
+            audit,
             new FakeAtomicScope());
 
-        await Assert.ThrowsAsync<ForbiddenException>(() =>
-            handler.HandleAsync(new ApproveLeaveRequestC1Command("local-dev", RequestId)));
+        await Assert.ThrowsAsync<ConflictException>(() =>
+            handler.HandleAsync(new RejectLeaveRequestC1Command("local-lm", RequestId, null)));
+
+        Assert.Empty(audit.Entries);
     }
 
-    private sealed class FakeAccountRepo(string sub, string employeeCode) : IIdentityAccountReadRepository
+    private sealed class FakeAccountRepo(string sub, string employeeCode, string[]? roles = null) : IIdentityAccountReadRepository
     {
         public Task<IdentityAccountSnapshot?> FindByIdpSubjectAsync(
             string idpSubject,
@@ -66,7 +111,7 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
                 null,
                 employeeCode,
                 IdentityAccountStatus.Active,
-                ["IAM-ROLE-NV"]));
+                roles ?? ["IAM-ROLE-NV"]));
 
         public Task<IdentityAccountSnapshot?> FindByEmployeeCodeAsync(
             string employeeCode,
@@ -143,7 +188,7 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
             Task.FromResult<EmployeeUniqueField?>(null);
     }
 
-    private sealed class FakeLeaveRequestRepo : ILeaveRequestRepository
+    private sealed class FakeLeaveRequestRepo(LeaveRequestStatus status = LeaveRequestStatus.PendingC1) : ILeaveRequestRepository
     {
         public Task<Guid> CreateAsync(LeaveRequestCreateModel model, CancellationToken cancellationToken = default)
             => Task.FromResult(Guid.NewGuid());
@@ -160,7 +205,7 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
                 1m,
                 "Test",
                 LmEmployeeId,
-                LeaveRequestStatus.PendingC1,
+                status,
                 false,
                 DateTime.UtcNow));
 

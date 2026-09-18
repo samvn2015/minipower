@@ -19,7 +19,8 @@ public sealed class ApproveLeaveRequestC2CommandHandler(
     ILeaveRequestRepository requests,
     ILeaveTypeReadRepository leaveTypes,
     ILeaveNotificationOutbox notifications,
-    ILevAuditLogRepository auditLogs)
+    ILevAuditLogRepository auditLogs,
+    ILevAtomicScope scope)
     : IAsyncCommandHandler<ApproveLeaveRequestC2Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -54,40 +55,44 @@ public sealed class ApproveLeaveRequestC2CommandHandler(
                 "Ốm/BHXH thiếu file đúng mẫu Cty — không C2 (LEV-FR-008).");
         }
 
-        var approved = await requests
-            .ApproveC2Async(
-                command.RequestId,
-                command.ActorIdpSubject!,
-                leaveType.DeductsAnnualBalance,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (!approved)
+        // M1 (pass 4): nghiệp vụ + outbox + audit trong MỘT transaction — audit fail thì rollback cả.
+        return await scope.RunAsync(async ct =>
         {
-            throw new BadRequestException(
-                HrmErrorCodes.BadRequest,
-                "Không duyệt C2 — quỹ phép không đủ hoặc đơn không hợp lệ (LEV-FR-004).");
-        }
-
-        await LeaveNotify.EmitAsync(
-                notifications,
-                request.Id,
-                request.EmployeeId,
-                LeaveNotificationEvents.C2Approved,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.LeaveRequestC2Approved,
-                    request.EmployeeId,
-                    request.Id,
+            var approved = await requests
+                .ApproveC2Async(
+                    command.RequestId,
                     command.ActorIdpSubject!,
-                    $"LeaveType={request.LeaveTypeCode}; DeductsBalance={leaveType.DeductsAnnualBalance}"),
-                cancellationToken)
-            .ConfigureAwait(false);
+                    leaveType.DeductsAnnualBalance,
+                    ct)
+                .ConfigureAwait(false);
 
-        return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Approved.ToString());
+            if (!approved)
+            {
+                throw new BadRequestException(
+                    HrmErrorCodes.BadRequest,
+                    "Không duyệt C2 — quỹ phép không đủ hoặc đơn không hợp lệ (LEV-FR-004).");
+            }
+
+            await LeaveNotify.EmitAsync(
+                    notifications,
+                    request.Id,
+                    request.EmployeeId,
+                    LeaveNotificationEvents.C2Approved,
+                    ct)
+                .ConfigureAwait(false);
+
+            await auditLogs.AppendAsync(
+                    new EmpAuditLogEntry(
+                        EmpAuditActions.LeaveRequestC2Approved,
+                        request.EmployeeId,
+                        request.Id,
+                        command.ActorIdpSubject!,
+                        $"LeaveType={request.LeaveTypeCode}; DeductsBalance={leaveType.DeductsAnnualBalance}"),
+                    ct)
+                .ConfigureAwait(false);
+
+            return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Approved.ToString());
+        }, cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -99,7 +104,8 @@ public sealed record RejectLeaveRequestC2Command(
 public sealed class RejectLeaveRequestC2CommandHandler(
     IIdentityAccountReadRepository accounts,
     ILeaveRequestRepository requests,
-    ILevAuditLogRepository auditLogs)
+    ILevAuditLogRepository auditLogs,
+    ILevAtomicScope scope)
     : IAsyncCommandHandler<RejectLeaveRequestC2Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -121,22 +127,26 @@ public sealed class RejectLeaveRequestC2CommandHandler(
             throw new ConflictException(HrmErrorCodes.Conflict, "Đơn không còn chờ duyệt C2.");
         }
 
-        var rejected = await requests
-            .RejectC2Async(command.RequestId, command.ActorIdpSubject!, command.ReviewNote, cancellationToken)
-            .ConfigureAwait(false);
-        if (!rejected)
-            throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối C2 được đơn.");
+        // M1 (pass 4): nghiệp vụ + outbox + audit trong MỘT transaction — audit fail thì rollback cả.
+        return await scope.RunAsync(async ct =>
+        {
+            var rejected = await requests
+                .RejectC2Async(command.RequestId, command.ActorIdpSubject!, command.ReviewNote, cancellationToken)
+                .ConfigureAwait(false);
+            if (!rejected)
+                throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối C2 được đơn.");
 
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.LeaveRequestC2Rejected,
-                    request.EmployeeId,
-                    request.Id,
-                    command.ActorIdpSubject!,
-                    command.ReviewNote),
-                cancellationToken)
-            .ConfigureAwait(false);
+            await auditLogs.AppendAsync(
+                    new EmpAuditLogEntry(
+                        EmpAuditActions.LeaveRequestC2Rejected,
+                        request.EmployeeId,
+                        request.Id,
+                        command.ActorIdpSubject!,
+                        command.ReviewNote),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
-        return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Rejected.ToString());
+            return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Rejected.ToString());
+        }, cancellationToken).ConfigureAwait(false);
     }
 }
