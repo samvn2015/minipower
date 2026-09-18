@@ -7,6 +7,7 @@
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — thêm §2.3 bộ lập lịch job theo **ADR-005** (DEC-ARC-026) |
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — **ADR-013**: một host, một DB 8 schema / 7 role, không Gateway; **ADR-012**: bỏ Lark, secret ký JWT, kiểm `/dev/*` đóng trên Prod |
 | 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — doc-review pass 3: **M1** key JWT đúng tên Jarvis, **xoá** `Authority` khỏi template Prod; **M11** bỏ cột `idempotencyKey` không tồn tại; **M10** thêm `Hrm:HostRole`; Minor path `/v1` |
+| 0.4.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi)* — pass 4 M3: Standby từ chối job = **400** |
 
 **Runbook** · DOC-08 §4.4 v0.4 · **ADR-013** · **ADR-012** · **ADR-010** · ADR-009 · DOC-15 **Chốt** · DOC-16 **Chốt**.  
 **Cổng:** PGD chốt v0.1 (DEC-DLV-007). Sửa runbook đã chốt = CR. Nợ: URL, sản phẩm LBS, **PostgreSQL host prod**, **RTO-failover / RTO-restore**, chu kỳ + nơi lưu backup, **lệnh CI / Dockerfile (chưa có)**, **hosting SPA**, **OTEL collector**, **luồng login Prod chưa code** (CR-002). **Không** khóa K8s. **Không** tự code. **Chưa** `02-baseline/`. Go-live **2027**. Chốt tài liệu ≠ go-live.
@@ -130,7 +131,7 @@ Bộ lập lịch (ngoài) → LBS → POST /v1/…/jobs/…   (chỉ Active —
 | 2 | Backup DB `hrm` trên Active (một DB) | TBD | DBA | Backup ID |
 | 3 | Deploy **Standby**: `Hrm.Host` + `dotnet ef database update --context AppDbContext` bằng `hrm_migrator`; nếu GRANT đổi → chạy `w1-roles.sql` phần thay đổi | TBD CI | DevOps / DBA | `/health` readiness 7 `db-*` Healthy |
 | 4 | Smoke Standby **nội bộ** (không cắt user) | TC-smoke | QC | Pass |
-| 5 | Failover LBS → node mới Active; **lật `Hrm:HostRole`** (mới = Active, cũ = Standby) | TBD | DevOps | `GET /v1/iam/me` 200 · job trên node cũ trả 422 Standby |
+| 5 | Failover LBS → node mới Active; **lật `Hrm:HostRole`** (mới = Active, cũ = Standby) | TBD | DevOps | `GET /v1/iam/me` 200 · job trên node cũ trả **400** `Host Standby` |
 | 6 | Job ON chỉ Active mới; OFF cũ | TBD | DevOps | 0 job trên Standby |
 | 7 | Smoke Prod: phép, phiếu mình, 403 lương LM, 0 INT-006 | DOC-16 smoke | QC | Pass |
 | 8 | Tắt bảo trì | TBD | DevOps | |
@@ -156,7 +157,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 | NFR-002 (DB) | `psql -U hrm_app_lev -c 'select 1 from pay.pay_line limit 1'` → *permission denied*; `pg_stat_activity` thấy **7** role `hrm_app_*`, **không** thấy `hrm_migrator` từ app | ☐ |
 | INT-004/005 | Dry-run lock **UAT** trước Prod | ☐ |
 | INT-006 | 0 request CRM sales | ☐ |
-| Job trên Standby | `POST /v1/prb/jobs/reminders/run` vào node Standby → **422** `Host Standby`; `pg_stat_activity` không có job từ Standby | ☐ |
+| Job trên Standby | `POST /v1/prb/jobs/reminders/run` vào node Standby → **400** `Host Standby` (`BadRequestException`); `pg_stat_activity` không có job từ Standby | ☐ |
 | APM | Không spike 5xx | ☐ |
 
 ## 8. Rollback

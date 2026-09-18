@@ -4,6 +4,7 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA soạn) | **Chốt** (DEC-DLV-004) |
 | 0.2 | 2026-09-18 | soạn nháp QC (trợ lý) | **Chốt** (DEC-ARC-035 · PGD) — theo **ADR-013** (một host, không GW/DB-per-service), **ADR-012** (login HRM — TC SSO bỏ, TC password thêm), **ADR-010** (không DR); ghi thực trạng test đã có trong `hrm/` (doc-review pass 3 B2) |
+| 0.2.1 | 2026-09-18 | soạn nháp SA/QC (trợ lý) | **Chốt** *(sửa lỗi)* — pass 4: mã 422 → **400**; định tính trạng thái test; cột `GitLockedAtUtc` thuộc case |
 
 **ISTQB** levels/types. Phạm vi: 7 module Must đã có DOC-07 **Chốt**.  
 **Gói DOC-16 Chốt:** chương trình + 7 file module (DEC-DLV-004). EVT/RPT chưa SRS — không TC.  
@@ -37,7 +38,7 @@ Nguồn: 7× DOC-06/07 Chốt · DOC-12 v0.4 · DOC-10 v0.2 · DOC-13 v0.3.2 (NF
 | System / E2E | QC | Client → LBS → `Hrm.Host` (Playwright `autotest/`); DEV dùng `/dev/login`, UAT/Prod dùng `POST /v1/iam/auth/login` (chưa code) |
 | UAT | Ban HR + PGD | AC Must; NFR-001 sau LBS |
 | Security | QC + IAM | 401 token giả/không `sub`; 403 lương; **login negative** (S07 blocklist, S08 khoá, S10 429, S11 reset hết hạn, một thông báo chung); `/dev/*` → 404 Prod; NFR-002/004/006/007 |
-| HA | DevOps | Failover A/S **một DC**; job trên Standby → 422 (`Hrm:HostRole`); restore thử từ backup |
+| HA | DevOps | Failover A/S **một DC**; job trên Standby → **400** `Host Standby` (`Hrm:HostRole`); restore thử từ backup |
 
 ## 4. Quy tắc catalog (khi mở file module)
 
@@ -57,12 +58,12 @@ Nguồn: 7× DOC-06/07 Chốt · DOC-12 v0.4 · DOC-10 v0.2 · DOC-13 v0.3.2 (NF
 | Module | DOC-07 | File TC module | Coverage |
 |--------|--------|----------------|----------|
 | IAM | Chốt | [identity/DOC-16](../03-modules/identity/DOC-16-test-strategy.md) **Chốt** — **còn TC OIDC Lark, phải sửa theo ADR-012** | catalog ◐; RBAC đã chạy 2026-09-04 (Partial) |
-| EMP | Chốt | [employee-profile/DOC-16](../03-modules/employee-profile/DOC-16-test-strategy.md) **Chốt** | catalog ◐; chưa chạy |
-| LEV | Chốt | [leave/DOC-16](../03-modules/leave/DOC-16-test-strategy.md) **Chốt** | catalog AC Must; chưa chạy |
-| TIM | Chốt | [timekeeping/DOC-16](../03-modules/timekeeping/DOC-16-test-strategy.md) **Chốt** | catalog ◐; chưa chạy |
-| PAY | Chốt | [payroll/DOC-16](../03-modules/payroll/DOC-16-test-strategy.md) **Chốt** | catalog ◐; chưa chạy |
-| PRB | Chốt | [probation/DOC-16](../03-modules/probation/DOC-16-test-strategy.md) **Chốt** | catalog ◐; chưa chạy |
-| LIF | Chốt | [lifecycle/DOC-16](../03-modules/lifecycle/DOC-16-test-strategy.md) **Chốt** | catalog ◐; chưa chạy |
+| EMP | Chốt | [employee-profile/DOC-16](../03-modules/employee-profile/DOC-16-test-strategy.md) **Chốt** | catalog ◐; e2e slice **Pass ◐** 2026-09-04 (`tc-run`), TC chưa rollup |
+| LEV | Chốt | [leave/DOC-16](../03-modules/leave/DOC-16-test-strategy.md) **Chốt** | catalog AC Must; e2e slice **Pass ◐** 2026-09-04, TC chưa rollup |
+| TIM | Chốt | [timekeeping/DOC-16](../03-modules/timekeeping/DOC-16-test-strategy.md) **Chốt** | catalog ◐; e2e slice **Pass ◐** 2026-09-04, TC chưa rollup |
+| PAY | Chốt | [payroll/DOC-16](../03-modules/payroll/DOC-16-test-strategy.md) **Chốt** | catalog ◐; e2e slice **Pass ◐** 2026-09-04, TC chưa rollup |
+| PRB | Chốt | [probation/DOC-16](../03-modules/probation/DOC-16-test-strategy.md) **Chốt** | catalog ◐; e2e slice **Pass ◐** 2026-09-04, TC chưa rollup |
+| LIF | Chốt | [lifecycle/DOC-16](../03-modules/lifecycle/DOC-16-test-strategy.md) **Chốt** | catalog ◐; e2e slice **Pass ◐** 2026-09-04, TC chưa rollup |
 | INT-006 | NFR-007 | TC trên LEV/LIF/PRB/IAM | catalog ◐; chưa chạy |
 | NFR-002 DB | ADR-011 W1 | role test `psql` (OQ-ARC-011) | **đã chạy** 2026-09-07/15 — 8/8 |
 | Ranh giới code | ADR-011 W2 | `Hrm.Architecture.Tests` | **đã chạy** — 9/9 |
@@ -86,7 +87,7 @@ NFR-001 **không** đo localhost.
 |------|-------|------|
 | Test module | DOC-07 Chốt; API path DOC-12 | Mọi AC Must có TC Pass |
 | UAT chương trình | 7 module TC Pass; login password UAT (CR-002 đã code) | PGD + Ban HR |
-| Go-live | DOC-17 dry-run + rollback | M6 2027 |
+| Go-live | DOC-17 dry-run + rollback | **2027** — tháng TBD DOC-15 |
 
 ## 8. Defect
 
