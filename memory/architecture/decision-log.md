@@ -487,3 +487,18 @@
 - Affects: hrm PR #57 · DOC-08 · DOC-11 · DOC-12 · R-017
 - Trace: DEC-ARC-033 · doc-review-2026-09-16-platform B1
 - Confidence: cao *(smoke trên DB thật)*
+
+### DEC-ARC-035 — Ký DOC-10 v0.2 · DOC-14 v0.2 · DOC-16 v0.2 theo ADR-010/012/013 (B2 đóng) · [2026-09-18]
+- Status: accepted *(PGD «merge ký»)*
+- Context: B2 doc-review pass 3 — ba DOC cùng thư mục còn mô tả Gateway/Lark/DR/7 service. PGD chọn sửa cả ba (DEC-ARC-033).
+- Options: *(ký bản đã soạn)*
+- Decision: **DOC-10 v0.2** — INT-001 Lark **bỏ**, không GW, adapter SMTP/Git/CRM ghi *chưa code*, payload INT-004/005 theo cột thật `LifAccessLockOutbox`. **DOC-14 v0.2** — 7 module Must + W1/W2 ghi XONG; WBS = việc còn lại cho Prod (login, adapter, guard Prod, CI, hosting, mobile); phức tạp 17 → 15. **DOC-16 v0.2** — level Architecture + role test DB thêm; TC SSO bỏ, TC password S07…S11 thêm; thực trạng 163 unit + Playwright, chưa CI.
+- Why (thư mục 04-platform phải đồng bộ một kiến trúc trước khi baseline nguyên khối)
+- Consequences:
+  - Cả 04-platform (DOC-08…17) cùng mô tả một kiến trúc. B1 (DEC-ARC-034) và B2 đóng → **gate pass 3 hết Blocker**.
+  - Còn Major có owner khác chưa làm: M4 `openapi.yaml` sinh lại (Dev) · M5 vòng đời tài khoản (BA delta IAM DOC-06/07) · M8 Prod lần đầu (DBA) · M9 replication (DevOps) · M14 forwarded headers (DevOps+Dev). Không chặn baseline tài liệu, chặn go-live.
+  - `identity/DOC-16` còn TC OIDC Lark — 03-modules, owner QC, nợ.
+  - Tiếp: **doc-review pass 4 hẹp** (DOC-10/14/16 + B1 code) → nếu PASS, mở `02-baseline/` cho 04-platform.
+- Affects: DOC-10 · DOC-14 · DOC-16 · DOC-08 §1.3
+- Trace: DEC-ARC-033 · doc-review-2026-09-16-platform B2
+- Confidence: cao

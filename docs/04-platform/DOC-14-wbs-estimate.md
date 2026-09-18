@@ -3,10 +3,10 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (PM/BA soạn) | **Chốt** (DEC-PLN-002) |
-| 0.2 | 2026-09-18 | soạn nháp PM (trợ lý) | **Draft — chờ PGD ký** — WBS theo **ADR-013** (một host, không GW/DB-per-service), **ADR-012** (login HRM), **ADR-010** (không DR); ghi nhận **7 module Must đã code, UAT DEV Pass**; phần còn lại là nợ Prod (doc-review pass 3 B2) |
+| 0.2 | 2026-09-18 | soạn nháp PM (trợ lý) | **Chốt** (DEC-ARC-035 · PGD) — WBS theo **ADR-013** (một host, không GW/DB-per-service), **ADR-012** (login HRM), **ADR-010** (không DR); ghi nhận **7 module Must đã code, UAT DEV Pass**; phần còn lại là nợ Prod (doc-review pass 3 B2) |
 
 **PMBOK WBS** · Epic / Feature / Story. Tiên quyết: DOC-03 · 7× DOC-06 **Chốt** · DOC-08 v0.4 · DOC-10–13/17 **Chốt**.  
-**Cổng:** PGD chốt v0.1 (DEC-PLN-002); v0.2 chờ ký. Nợ: velocity; FTE; EVT/RPT SRS; **ngày go-live 2027 chưa lịch**. **Không** tự DOC-16/17. **Chưa** `02-baseline/`.
+**Cổng:** PGD chốt v0.1 (DEC-PLN-002) · v0.2 (DEC-ARC-035). Nợ: velocity; FTE; EVT/RPT SRS; **ngày go-live 2027 chưa lịch**. **Không** tự DOC-16/17. **Chưa** `02-baseline/`.
 
 > **Thực tế 2026-09-18:** 7 module Must **đã code** trên một `Hrm.Host` (UAT DEV Pass), hàng rào dữ liệu W1 + test kiến trúc W2 **đã xong**. WBS v0.1 (wave theo module) đã qua. v0.2 xếp lại theo **việc còn lại để chạy Prod 2027**.
 
@@ -156,6 +156,6 @@ Ngày tháng cụ thể **TBD** DOC-15 khi có FTE.
 | Vai trò | Họ tên | Ngày | Kết quả |
 |---------|--------|------|---------|
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** v0.1 (DEC-PLN-002) |
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.2** · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-09-18 | **Chốt v0.2** (DEC-ARC-035) · ☐ `02-baseline/` |
 | PM | | 2026-08-26 | Soạn → PGD chốt |
 | BA | Trịnh Yên | 2026-08-26 | Soạn |

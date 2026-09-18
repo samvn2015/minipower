@@ -3,10 +3,10 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (INT · DEC-ARC-006) |
-| 0.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — **INT-001 (Lark IdP) bỏ** theo ADR-012; bỏ API Gateway, DR, "service" theo ADR-010/013; **adapter ra ghi rõ chưa code** (doc-review pass 3 B2/M13) |
+| 0.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-035 · PGD) — **INT-001 (Lark IdP) bỏ** theo ADR-012; bỏ API Gateway, DR, "service" theo ADR-010/013; **adapter ra ghi rõ chưa code** (doc-review pass 3 B2/M13) |
 
 **Hohpe EIP** · Adjunct DOC-08 **v0.4** · **ADR-013** (một host, không GW) · **ADR-012** (không IdP) · **ADR-010** (một DC) · ADR-005.  
-**Cổng:** PGD chốt v0.1 (DEC-ARC-006); v0.2 chờ ký. Nợ: Git/CRM API vendor; SMTP host; RTO phút; Ban HR ☐; **toàn bộ adapter ra chưa code** (R-015). **Chưa** `02-baseline/`. **Không** tự DOC-17. **Không còn INT xác thực** — đăng nhập là nội bộ HRM (ADR-012), không phải tích hợp.
+**Cổng:** PGD chốt v0.1 (DEC-ARC-006) · v0.2 (DEC-ARC-035). Nợ: Git/CRM API vendor; SMTP host; RTO phút; Ban HR ☐; **toàn bộ adapter ra chưa code** (R-015). **Chưa** `02-baseline/`. **Không** tự DOC-17. **Không còn INT xác thực** — đăng nhập là nội bộ HRM (ADR-012), không phải tích hợp.
 
 **Cấm:** INT sang CRM **bán hàng** (NFR-007).
 
@@ -171,7 +171,7 @@ Số ngưỡng % **TBD** (không bịa).
 | Vai trò | Họ tên | Ngày | Baseline |
 |---------|--------|------|----------|
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** v0.1 (DEC-ARC-006) |
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.2** · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-09-18 | **Chốt v0.2** (DEC-ARC-035) · ☐ `02-baseline/` |
 | SA | | 2026-08-26 | Soạn → PGD chốt |
 | BA (R) | Trịnh Yên | 2026-08-26 | Soạn |
 | Business Owner | Ban HR · IT | | ☐ Nợ Git/CRM API, SMTP host |
