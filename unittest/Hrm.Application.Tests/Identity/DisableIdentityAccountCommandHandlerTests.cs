@@ -1,3 +1,5 @@
+using Hrm.Domain.Employees.Repositories;
+using Hrm.Domain.Employees;
 using Hrm.Application.Identity.Admin.Commands;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
@@ -12,7 +14,8 @@ public sealed class DisableIdentityAccountCommandHandlerTests
     {
         var handler = new DisableIdentityAccountCommandHandler(
             new FakeReadRepo(HrActor),
-            new FakeAdminRepo());
+            new FakeAdminRepo(),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new DisableIdentityAccountCommand(Guid.NewGuid(), "local-dev")));
@@ -23,9 +26,11 @@ public sealed class DisableIdentityAccountCommandHandlerTests
     {
         var targetId = Guid.NewGuid();
         var admin = new FakeAdminRepo();
+        var audit = new FakeAudit();
         var handler = new DisableIdentityAccountCommandHandler(
             new FakeReadRepo(ItActor),
-            admin);
+            admin,
+            audit);
 
         var result = await handler.HandleAsync(
             new DisableIdentityAccountCommand(targetId, "it-dev"));
@@ -33,6 +38,11 @@ public sealed class DisableIdentityAccountCommandHandlerTests
         Assert.Equal(targetId, result.AccountId);
         Assert.Equal(nameof(IdentityAccountStatus.Disabled), result.Status);
         Assert.Equal(IdentityAccountStatus.Disabled, admin.LastStatus);
+        // NFR-005 (B1): disable tài khoản là hành vi IAM phải có audit — nền cho khoá/reset sau ADR-012.
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(EmpAuditActions.IamAccountDisabled, entry.Action);
+        Assert.Equal(targetId, entry.RelatedId);
+        Assert.Equal("it-dev", entry.ActorIdpSubject);
     }
 
     private static readonly IdentityAccountSnapshot HrActor = new(
@@ -79,5 +89,27 @@ public sealed class DisableIdentityAccountCommandHandlerTests
             LastStatus = status;
             return Task.CompletedTask;
         }
+    }
+
+    private sealed class FakeAudit : IIamAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 }

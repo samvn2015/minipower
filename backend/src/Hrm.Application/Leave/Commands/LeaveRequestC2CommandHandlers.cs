@@ -1,5 +1,7 @@
 using Hrm.Application.Common;
 using Hrm.Application.Leave.Dtos;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave;
 using Hrm.Domain.Leave.Repositories;
@@ -16,7 +18,8 @@ public sealed class ApproveLeaveRequestC2CommandHandler(
     IIdentityAccountReadRepository accounts,
     ILeaveRequestRepository requests,
     ILeaveTypeReadRepository leaveTypes,
-    ILeaveNotificationOutbox notifications)
+    ILeaveNotificationOutbox notifications,
+    ILevAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ApproveLeaveRequestC2Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -74,6 +77,16 @@ public sealed class ApproveLeaveRequestC2CommandHandler(
                 cancellationToken)
             .ConfigureAwait(false);
 
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.LeaveRequestC2Approved,
+                    request.EmployeeId,
+                    request.Id,
+                    command.ActorIdpSubject!,
+                    $"LeaveType={request.LeaveTypeCode}; DeductsBalance={leaveType.DeductsAnnualBalance}"),
+                cancellationToken)
+            .ConfigureAwait(false);
+
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Approved.ToString());
     }
 }
@@ -85,7 +98,8 @@ public sealed record RejectLeaveRequestC2Command(
 
 public sealed class RejectLeaveRequestC2CommandHandler(
     IIdentityAccountReadRepository accounts,
-    ILeaveRequestRepository requests)
+    ILeaveRequestRepository requests,
+    ILevAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RejectLeaveRequestC2Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -112,6 +126,16 @@ public sealed class RejectLeaveRequestC2CommandHandler(
             .ConfigureAwait(false);
         if (!rejected)
             throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối C2 được đơn.");
+
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.LeaveRequestC2Rejected,
+                    request.EmployeeId,
+                    request.Id,
+                    command.ActorIdpSubject!,
+                    command.ReviewNote),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Rejected.ToString());
     }

@@ -17,3 +17,9 @@ public interface IPrbAuditLogRepository : IEmpAuditLogRepository;
 
 /// <inheritdoc cref="ITimAuditLogRepository"/>
 public interface ILifAuditLogRepository : IEmpAuditLogRepository;
+
+/// <inheritdoc cref="ITimAuditLogRepository"/>
+public interface ILevAuditLogRepository : IEmpAuditLogRepository;
+
+/// <inheritdoc cref="ITimAuditLogRepository"/>
+public interface IIamAuditLogRepository : IEmpAuditLogRepository;

@@ -42,6 +42,8 @@ public static class InfrastructureLayerExtension
         builder.Services.AddScoped<IPayAuditLogRepository, PayAuditLogRepository>();
         builder.Services.AddScoped<IPrbAuditLogRepository, PrbAuditLogRepository>();
         builder.Services.AddScoped<ILifAuditLogRepository, LifAuditLogRepository>();
+        builder.Services.AddScoped<ILevAuditLogRepository, LevAuditLogRepository>();
+        builder.Services.AddScoped<IIamAuditLogRepository, IamAuditLogRepository>();
         builder.Services.AddScoped<ILineManagerChangeRepository, LineManagerChangeRepository>();
         builder.Services.AddScoped<ILeaveTypeReadRepository, LeaveTypeReadRepository>();
         builder.Services.AddScoped<ILeaveBalanceRepository, LeaveBalanceRepository>();

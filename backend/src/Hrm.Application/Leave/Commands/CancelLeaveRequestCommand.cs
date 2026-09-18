@@ -1,3 +1,4 @@
+using Hrm.Domain.Employees;
 using Hrm.Application.Leave.Dtos;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
@@ -16,7 +17,8 @@ public sealed class CancelLeaveRequestCommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
     ILeaveRequestRepository requests,
-    ILeaveNotificationOutbox notifications)
+    ILeaveNotificationOutbox notifications,
+    ILevAuditLogRepository auditLogs)
     : IAsyncCommandHandler<CancelLeaveRequestCommand, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -62,6 +64,16 @@ public sealed class CancelLeaveRequestCommandHandler(
                 request.Id,
                 employee.Id,
                 LeaveNotificationEvents.Cancelled,
+                cancellationToken)
+            .ConfigureAwait(false);
+
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.LeaveRequestCancelled,
+                    employee.Id,
+                    request.Id,
+                    command.ActorIdpSubject!,
+                    $"FromStatus={request.Status}"),
                 cancellationToken)
             .ConfigureAwait(false);
 

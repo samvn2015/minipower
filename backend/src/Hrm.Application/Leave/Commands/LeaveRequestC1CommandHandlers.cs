@@ -1,4 +1,5 @@
 using Hrm.Application.Leave.Dtos;
+using Hrm.Domain.Employees;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity.Repositories;
 using Hrm.Domain.Leave;
@@ -16,7 +17,8 @@ public sealed class ApproveLeaveRequestC1CommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
     ILeaveRequestRepository requests,
-    ILeaveNotificationOutbox notifications)
+    ILeaveNotificationOutbox notifications,
+    ILevAuditLogRepository auditLogs)
     : IAsyncCommandHandler<ApproveLeaveRequestC1Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -54,6 +56,16 @@ public sealed class ApproveLeaveRequestC1CommandHandler(
                 cancellationToken)
             .ConfigureAwait(false);
 
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.LeaveRequestC1Approved,
+                    request.EmployeeId,
+                    request.Id,
+                    command.ActorIdpSubject!,
+                    null),
+                cancellationToken)
+            .ConfigureAwait(false);
+
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.PendingC2.ToString());
     }
 }
@@ -66,7 +78,8 @@ public sealed record RejectLeaveRequestC1Command(
 public sealed class RejectLeaveRequestC1CommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
-    ILeaveRequestRepository requests)
+    ILeaveRequestRepository requests,
+    ILevAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RejectLeaveRequestC1Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -95,6 +108,16 @@ public sealed class RejectLeaveRequestC1CommandHandler(
             .ConfigureAwait(false);
         if (!rejected)
             throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối C1 được đơn.");
+
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.LeaveRequestC1Rejected,
+                    request!.EmployeeId,
+                    request.Id,
+                    command.ActorIdpSubject!,
+                    command.ReviewNote),
+                cancellationToken)
+            .ConfigureAwait(false);
 
         return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Rejected.ToString());
     }

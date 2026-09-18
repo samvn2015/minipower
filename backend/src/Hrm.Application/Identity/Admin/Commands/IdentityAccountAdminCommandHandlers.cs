@@ -1,5 +1,7 @@
 using Hrm.Application.Common;
 using Hrm.Application.Identity.Admin.Commands;
+using Hrm.Domain.Employees;
+using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Constants;
 using Hrm.Domain.Identity.Repositories;
@@ -11,7 +13,8 @@ namespace Hrm.Application.Identity.Admin.Commands;
 
 public sealed class AssignAccountRoleCommandHandler(
     IIdentityAccountReadRepository accounts,
-    IIdentityAccountAdminRepository admin)
+    IIdentityAccountAdminRepository admin,
+    IIamAuditLogRepository auditLogs)
     : IAsyncCommandHandler<AssignAccountRoleCommand, IdentityAccountAdminResult>
 {
     public async Task<IdentityAccountAdminResult> HandleAsync(
@@ -23,6 +26,16 @@ public sealed class AssignAccountRoleCommandHandler(
         ValidateRoleCode(command.RoleCode);
 
         await admin.AssignRoleAsync(command.AccountId, command.RoleCode, cancellationToken)
+            .ConfigureAwait(false);
+
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.IamRoleAssigned,
+                    null,
+                    command.AccountId,
+                    command.ActorIdpSubject!,
+                    $"Role={command.RoleCode}"),
+                cancellationToken)
             .ConfigureAwait(false);
 
         return await ToResultAsync(command.AccountId, cancellationToken).ConfigureAwait(false);
@@ -63,7 +76,8 @@ public sealed class AssignAccountRoleCommandHandler(
 
 public sealed class RemoveAccountRoleCommandHandler(
     IIdentityAccountReadRepository accounts,
-    IIdentityAccountAdminRepository admin)
+    IIdentityAccountAdminRepository admin,
+    IIamAuditLogRepository auditLogs)
     : IAsyncCommandHandler<RemoveAccountRoleCommand, IdentityAccountAdminResult>
 {
     public async Task<IdentityAccountAdminResult> HandleAsync(
@@ -78,6 +92,16 @@ public sealed class RemoveAccountRoleCommandHandler(
         await admin.RemoveRoleAsync(command.AccountId, command.RoleCode, cancellationToken)
             .ConfigureAwait(false);
 
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.IamRoleRemoved,
+                    null,
+                    command.AccountId,
+                    command.ActorIdpSubject!,
+                    $"Role={command.RoleCode}"),
+                cancellationToken)
+            .ConfigureAwait(false);
+
         var account = await admin.FindByIdAsync(command.AccountId, cancellationToken).ConfigureAwait(false)
             ?? throw new NotFoundException(HrmErrorCodes.NotFound, $"IdentityAccount {command.AccountId} không tồn tại.");
 
@@ -90,7 +114,8 @@ public sealed class RemoveAccountRoleCommandHandler(
 
 public sealed class DisableIdentityAccountCommandHandler(
     IIdentityAccountReadRepository accounts,
-    IIdentityAccountAdminRepository admin)
+    IIdentityAccountAdminRepository admin,
+    IIamAuditLogRepository auditLogs)
     : IAsyncCommandHandler<DisableIdentityAccountCommand, IdentityAccountAdminResult>
 {
     public async Task<IdentityAccountAdminResult> HandleAsync(
@@ -105,6 +130,16 @@ public sealed class DisableIdentityAccountCommandHandler(
         IamAccessGuard.RequireIt(actor);
 
         await admin.SetStatusAsync(command.AccountId, IdentityAccountStatus.Disabled, cancellationToken)
+            .ConfigureAwait(false);
+
+        await auditLogs.AppendAsync(
+                new EmpAuditLogEntry(
+                    EmpAuditActions.IamAccountDisabled,
+                    null,
+                    command.AccountId,
+                    command.ActorIdpSubject!,
+                    null),
+                cancellationToken)
             .ConfigureAwait(false);
 
         var account = await admin.FindByIdAsync(command.AccountId, cancellationToken).ConfigureAwait(false)

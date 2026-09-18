@@ -20,15 +20,21 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
     [Fact]
     public async Task HandleAsync_LmApproves_MovesToPendingC2()
     {
+        var audit = new FakeAudit();
         var handler = new ApproveLeaveRequestC1CommandHandler(
             new FakeAccountRepo("local-lm", "MNV-HO"),
             new FakeEmployeeRepo(),
             new FakeLeaveRequestRepo(),
-            new FakeNotify());
+            new FakeNotify(),
+            audit);
 
         var result = await handler.HandleAsync(new ApproveLeaveRequestC1Command("local-lm", RequestId));
 
         Assert.Equal("PendingC2", result.Status);
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(EmpAuditActions.LeaveRequestC1Approved, entry.Action);
+        Assert.Equal(EmployeeId, entry.EmployeeId);
+        Assert.Equal("local-lm", entry.ActorIdpSubject);
     }
 
     [Fact]
@@ -38,7 +44,8 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
             new FakeAccountRepo("local-dev", "MNV-DEV"),
             new FakeEmployeeRepo(),
             new FakeLeaveRequestRepo(),
-            new FakeNotify());
+            new FakeNotify(),
+            new FakeAudit());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new ApproveLeaveRequestC1Command("local-dev", RequestId)));
@@ -214,5 +221,27 @@ public sealed class ApproveLeaveRequestC1CommandHandlerTests
             IReadOnlyList<Guid> employeeIds,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>>([]);
+    }
+
+    private sealed class FakeAudit : ILevAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 }

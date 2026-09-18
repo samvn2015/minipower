@@ -1,3 +1,5 @@
+using Hrm.Domain.Employees.Repositories;
+using Hrm.Domain.Employees;
 using Hrm.Application.Leave.Commands;
 using Hrm.Domain.Identity;
 using Hrm.Domain.Identity.Repositories;
@@ -14,28 +16,38 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
     [Fact]
     public async Task HandleAsync_HrApproves_MovesToApproved()
     {
+        var audit = new FakeAudit();
         var handler = new ApproveLeaveRequestC2CommandHandler(
             new FakeAccountRepo("local-dev", ["IAM-ROLE-HR"]),
             new FakeLeaveRequestRepo(),
             new FakeLeaveTypeRepo(),
-            new FakeNotify());
+            new FakeNotify(),
+            audit);
 
         var result = await handler.HandleAsync(new ApproveLeaveRequestC2Command("local-dev", RequestId));
 
         Assert.Equal("Approved", result.Status);
+        // NFR-005 (B1): C2 phải để lại dòng audit bất biến, ghi đúng actor và đơn.
+        var entry = Assert.Single(audit.Entries);
+        Assert.Equal(EmpAuditActions.LeaveRequestC2Approved, entry.Action);
+        Assert.Equal(RequestId, entry.RelatedId);
+        Assert.Equal("local-dev", entry.ActorIdpSubject);
     }
 
     [Fact]
     public async Task HandleAsync_LmCannotC2_ThrowsForbidden()
     {
+        var audit = new FakeAudit();
         var handler = new ApproveLeaveRequestC2CommandHandler(
             new FakeAccountRepo("local-lm", ["IAM-ROLE-LM", "IAM-ROLE-NV"]),
             new FakeLeaveRequestRepo(),
             new FakeLeaveTypeRepo(),
-            new FakeNotify());
+            new FakeNotify(),
+            audit);
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new ApproveLeaveRequestC2Command("local-lm", RequestId)));
+        Assert.Empty(audit.Entries);
     }
 
     private sealed class FakeAccountRepo(string sub, string[] roles) : IIdentityAccountReadRepository
@@ -165,5 +177,27 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
             IReadOnlyList<Guid> employeeIds,
             CancellationToken cancellationToken = default) =>
             Task.FromResult<IReadOnlyList<ApprovedLeaveForTimesheetSnapshot>>([]);
+    }
+
+    private sealed class FakeAudit : ILevAuditLogRepository
+    {
+        public List<EmpAuditLogEntry> Entries { get; } = [];
+
+        public Task AppendAsync(EmpAuditLogEntry entry, CancellationToken cancellationToken = default)
+        {
+            Entries.Add(entry);
+            return Task.CompletedTask;
+        }
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByEmployeeIdAsync(
+            Guid employeeId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
+
+        public Task<IReadOnlyList<EmpAuditLogSnapshot>> ListByActionAsync(
+            string action,
+            int take = 50,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult<IReadOnlyList<EmpAuditLogSnapshot>>([]);
     }
 }
