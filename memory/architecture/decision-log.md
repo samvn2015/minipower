@@ -471,3 +471,19 @@
 - Affects: DOC-13 v0.3.2 · DOC-10 · DOC-14 · DOC-16 · `hrm/` LEV/IAM audit · w1-roles.sql · Hrm.Architecture.Tests
 - Trace: DEC-ARC-032 · doc-review-2026-09-16-platform B1/B2/M6
 - Confidence: cao
+
+### DEC-ARC-034 — B1 đóng: audit LEV + IAM lên code (PR #57) · [2026-09-18]
+- Status: accepted *(thực hiện DEC-ARC-033 B1(a))*
+- Context: NFR-005 đứt ở LEV/IAM (doc-review pass 3 B1).
+- Options: *(thực thi)*
+- Decision: `hrm/` PR #57 `feat/b1-lev-iam-audit` → `hrm-scaffold`: `ILevAuditLogRepository`/`IIamAuditLogRepository` (phương án A, cùng transaction); `EmpAuditLog` map vào `LevDbContext`/`IamDbContext`; allowlist test kiến trúc; 8 action mới (`LeaveRequestC1/C2Approved/Rejected`, `LeaveRequestCancelled`, `IamRoleAssigned/Removed`, `IamAccountDisabled`). **Không đổi DB** — ①a đã cấp INSERT cho 7 role.
+- Why (NFR-005 Must; IAM audit là nền cho login/khoá ADR-012)
+- Consequences:
+  - Kiểm: 163/163 unit (kiến trúc 9/9) · Playwright 10/10 · smoke live: `hrm_app_lev` ghi `LeaveRequestC2Rejected`, `hrm_app_iam` ghi `IamRoleAssigned/Removed`; `has_table_privilege(UPDATE)=false`.
+  - DOC-08 v0.4.2, DOC-11 v0.3.2: audit **7/7**; R-017 đóng.
+  - Phát hiện kèm: `/dev/login` trả **raw** không envelope — DOC-12 §3 ghi ngoại lệ.
+  - **Nợ mồ côi vẫn còn:** `LevDbContext` map 6 entity `emp` khi GRANT chỉ 4 cột — comment test đổi từ "trả bằng W3" thành "đọc qua `IEmployeeReadRepository`", chưa làm.
+  - Gate: còn ký DOC-10/14/16 v0.2 → doc-review pass 4 hẹp → `02-baseline/`.
+- Affects: hrm PR #57 · DOC-08 · DOC-11 · DOC-12 · R-017
+- Trace: DEC-ARC-033 · doc-review-2026-09-16-platform B1
+- Confidence: cao *(smoke trên DB thật)*

@@ -7,10 +7,11 @@
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ "saga TIM→PAY" và broker theo **ADR-005** (DEC-ARC-026) |
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-030 · PGD Dư Hùng) — viết lại theo **ADR-013** (modular monolith, không Gateway) và **ADR-012** (bỏ SSO). Kiến trúc đích = kiến trúc đang chạy |
 | 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — doc-review pass 3: **M2** §1.3/§5/R-004/R-012 trỏ DOC-11/12/13 bản đã ký; **M13** adapter ra ghi *chưa code*; **M10** `Hrm:HostRole`; Minor: 163 test, RK-07 đóng |
+| 0.4.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(cập nhật thực tế)* — **B1 đóng**: audit 7/7 context (PR #57); R-017 đóng |
 
 **SEI** Views and Beyond · **Kruchten 4+1**.  
 **Tiền đề:** DOC-03 / 7× DOC-06 / DOC-13 **Chốt** (chưa `02-baseline/`). EVT + RPT **chưa SRS**. Mobile **chưa có code**.  
-**Cổng SAD đã chốt** (PGD · v0.1 DEC-ARC-005 · v0.4 DEC-ARC-030). DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 **Chốt** (DEC-ARC-031). **DOC-10 / DOC-14 / DOC-16 còn mô tả GW/Lark/DR — chưa sửa** (doc-review pass 3 **B2**). Nợ: RTO phút; sản phẩm LBS; MFA (OQ-ARC-007); reset mật khẩu (OQ-DLV-011); Ban HR ☐; **văn bản khách chưa vào `assets/`** (RK-08). ADR còn hiệu lực: **013** · **012** · **010** · **009** · **005** · 001 *(chỉ §3, §5 .NET 9, §6)* · 011 *(W1/W2)*. **Không** tự DOC-17.
+**Cổng SAD đã chốt** (PGD · v0.1 DEC-ARC-005 · v0.4 DEC-ARC-030). DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 **Chốt** (DEC-ARC-031). DOC-10 v0.2 · DOC-14 v0.2 · DOC-16 v0.2 **Draft chờ ký** (B2). Nợ: RTO phút; sản phẩm LBS; MFA (OQ-ARC-007); reset mật khẩu (OQ-DLV-011); Ban HR ☐; **văn bản khách chưa vào `assets/`** (RK-08). ADR còn hiệu lực: **013** · **012** · **010** · **009** · **005** · 001 *(chỉ §3, §5 .NET 9, §6)* · 011 *(W1/W2)*. **Không** tự DOC-17.
 
 > **Mô tả một kiến trúc, không phải hai.** Từ v0.4, SAD không còn phân biệt "hiện tại" và "đích đến" (ADR-011 hệ quả tiêu cực) — hai cái trùng nhau. Mọi sơ đồ dưới đây soi từ `hrm/` ngày 2026-09-16.
 
@@ -134,7 +135,7 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | `Hrm.Host` | Composition root; pipeline §4.0; 13 controller `/v1/{ctx}/…`; `/dev/*` **chỉ Development** | .NET 9 · Jarvis Mvc/Auth/Health/OTEL |
 | IAM | Tài khoản, role, 403; **đăng nhập username/password, hash, khoá, reset** (ADR-012 — **chưa code**, CR-002) | `IamDbContext` · role `hrm_app_iam` |
 | EMP · LEV · TIM · PAY · PRB · LIF | SoT module theo DOC-06 | mỗi context một `DbContext` + role riêng |
-| Audit | `shared.emp_audit_log` — **5/7** context INSERT (EMP, TIM, PAY, PRB, LIF); **LEV, IAM chưa** (R-017 · B1); không UPDATE/DELETE | DEC-ARC-024 (phương án A) |
+| Audit | `shared.emp_audit_log` — **7/7** context INSERT qua DbContext của chính module (LEV, IAM bổ sung 2026-09-18, PR #57); không UPDATE/DELETE — `has_table_privilege` kiểm | DEC-ARC-024 (phương án A) · DEC-ARC-033 |
 | Notification | In-app + email — **trong process** (bảng `LeaveNotification`, outbox PAY export) | Không service riêng |
 | Job | T-15, T-7, N+3 — endpoint idempotent theo ngày (PRB: unique + `ExistsAsync`, RK-07 đóng; LIF: bỏ qua case đã khoá) | Bộ lập lịch ngoài (OQ-ARC-017) · **không** broker · node Standby từ chối 422 theo `Hrm:HostRole` (mặc định **Active** khi rỗng — DOC-17 §3 #2e) |
 | Adapters | mail / Git / CRM lock — **chưa code**: không package mail/HTTP client, không consumer outbox (soi 2026-09-16) | Trên LIF/Job — DOC-10 · **R-015** |
@@ -207,7 +208,7 @@ Cấu hình Prod bắt buộc (DOC-17): **8** connection string (7 context + mig
 |----------|-------|-----------|
 | Login username/password web = mobile → JWT | LBS + Host IAM | NFR-003, AG-012 · **chưa code** |
 | Token giả / không `sub` → 401 tại biên | Host pipeline | AG-012 · đã kiểm (forged token 401) |
-| LEV C2 trừ quỹ | Logic + Process — **audit LEV chưa có** (R-017), kịch bản mới kiểm được C1/C2 in-row | NFR-005 *(đứt)* |
+| LEV C2 trừ quỹ | Logic + Process — audit `LeaveRequestC2Approved/Rejected` qua `hrm_app_lev` (smoke 2026-09-18) | NFR-005 |
 | TIM/PAY 1000 dòng &lt;5s sau LBS | Process + Physical | NFR-001 |
 | NV xem phiếu; LM 403 lương | Logic | NFR-002, 004 |
 | **`psql` bằng role `hrm_app_lev` không đọc được `pay.*`** | Physical (DB) | NFR-002, AG-002, AG-015 · đã kiểm 8/8 |
@@ -272,7 +273,7 @@ Cấu hình Prod bắt buộc (DOC-17): **8** connection string (7 context + mig
 | **R-014** | Prod chưa chạy được: 8 connection string, secret, CORS, OTEL collector, hosting SPA, bộ lập lịch — toàn TBD; template Prod còn `Authority` Lark phải xoá | DOC-17 v0.4.1; guard khởi động chặn placeholder (chưa code) |
 | **R-015** | **Adapter ra chưa code** — mail, Git, CRM lock: outbox ghi nhưng không gì gửi đi → NFR-006/009, INT-002/004/005 chưa kiểm được đầu-cuối | Slice riêng khi có DOC-10 sửa; không vẽ như đã có |
 | **R-016** | **Bộ lập lịch xác thực bằng gì** — job handler đòi JWT của IT/PGD; sau ADR-012 JWT chỉ cấp qua mật khẩu người → scheduler giữ mật khẩu người (trái S07/NFR-006) | Cần cơ chế service account / secret nội bộ — OQ-ARC-019, PGD |
-| **R-017** | **NFR-005 đứt ở LEV và IAM** — SAD §4.1 nói "mọi context INSERT"; thật LEV/IAM không map `EmpAuditLog`; C1/C2 lưu in-row, role LEV có UPDATE | **B1** doc-review pass 3 — PGD chọn: chấp nhận nợ có deadline, hay code trước baseline |
+| ~~R-017~~ | ~~NFR-005 đứt ở LEV và IAM~~ — **đóng 2026-09-18** (PR #57, DEC-ARC-033): LEV ghi C1/C2/huỷ, IAM ghi gán/thu role/disable; 163 unit + smoke live | — |
 
 ## 8. Phê duyệt
 

@@ -6,6 +6,7 @@
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §2/§3 sinh lại từ schema thật, đóng doc-review **B2** (PGD ký · DEC-ARC-021) |
 | 0.3 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-013** (một DB, schema + role theo context — W1 đã xong) và **ADR-012** (bỏ SSO; lưu password hash) |
 | 0.3.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi)* — doc-review pass 3: §2 audit **5/7** context (B1); §3 ghi unique tổ hợp chưa liệt kê + cảnh báo drift; §4 tên TIM template; 29 migration |
+| 0.3.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(cập nhật thực tế)* — §2 audit **7/7** sau PR #57 (B1 đóng) |
 
 **UML / ERD khái niệm** · DOC-08 **Chốt v0.4** · **ADR-013** một instance PostgreSQL, **schema + role theo bounded context** · **ADR-012** HRM tự quản password · ADR-009 PostgreSQL.  
 **Cổng:** PGD chốt v0.1 (DEC-ARC-008). Engine: **PostgreSQL** (ADR-009). Nợ: version/host/connection; UUID vs bigint; list field master; EVT/RPT. **Chưa** `02-baseline/`.
@@ -46,7 +47,7 @@ Khung **thực thể + ranh giới schema** (bounded context) cho 7 module Must.
 [ProbationEvaluation] *───1 Employee; [ProbationCriterion] [ProbationOutcome] [ProbationExtendDuration] [ProbationReminder]
 [LifOnboardingCase] / [LifOffboardingCase] 1───* [Lif*ChecklistItem] / [Lif*ChecklistTick]
 [LifAccessLockOutbox] → INT-004/005
-[EmpAuditLog] — schema `shared`, audit dùng chung (DEC-DLV-022/024); **5/7 context ghi**: EMP, TIM, PAY, PRB, LIF. **LEV, IAM chưa** (doc-review pass 3 B1 · DOC-08 R-017). INSERT only, không UPDATE/DELETE
+[EmpAuditLog] — schema `shared`, audit dùng chung (DEC-DLV-022/024); **7/7 context ghi** (LEV, IAM bổ sung 2026-09-18 — B1). INSERT only, không UPDATE/DELETE
 ```
 
 **Ràng buộc giữ nguyên từ v0.1:** cấm bảng lương lộ cho LM (NFR-002); cấm event CRM sales. **Khác v0.2:** hàng rào NFR-002 nay **dưới tầng ứng dụng** — `psql` bằng `hrm_app_lev` không đọc được `pay.*` (kiểm 8/8, OQ-ARC-011/015). Bẫy ghi nhận: `LevDbContext` map rộng hơn quyền — query mới đụng cột `emp` ngoài 4 cột sẽ *permission denied* (ồn, không im lặng).
