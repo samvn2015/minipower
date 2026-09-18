@@ -437,3 +437,23 @@
 - Affects: DOC-11 · DOC-12 · DOC-13 · DOC-17 · OQ-DLV-010 · CR-002 §Tiền đề
 - Trace: DEC-ARC-029 · DEC-ARC-030 · DEC-ARC-027 · ADR-012 §6 · RK-13
 - Confidence: cao *(soi code)* · số mật khẩu: **vừa** *(chuẩn công khai, chưa pen test)*
+
+### DEC-ARC-032 — Doc-review pass 3 `04-platform`: ⛔ BLOCK; sửa Major thuộc SA, hai Blocker chờ PGD · [2026-09-18]
+- Status: accepted *(PGD «chạy doc-review lần ba» → «thực hiện tiếp»)*
+- Context: Pass 3 chạy bằng subagent context sạch trên DOC-08/11/12/13/17 vừa ký (DEC-ARC-030/031): **2 Blocker · 15 Major · 20 Minor** — [`memory/delivery/doc-review-2026-09-16-platform.md`](../delivery/doc-review-2026-09-16-platform.md). Agent chính đã kiểm lại 4 claim nặng nhất trên code trước khi ghi — đúng cả 4.
+- Options: *(sửa lỗi theo owner; không đổi quyết định nào)*
+- Decision: sửa ngay các finding **SA là owner và không cần PGD quyết** — v0.x.1 của DOC-08/11/12/13/17, nhãn *"sửa lỗi, không đổi quyết định"*:
+  - **M1** DOC-17: key JWT đúng tên Jarvis (`Authentication:Jwt:Bearer:IssuerSigningKeys/ValidIssuers/ValidAudiences`); **xoá `Authority`** — Jarvis thấy `Authority` là bỏ `IssuerSigningKeys`; template Prod còn `TBD-LARK-OIDC-ISSUER` → **Dev sửa template, nợ**.
+  - **M3** DOC-12 §3: envelope theo `BaseResponse` thật (`code` top-level `Hrm.Host:*`, `data`, `error{message,systemMessage,details}`); **422** cho mọi `BusinessException`; 429 chưa có đường trả. Envelope `{"error":{"code"…}}` v0.1–0.4 **chưa từng đúng**.
+  - **M2** DOC-08 §1.3/§5/R-004/R-012 trỏ bản đã ký. **M10** `Hrm:HostRole` vào DOC-08/17 (mặc định Active khi rỗng — fail-open, ghi rõ). **M11** bỏ `idempotencyKey` không tồn tại; RK-07 **đóng** (unique + `ExistsAsync` + test). **M13** adapter ra ghi *chưa code* — R-015. **M12** → **OQ-ARC-019** (scheduler xác thực bằng gì) — R-016. **M7** DOC-13: IAM DOC-06/07 **có**, thiếu delta password. **M15** → NFR-S13 (vòng đời JWT) TBD. **M6** ghi nợ trong DOC-13 §3.3 với đề xuất, **chờ PGD chốt (1)–(3)**. Minor: 29 migration, 163 = 154 + 9, S11/S12 vào §2, TIM template, unique tổ hợp, `/v1`, path `hrm/…`, **OQ-DLV-009 trùng ID → reset mật khẩu đổi thành OQ-DLV-011** (ADR-012 Accepted giữ nguyên chữ 009 — đọc kèm mục này).
+  - **B1** (NFR-005 đứt ở LEV/IAM): DOC-08/11 sửa thành **5/7 context**, R-017. **Cách đóng chờ PGD**: (a) chấp nhận nợ có deadline, hay (b) code LEV+IAM audit trước baseline.
+  - **B2** (DOC-10/14/16 còn GW/Lark/DR): **chưa sửa** — owner SA/PM/QC; **hoặc** PGD DEC baseline theo file. Chờ PGD.
+  - **Chưa sửa, có owner:** M4 `openapi.yaml` info (Dev sinh lại) · M5 vòng đời tài khoản (BA delta IAM DOC-06/07; DOC-11/12 sửa sau) · M8 Prod lần đầu (DBA tách `w1-roles.sql`) · M9 replication/promote (DevOps) · M14 LBS→host forwarded headers (DevOps+Dev) · Minor 9/10/11/13/16/17/18/19/20.
+- Why (Major M1/M3 là loại "người làm theo DOC sẽ làm sai ngay" — sửa trước; hai Blocker là lựa chọn có chi phí, thuộc PGD)
+- Consequences:
+  - Gate **vẫn BLOCK** cho tới khi PGD quyết B1 (a/b) và B2 (sửa 3 DOC / baseline theo file).
+  - Lớp lỗi lặp 3 pass: **tên cột viết tay không tồn tại** và **path thiếu `/v1`** — quy tắc: mọi cột/path trong DOC copy từ snapshot/OAS, không gõ.
+  - `appsettings.Production.json` **sai theo ADR-012** (còn `Authority` Lark) — code, nợ Dev; guard khởi động chưa có.
+- Affects: DOC-08 v0.4.1 · DOC-11 v0.3.1 · DOC-12 v0.4.1 · DOC-13 v0.3.1 · DOC-17 v0.4.1 · CR-002 · OQ-DLV-011 · OQ-ARC-019 · R-015/016/017
+- Trace: DEC-ARC-030 · DEC-ARC-031 · doc-review-2026-09-16-platform · ADR-012 · ADR-013
+- Confidence: cao *(mọi sửa đối chiếu code)*

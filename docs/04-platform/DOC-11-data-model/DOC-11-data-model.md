@@ -5,6 +5,7 @@
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (khung ER · DEC-ARC-008) |
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §2/§3 sinh lại từ schema thật, đóng doc-review **B2** (PGD ký · DEC-ARC-021) |
 | 0.3 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-013** (một DB, schema + role theo context — W1 đã xong) và **ADR-012** (bỏ SSO; lưu password hash) |
+| 0.3.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi)* — doc-review pass 3: §2 audit **5/7** context (B1); §3 ghi unique tổ hợp chưa liệt kê + cảnh báo drift; §4 tên TIM template; 29 migration |
 
 **UML / ERD khái niệm** · DOC-08 **Chốt v0.4** · **ADR-013** một instance PostgreSQL, **schema + role theo bounded context** · **ADR-012** HRM tự quản password · ADR-009 PostgreSQL.  
 **Cổng:** PGD chốt v0.1 (DEC-ARC-008). Engine: **PostgreSQL** (ADR-009). Nợ: version/host/connection; UUID vs bigint; list field master; EVT/RPT. **Chưa** `02-baseline/`.
@@ -24,7 +25,7 @@ Khung **thực thể + ranh giới schema** (bounded context) cho 7 module Must.
 | Quy ước | Giá trị |
 |---------|---------|
 | Tên entity | PascalCase |
-| PK | `Id` kiểu **Guid** — chốt trong code, 56 migration đã áp *(v0.1 ghi TBD)* |
+| PK | `Id` kiểu **Guid** — chốt trong code, 29 migration đã áp *(v0.1 ghi TBD)* |
 | FK xuyên schema | chỉ **ID**, **không FK vật lý, không join SQL chéo schema** — role của context này không thấy bảng context kia. Ngoại lệ phải có GRANT ghi trong `w1-roles.sql`; hiện **một**: `hrm_app_lev` SELECT 4 cột `emp.emp_employee` (OQ-ARC-015) |
 | Schema / role / DbContext | mỗi context một bộ: `iam`/`hrm_app_iam`/`IamDbContext` … `lif`/`hrm_app_lif`/`LifDbContext`; `shared` cho audit; `hrm_migrator` chỉ DDL (`AppDbContext`) |
 | Audit nghiệp vụ | ai/khi nào trên thực thể chốt (NFR-005) |
@@ -45,14 +46,14 @@ Khung **thực thể + ranh giới schema** (bounded context) cho 7 module Must.
 [ProbationEvaluation] *───1 Employee; [ProbationCriterion] [ProbationOutcome] [ProbationExtendDuration] [ProbationReminder]
 [LifOnboardingCase] / [LifOffboardingCase] 1───* [Lif*ChecklistItem] / [Lif*ChecklistTick]
 [LifAccessLockOutbox] → INT-004/005
-[EmpAuditLog] — schema `shared`, audit **dùng chung 7 module** (DEC-DLV-022/024); mọi role INSERT, không UPDATE/DELETE
+[EmpAuditLog] — schema `shared`, audit dùng chung (DEC-DLV-022/024); **5/7 context ghi**: EMP, TIM, PAY, PRB, LIF. **LEV, IAM chưa** (doc-review pass 3 B1 · DOC-08 R-017). INSERT only, không UPDATE/DELETE
 ```
 
 **Ràng buộc giữ nguyên từ v0.1:** cấm bảng lương lộ cho LM (NFR-002); cấm event CRM sales. **Khác v0.2:** hàng rào NFR-002 nay **dưới tầng ứng dụng** — `psql` bằng `hrm_app_lev` không đọc được `pay.*` (kiểm 8/8, OQ-ARC-011/015). Bẫy ghi nhận: `LevDbContext` map rộng hơn quyền — query mới đụng cột `emp` ngoài 4 cột sẽ *permission denied* (ồn, không im lặng).
 
 ## 3. Mô hình logic — **sinh từ schema thật**
 
-> Bảng dưới trích từ `AppDbContextModelSnapshot`, ngày 2026-09-07; schema/role bổ sung 2026-09-16 theo W1. **41 entity.** v0.1 liệt kê ~30 entity với tên khác hẳn — đó là nguồn của Blocker B2. Cột *Thuộc tính chính* rút gọn 7 cột đầu, không phải full DDL.
+> Bảng dưới trích từ `AppDbContextModelSnapshot`, ngày 2026-09-07; schema/role bổ sung 2026-09-16 theo W1. **41 entity.** Cột *Unique* chỉ liệt kê unique **một cột**; unique **tổ hợp** (LeaveBalance, PayLine, PayContractAllowance, PayMonthlyAllowance, ProbationReminder, TimesheetImportRow, TimesheetLine, TimesheetTemplateColumn, LifOn/OffChecklistTick) xem snapshot — chưa ghi ở đây. Nguồn là snapshot, **không** phải DB đang chạy: sửa DB bằng tay sẽ không lộ ở đây. v0.1 liệt kê ~30 entity với tên khác hẳn — đó là nguồn của Blocker B2. Cột *Thuộc tính chính* rút gọn 7 cột đầu, không phải full DDL.
 
 ### 3.1 IAM — 3 entity · schema `iam` · role `hrm_app_iam` · `IamDbContext`
 
@@ -139,7 +140,7 @@ Khung **thực thể + ranh giới schema** (bounded context) cho 7 module Must.
 | Employee / HĐ / KT_TV | EMP | EMP | PRB đọc, không ghi ảo |
 | Org / LM | EMP | EMP | IAM chỉ map account |
 | Loại phép, trần ngày | Catalog HR | LEV | động quy chế |
-| Mẫu Excel CC | TIM template | TIM | 1 version hiệu lực |
+| Mẫu Excel CC | `TimesheetTemplateVersion` + `TimesheetTemplateColumn` | TIM | 1 version hiệu lực |
 | PC / BH / TNCN tỷ lệ | Catalog kỳ | PAY | không hardcode luật |
 | Role HRM | IAM | IAM | gán trong HRM; **không có IdP** (ADR-012) |
 | Git/CRM user id | IT + LIF map | LIF lock | INT-004/005 |

@@ -29,7 +29,7 @@ Lấy nguyên bảng *"Phạm vi Production — đã từ chối"* của CR-001,
 | Endpoint | `POST /v1/iam/auth/login` · `change-password` · `reset-password` | ☐ |
 | Hash | Thuật toán + tham số — **TBD DOC-13** (khuyến nghị Argon2id hoặc PBKDF2 ≥ 600k vòng) | ☐ |
 | Chính sách | Độ dài/phức tạp/hạn dùng; khoá sau N lần sai; rate limit — **TBD DOC-13** (OQ-DLV-010) | ☐ |
-| Reset | Quy trình HR/IT xác minh danh tính — **TBD** (OQ-DLV-009) | ☐ |
+| Reset | Quy trình HR/IT xác minh danh tính — **TBD** (OQ-DLV-011) | ☐ |
 | MFA | TOTP tự làm hay không có — **TBD** (OQ-ARC-007 phát biểu lại) | ☐ |
 | Audit | +action: LoginSucceeded, LoginFailed, AccountLocked, PasswordChanged, PasswordReset (NFR-005) | ☐ |
 | **Không** dùng `POST /dev/login` cho Prod | Nó đối chiếu plaintext trong config — giữ 404 ngoài Development | ☑ đã đúng |
@@ -77,5 +77,5 @@ Theo `CLAUDE.md`, code chỉ mở khi tài liệu đủ. Hiện **thiếu 3 ti�
 ## Liên quan
 
 - DEC-ARC-027 · DEC-DLV-026 · DEC-DLV-025 *(bị đảo)*
-- OQ-DLV-001 *(đóng)* · OQ-DLV-009, OQ-DLV-010 *(mới)* · OQ-ARC-007 *(phát biểu lại)*
+- OQ-DLV-001 *(đóng)* · OQ-DLV-011, OQ-DLV-010 *(mới)* · OQ-ARC-007 *(phát biểu lại)*
 - RK-08: văn bản khách chưa có trong `assets/`
