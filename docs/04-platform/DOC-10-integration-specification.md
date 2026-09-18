@@ -3,9 +3,10 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (INT · DEC-ARC-006) |
+| 0.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Draft — chờ PGD ký** — **INT-001 (Lark IdP) bỏ** theo ADR-012; bỏ API Gateway, DR, "service" theo ADR-010/013; **adapter ra ghi rõ chưa code** (doc-review pass 3 B2/M13) |
 
-**Hohpe EIP** · Adjunct DOC-08 **Chốt** · ADR-001 / 002 / 003 / **007** **Accepted**.  
-**Cổng:** PGD chốt v0.1 (DEC-ARC-006). Nợ: **Lark issuer URL** (IT); Git/CRM API vendor; RTO/RPO phút; Ban HR ☐. **Chưa** `02-baseline/`. **Không** tự DOC-17. MVP INT-001 = **OIDC Lark** (ADR-007 v0.2).
+**Hohpe EIP** · Adjunct DOC-08 **v0.4** · **ADR-013** (một host, không GW) · **ADR-012** (không IdP) · **ADR-010** (một DC) · ADR-005.  
+**Cổng:** PGD chốt v0.1 (DEC-ARC-006); v0.2 chờ ký. Nợ: Git/CRM API vendor; SMTP host; RTO phút; Ban HR ☐; **toàn bộ adapter ra chưa code** (R-015). **Chưa** `02-baseline/`. **Không** tự DOC-17. **Không còn INT xác thực** — đăng nhập là nội bộ HRM (ADR-012), không phải tích hợp.
 
 **Cấm:** INT sang CRM **bán hàng** (NFR-007).
 
@@ -16,11 +17,10 @@
 ### 1.1 Bản đồ tích hợp
 
 ```text
- [Lark IdP] ←OIDC→ [LBS] → [API Gateway] → [IAM|EMP|LEV|TIM|PAY|PRB|LIF|Job|Notif]
-                                                          │
-                    [NV/HR Web · Mobile] ─────────────────┘  (chỉ qua LBS+GW+SSO)
+ [NV/HR Web · Mobile] → [LBS] → [Hrm.Host — một process: IAM|EMP|LEV|TIM|PAY|PRB|LIF|Job|Notif]
+                                  (Bearer JWT HRM ký — không IdP ngoài, không Gateway)
 
- Adapter (chỉ từ service Active):
+ Adapter ra (chỉ từ node Active) — ⚠️ CHƯA CODE, outbox mới ghi:
    TIM  ← file Excel CC (1 mẫu master)
    Notif → SMTP @minvoice.vn
    LIF  → Git (khóa TK)     secret IT, không HR
@@ -28,59 +28,44 @@
    ✗    → CRM bán hàng (không INT)
 ```
 
-Replicate Prod→DR: **nội bộ DB**, không phải INT hệ ngoài (ADR-003).
+Không có DR site (ADR-010). Backup/restore là việc nội bộ DB, không phải INT.
 
 ### 1.2 Nguyên tắc tích hợp
 
 | Principle | Mô tả |
 |-----------|-------|
-| Cổng duy nhất | Client/hệ ngoài **không** gọi thẳng microservice; trừ IdP (browser redirect) và SMTP/Git/CRM từ adapter LIF/Notif |
-| SSO bắt buộc | Mọi phiên người dùng qua IdP; GW từ chối request không token (ADR-001) |
+| Cổng duy nhất | Client/hệ ngoài đi qua **LBS → `Hrm.Host`**; không có đường vào DB hay module riêng lẻ. Chiều ra chỉ từ adapter LIF/Notif/Job |
+| Xác thực bắt buộc | Mọi request mang **Bearer JWT HRM ký**; host từ chối token thiếu/giả/không `sub` tại biên (ADR-012 §4, `RequireIdpSubject`). **Không** phải INT |
 | Idempotency | Khóa Git/CRM N+3: gọi lại cùng NV+N không tạo khóa kép lỗi; import Excel theo file-id |
 | Retry | Outbound Git/CRM/SMTP: retry hữu hạn + DLQ/alert; **không** retry tạo event CRM sales |
-| Job một nơi | Adapter/job **chỉ** node Active (ADR-003) |
+| Job một nơi | Adapter/job **chỉ** node Active (ADR-010 §5, `Hrm:HostRole`) |
 | Không PII lương qua INT | PAY không đẩy phiếu sang hệ ngoài trừ email **chính chủ** (INT-002) |
-| Split-brain | Cấm dual-Active hai DC khi gọi Git/CRM |
+| Split-brain | Cấm hai node cùng Active khi gọi Git/CRM — LBS chỉ bơm một node; `HostRole=Standby` từ chối job |
 
 ## 2. Danh mục tích hợp
 
 | INT ID | Hệ thống ngoài | Mục đích | Direction | Pattern | Protocol | Frequency | Owner |
 |--------|----------------|----------|-----------|---------|----------|-----------|-------|
-| INT-001 | **Lark** SSO IdP Cty | Xác thực user web+mobile (Google · Apple · @lhqglobal.vn) | Inbound (token) + redirect | API Gateway | **OIDC** (ADR-007) | Real-time | SH-006 |
-| INT-002 | SMTP / mail Cty | Cảnh báo, phép, phiếu, T-15/T-7 | Outbound | Point-to-point | SMTP/TLS | Event | Notif |
+| ~~INT-001~~ | ~~Lark SSO IdP~~ | **Bỏ** — ADR-012 (2026-09-15): HRM tự quản username/password, không IdP ngoài. Giữ số để trace lịch sử | — | — | — | — | — |
+| INT-002 | SMTP / mail Cty | Cảnh báo, phép, phiếu, T-15/T-7 | Outbound | Outbox → adapter *(adapter **chưa code**)* | SMTP/TLS | Event | Notif |
 | INT-003 | File Excel CC | Import công 1 mẫu master | Inbound | Upload / batch | HTTPS file | Theo kỳ / ad-hoc | TIM |
-| INT-004 | Git | Khóa tài khoản N+3 | Outbound | Point-to-point | REST/API Git **TBD** | Job N+3 | LIF + IT |
-| INT-005 | CRM **sản phẩm** | Khóa TK N+3 | Outbound | Point-to-point | API CRM **TBD** | Job N+3 | LIF + IT |
+| INT-004 | Git | Khóa tài khoản N+3 | Outbound | `LifAccessLockOutbox` → adapter *(adapter **chưa code**)* | REST/API Git **TBD** | Job N+3 | LIF + IT |
+| INT-005 | CRM **sản phẩm** | Khóa TK N+3 | Outbound | `LifAccessLockOutbox` → adapter *(adapter **chưa code**)* | API CRM **TBD** | Job N+3 | LIF + IT |
 | INT-006 | CRM **bán hàng** | — | **Cấm** | — | — | — | — |
 
 **Không** INT: máy CC hardware, ATS, sổ cái/nộp BH NN, chữ ký số CQNN.
 
 ## 3. Chi tiết tích hợp
 
-### INT-001 — SSO IdP
+### ~~INT-001 — SSO IdP~~ — **bỏ (ADR-012)**
 
-| Mục | Nội dung |
-|-----|----------|
-| **Source** | **Lark** (Feishu) — directory `@lhqglobal.vn` (DEC-DLV-010). Login: Google · Apple · mail công ty qua cổng Lark |
-| **Target** | API Gateway → IAM map `sub` → role HRM (SoT PostgreSQL) |
-| **Trigger** | Login / refresh token |
-| **Data scope** | `sub`, email (provision/linking). **Không** dùng role claim IdP làm SoT (ADR-002) |
-| **Volume** | Mọi NV/LM/HR active — số user TBD |
-| **SLA** | Phụ thuộc IdP; HRM 24/7 (ADR-003) nếu IdP sập → không login |
-| **Auth** | **OIDC** (ADR-007); cùng IdP web = mobile |
-| **Error** | 401 hết hạn; không fallback user/pass local trên ADR-001 |
-| **Mapping** | Lark `sub` → `iam_identity_account.IdpSubject` → RBAC HRM; token **ADR-002 Accepted** |
-| **HA** | IdP A/S hoặc IdP Cty; DR cùng ADR-003 |
-
-```text
-Client → LBS → GW → (401/redirect) IdP → code/token → GW validate → IAM roles → MS
-```
+Toàn bộ mục v0.1 (Lark, OIDC, JWKS, redirect qua Gateway) **không còn hiệu lực**. Xác thực nay là nội bộ: `POST /v1/iam/auth/login` → JWT HRM ký (DOC-12 §2, **chưa code** — CR-002). Không có hệ ngoài nào tham gia → không phải INT. Cột `iam_identity_account.IdpSubject` giữ tên, ngữ nghĩa = `sub` của JWT HRM (DOC-11 §3.1). Luồng JIT-provision *"first login: map IdP sub → EMP qua email"* (IAM-FR-017) **phải bỏ** — tài khoản do HR/IT tạo (DOC-08 R-012).
 
 ### INT-002 — SMTP
 
 | Mục | Nội dung |
 |-----|----------|
-| **Source** | Notification service (Active) |
+| **Source** | Notification trong `Hrm.Host` (node Active) — bảng `LeaveNotification` / outbox; **chưa có adapter SMTP** |
 | **Target** | Mail Cty `@minvoice.vn` |
 | **Trigger** | Event phép, T-15/T-7, phiếu (kỳ chốt), N+3 nhắc IT |
 | **Data scope** | To = chính chủ / HR theo FR; không BCC CRM sales |
@@ -95,12 +80,12 @@ Client → LBS → GW → (401/redirect) IdP → code/token → GW validate → 
 | Mục | Nội dung |
 |-----|----------|
 | **Source** | File xuất máy CC / HR upload — **1 mẫu** master tại một thời điểm |
-| **Target** | TIM service |
+| **Target** | TIM (`/v1/tim/imports`) |
 | **Trigger** | Upload HR |
 | **Data scope** | Cột = catalog quy chế (động); preview lỗi trước chốt |
-| **Volume** | UAT 1000 dòng &lt;5s (NFR-001) đo sau LBS+GW |
+| **Volume** | UAT 1000 dòng &lt;5s (NFR-001) đo sau LBS |
 | **SLA** | Sync request import |
-| **Auth** | SSO + role HR (403 NV/LM) |
+| **Auth** | JWT HRM + role HR (403 NV/LM) |
 | **Error** | Preview danh sách lỗi; không ghi công khi fail AC |
 | **Mapping** | DOC-11 TimesheetTemplate / ImportBatch **Chốt** khung |
 
@@ -140,10 +125,9 @@ Chi tiết field → **DOC-12** khi mở. DOC-10 chỉ khóa **hướng, hệ, c
 
 | INT | Payload mức SAD |
 |-----|-----------------|
-| INT-001 | Token IdP + claims tối thiểu (sub, email) |
 | INT-002 | to, template-id, ids nghiệp vụ (không full phiếu lương trên bus) |
 | INT-003 | file + version mẫu master |
-| INT-004/005 | employee-id, lock=true, N, idempotency-key |
+| INT-004/005 | `EmployeeId`, `EmployeeCode`, `AsOfDate` (N), `Channel`, `TargetSystems` — theo `LifAccessLockOutbox` (DOC-11 §3.7); idempotency = bỏ qua case đã `GitLockedAtUtc && CrmSpLockedAtUtc`, **không** có cột idempotency-key |
 
 ## 5. Bảo mật
 
@@ -151,18 +135,19 @@ Chi tiết field → **DOC-12** khi mở. DOC-10 chỉ khóa **hướng, hệ, c
 |-----|---------|
 | Transport | TLS 1.2+ mọi INT |
 | Secrets | Vault/IT; Git/CRM/SMTP **không** trên UI HR |
-| PII | Lương không qua INT-001/004/005 |
-| SSO | Không session local thay IdP (ADR-001) |
-| MFA | Chưa bắt (ADR-006 / OQ-ARC-007) |
+| PII | Lương không qua INT-004/005; chỉ email chính chủ (INT-002) |
+| Xác thực | JWT HRM ký; mật khẩu theo DOC-13 NFR-S07…S11 (ADR-012) — nội bộ, không INT |
+| MFA | Chưa bắt (OQ-ARC-007, phát biểu lại sau ADR-012) |
+| Bộ lập lịch gọi job | **Chưa có cơ chế** xác thực cho máy — OQ-ARC-019 |
 
 ## 6. Giám sát & Hỗ trợ
 
 | Metric | Threshold | Alert |
 |--------|-----------|-------|
-| INT-001 IdP down | GW 5xx/401 spike | Ops + IAM |
+| Login fail spike | 401/429 `POST /v1/iam/auth/login` bất thường (credential stuffing) | Ops + IAM |
 | INT-004/005 lock fail | 1 fail sau retry | IT |
 | INT-006 probe | Mọi call CRM sales | **P1** vi phạm NFR-007 |
-| Job trên Standby/DR | Count &gt; 0 | P1 ADR-003 |
+| Job trên Standby | 422 `Host Standby` hoặc job chạy từ node Standby | P1 ADR-010 |
 
 Số ngưỡng % **TBD** (không bịa).
 
@@ -170,20 +155,23 @@ Số ngưỡng % **TBD** (không bịa).
 
 | FR / NFR / ADR | INT |
 |----------------|-----|
-| ADR-001 SSO, GW, LBS | INT-001 |
-| NFR-003 web=mobile | INT-001 |
+| ADR-012 đăng nhập nội bộ | *(không INT)* — DOC-12 §2 |
+| ADR-013 một host, LBS | mọi INT đi qua `Hrm.Host` |
+| NFR-003 web=mobile | cùng JWT — không INT |
 | NFR-006 Git secret | INT-004 |
 | LIF N+3 | INT-004, INT-005 |
 | TIM 1 mẫu | INT-003 |
 | PRB-FR-011 / phép mail | INT-002 |
 | NFR-007 | INT-006 |
-| ADR-003 job Active | mọi outbound |
+| ADR-010 §5 job Active | mọi outbound |
+| R-015 adapter chưa code | INT-002/004/005 |
 
 ## 8. Phê duyệt
 
 | Vai trò | Họ tên | Ngày | Baseline |
 |---------|--------|------|----------|
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** v0.1 (DEC-ARC-006) · ☐ `02-baseline/` |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | **Chốt** v0.1 (DEC-ARC-006) |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.2** · ☐ `02-baseline/` |
 | SA | | 2026-08-26 | Soạn → PGD chốt |
 | BA (R) | Trịnh Yên | 2026-08-26 | Soạn |
-| Business Owner | Ban HR · IT | | ☐ Nợ IdP/Git/CRM API |
+| Business Owner | Ban HR · IT | | ☐ Nợ Git/CRM API, SMTP host |

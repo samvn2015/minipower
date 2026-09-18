@@ -73,6 +73,8 @@ Lỗi (`4xx`/`5xx`):
 
 `code` ở **top-level**, dạng `Hrm.Host:{suffix}` (`BaseResponse.GenerateCode`). Client unwrap `.data` (`frontend/src/api/client.ts`). `traceId` là cái để đối chiếu log/OTEL — không có `X-Request-Id`.
 
+**Ngoại lệ:** `POST /dev/login` và `GET /dev/token` trả **raw** `{accessToken, sub, expiresUtc}` — không envelope (kiểm 2026-09-18). Chỉ Development, không ai ngoài autotest phụ thuộc vào shape này.
+
 | HTTP | Khi nào | Nguồn |
 |------|---------|-------|
 | 200 / 201 | OK / created | — |
