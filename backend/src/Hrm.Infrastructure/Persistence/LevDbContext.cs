@@ -8,7 +8,8 @@ namespace Hrm.Infrastructure.Persistence;
 /// ADR-011 W1c — DbContext riêng cho bounded context **LEV** (role <c>hrm_app_lev</c>,
 /// <c>ConnectionStrings:LevDbContext</c>). Không sở hữu migration — xem <see cref="PayDbContext"/>.
 ///
-/// LEV **không** ghi <c>EmpAuditLog</c>, nên tách context không tạo giao dịch bắc cầu.
+/// LEV ghi <c>EmpAuditLog</c> (schema <c>shared</c>) cho C1/C2/huỷ phép — bổ sung 2026-09-18
+/// (doc-review pass 3 B1, NFR-005). Cùng transaction với lệnh nghiệp vụ, như PAY/TIM.
 ///
 /// LEV **có JOIN xuyên schema** sang <c>emp.emp_employee</c>: hàng đợi duyệt C1/C2 lọc theo
 /// line manager (<c>LeaveRequestRepository</c>). Đây là truy cập **được phép** theo quyết định
@@ -36,6 +37,10 @@ public class LevDbContext(DbContextOptions<LevDbContext> options) : DbContext(op
 
     public DbSet<LeaveNotification> LeaveNotifications => Set<LeaveNotification>();
 
+    /// <summary>Bảng audit dùng chung ở schema <c>shared</c> (①a + phương án A).</summary>
+    public DbSet<Domain.Employees.Entities.EmpAuditLog> EmpAuditLogs =>
+        Set<Domain.Employees.Entities.EmpAuditLog>();
+
     /// <summary>Chỉ đọc — golden record thuộc EMP (②a · DOC-11 §4).</summary>
     public DbSet<Domain.Employees.Entities.Employee> Employees =>
         Set<Domain.Employees.Entities.Employee>();
@@ -47,7 +52,8 @@ public class LevDbContext(DbContextOptions<LevDbContext> options) : DbContext(op
         modelBuilder.ApplyConfigurationsFromAssembly(
             typeof(LevDbContext).Assembly,
             type => type.Namespace == typeof(AppDbContext).Namespace + ".Configurations"
-                    && type.Name.StartsWith("Leave", StringComparison.Ordinal));
+                    && (type.Name.StartsWith("Leave", StringComparison.Ordinal)
+                        || type.Name.StartsWith("EmpAuditLog", StringComparison.Ordinal)));
 
         // Employee kéo theo cả closure navigation (EducationLevel, Contract, OrgUnit, …).
         // Map thiếu một cái là EF ném "requires a primary key", nên nạp trọn nhóm `emp`

@@ -19,3 +19,9 @@ internal sealed class PrbAuditLogRepository(PrbDbContext db)
 
 internal sealed class LifAuditLogRepository(LifDbContext db)
     : EmpAuditLogRepositoryBase(db), ILifAuditLogRepository;
+
+internal sealed class LevAuditLogRepository(LevDbContext db)
+    : EmpAuditLogRepositoryBase(db), ILevAuditLogRepository;
+
+internal sealed class IamAuditLogRepository(IamDbContext db)
+    : EmpAuditLogRepositoryBase(db), IIamAuditLogRepository;

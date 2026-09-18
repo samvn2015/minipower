@@ -41,18 +41,21 @@ public sealed class BoundedContextBoundaryTests
         [typeof(PayDbContext)] = ["EmpAuditLog"],
         [typeof(PrbDbContext)] = ["EmpAuditLog"],
         [typeof(LifDbContext)] = ["EmpAuditLog"],
-        [typeof(IamDbContext)] = [],
+        // B1 (DEC-ARC-033, 2026-09-18): IAM và LEV cũng ghi audit — NFR-005 đủ 7/7.
+        [typeof(IamDbContext)] = ["EmpAuditLog"],
 
         // ②a — LEV JOIN sang emp để lọc hàng đợi C1/C2 theo line manager.
         // Map Employee kéo theo cả closure navigation → phải liệt kê đủ.
         //
         // Lưu ý: sau khi siết OQ-ARC-015, role hrm_app_lev chỉ ĐỌC ĐƯỢC 4 cột của
         // emp_employee và KHÔNG có quyền trên 5 bảng còn lại — model map rộng hơn
-        // quyền thật. Đây là món nợ W3 phải trả bằng API, xem ADR-011.
+        // quyền thật. ADR-013 bỏ W3, nên đây là nợ mồ côi: thu hẹp bằng cách đọc EMP
+        // qua IEmployeeReadRepository thay vì map closure — chưa làm.
         [typeof(LevDbContext)] =
         [
             "Employee", "EmployeeContract", "EducationLevel",
             "OrgUnit", "SeniorityRule", "LineManagerChangeRequest",
+            "EmpAuditLog",
         ],
     };
 
