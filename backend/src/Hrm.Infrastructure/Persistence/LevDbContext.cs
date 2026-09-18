@@ -9,7 +9,8 @@ namespace Hrm.Infrastructure.Persistence;
 /// <c>ConnectionStrings:LevDbContext</c>). Không sở hữu migration — xem <see cref="PayDbContext"/>.
 ///
 /// LEV ghi <c>EmpAuditLog</c> (schema <c>shared</c>) cho C1/C2/huỷ phép — bổ sung 2026-09-18
-/// (doc-review pass 3 B1, NFR-005). Cùng transaction với lệnh nghiệp vụ, như PAY/TIM.
+/// (doc-review pass 3 B1, NFR-005). Handler bọc bằng <c>ILevAtomicScope</c> nên nghiệp vụ + outbox
+/// + audit là MỘT transaction (pass 4 M1) — PAY/TIM chưa có scope, chưa đạt mức này.
 ///
 /// LEV **có JOIN xuyên schema** sang <c>emp.emp_employee</c>: hàng đợi duyệt C1/C2 lọc theo
 /// line manager (<c>LeaveRequestRepository</c>). Đây là truy cập **được phép** theo quyết định
