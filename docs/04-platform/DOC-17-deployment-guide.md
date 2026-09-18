@@ -6,6 +6,7 @@
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ DR/DC theo **ADR-010** (DEC-ARC-017/018); thêm backup/restore |
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — thêm §2.3 bộ lập lịch job theo **ADR-005** (DEC-ARC-026) |
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — **ADR-013**: một host, một DB 8 schema / 7 role, không Gateway; **ADR-012**: bỏ Lark, secret ký JWT, kiểm `/dev/*` đóng trên Prod |
+| 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — doc-review pass 3: **M1** key JWT đúng tên Jarvis, **xoá** `Authority` khỏi template Prod; **M11** bỏ cột `idempotencyKey` không tồn tại; **M10** thêm `Hrm:HostRole`; Minor path `/v1` |
 
 **Runbook** · DOC-08 §4.4 v0.4 · **ADR-013** · **ADR-012** · **ADR-010** · ADR-009 · DOC-15 **Chốt** · DOC-16 **Chốt**.  
 **Cổng:** PGD chốt v0.1 (DEC-DLV-007). Sửa runbook đã chốt = CR. Nợ: URL, sản phẩm LBS, **PostgreSQL host prod**, **RTO-failover / RTO-restore**, chu kỳ + nơi lưu backup, **lệnh CI / Dockerfile (chưa có)**, **hosting SPA**, **OTEL collector**, **luồng login Prod chưa code** (CR-002). **Không** khóa K8s. **Không** tự code. **Chưa** `02-baseline/`. Go-live **2027**. Chốt tài liệu ≠ go-live.
@@ -38,13 +39,13 @@
 | **Engine** | PostgreSQL **16+** (ADR-009) |
 | **Connection** | **8 chuỗi**, không phải một (ADR-011 W1 · ADR-013): `ConnectionStrings:{Iam,Emp,Lev,Tim,Pay,Prb,Lif}DbContext` mỗi cái một role `hrm_app_*`, + `AppDbContext` bằng `hrm_migrator` (chỉ migrate). Vault Prod · **không** commit password |
 | ⚠️ **Bẫy** | `AddContextConnection` **rơi về chuỗi `AppDbContext`** nếu thiếu chuỗi của context → app chạy bằng `hrm_migrator`, **hàng rào NFR-002 biến mất im lặng**. Prod phải có **guard khởi động** từ chối thiếu chuỗi (chưa code — nợ) và checklist §3 kiểm đủ 8 |
-| **Role / GRANT** | DBA chạy `../hrm/backend/scripts/w1-roles.sql` **sau khi đổi mọi `CHANGE_ME_*`**; `pg_hba.conf` = `scram-sha-256` (local dev dùng `trust` — **không** mang lên Prod) |
-| **Template** | `../hrm/backend/src/Hrm.Host/appsettings.Production.json` — hiện chỉ có `AppDbContext` + 3 placeholder TBD; **chưa chạy được** |
+| **Role / GRANT** | DBA chạy `hrm/backend/scripts/w1-roles.sql` **sau khi đổi mọi `CHANGE_ME_*`**; `pg_hba.conf` = `scram-sha-256` (local dev dùng `trust` — **không** mang lên Prod) |
+| **Template** | `hrm/backend/src/Hrm.Host/appsettings.Production.json` — hiện chỉ có `AppDbContext` + 3 placeholder TBD; **chưa chạy được** |
 | **Format** | `Host={host};Port=5432;Database=hrm;Username={user};Password={secret};Pooling=true;SSL Mode=Require` |
 | **Owner cung cấp** | IT/DBA: host, user, password, SSL policy |
 | **Migrate** | `AutoMigrate` chỉ DEV — Prod: `dotnet ef database update --context AppDbContext` bằng `hrm_migrator`, chạy trên Standby trước failover (§5). Pipeline TBD CI |
 
-Local DEV: Postgres.app · `../hrm/backend/scripts/pg-local.sh` · User Secrets (xem `../hrm/README.md`).
+Local DEV: Postgres.app · `hrm/backend/scripts/pg-local.sh` · User Secrets id `4d509ed6-…` (8 chuỗi — `hrm/backend/README` mục *Kết nối*). *(Path tính từ gốc workspace `Học AI/`, không phải từ `docs/04-platform/`.)*
 
 ### 2.2 Backup & Restore (thay cho DR/DC — ADR-010 §4)
 
@@ -75,7 +76,7 @@ Backend **không có** `BackgroundService`/`IHostedService` nào (soi code 2026-
 | Ràng buộc | Giá trị |
 |---|---|
 | **Chỉ chạy trên Active** | Bộ lập lịch trỏ vào **LBS**, LBS chỉ bơm vào Active (ADR-010 §5) — không trỏ thẳng node |
-| **Idempotent theo ngày** | Gọi lại cùng ngày **không** được sinh nhắc trùng. `LifAccessLockOutbox` có `idempotencyKey`; PRB reminder **chưa kiểm** — RK-07 |
+| **Idempotent theo ngày** | Gọi lại cùng ngày **không** được sinh nhắc trùng. **PRB**: `ExistsAsync` + unique `(EmployeeId, Kind, ProbationEndDate)` trên `prb_probation_reminder`, có unit test lần 2 → `SkippedAlreadyExists` — **RK-07 đóng**. **LIF N+3**: bỏ qua case đã `GitLockedAtUtc && CrmSpLockedAtUtc` — *không* có cột `idempotencyKey` (v0.3–0.4 ghi sai) |
 | **Sản phẩm lập lịch** | **TBD** — cron OS / Jenkins / Jarvis worker (`OQ-ARC-017`) |
 | **Tần suất** | **TBD** |
 | **Giám sát** | **TBD** — job không chạy phải có cảnh báo, nếu không NFR-009 im lặng hỏng |
@@ -87,9 +88,10 @@ Backend **không có** `BackgroundService`/`IHostedService` nào (soi code 2026-
 | # | Item | Owner | Status |
 |---|------|-------|--------|
 | 1 | DOC-16 chương trình **Chốt** (DEC-DLV-004) + AC Must Pass | QC / PGD | ☑ DOC-16 · ☐ AC Pass |
-| 2 | **Secret ký JWT Prod** (`Authentication:Jwt:IssuerSigningKeys`) — sinh mới, ≥ 256 bit, **không** phải chuỗi dev trong `DevAuthController.DefaultSigningKey`; `Issuer`/`Audience` Prod | IT | ☐ |
+| 2 | **JWT Prod** — trong `Authentication:Jwt:Bearer:*` (tên key theo `Jarvis.Authentication.Jwt` — `AuthenticationJwtOption`): `IssuerSigningKeys` (mảng, ≥ 1 chuỗi ≥ 32 byte, sinh mới, **không** phải `DevAuthController.DefaultSigningKey`), `ValidIssuers`, `ValidAudiences`, `ValidateIssuerSigningKey/Issuer/Audience = true`. **`Authority` phải XOÁ / rỗng** — Jarvis thấy `Authority` là bỏ qua `IssuerSigningKeys` và validate qua metadata OIDC (`AuthenticationBuilderExtension.cs:141-163`). `Audience` (số ít) chỉ có tác dụng kèm `Authority` — không dùng | IT | ☐ |
 | 2a | `ASPNETCORE_ENVIRONMENT=Production` trên **mọi** node — sai là `POST /dev/login` / `GET /dev/token` mở với mật khẩu plaintext (ADR-012 §5 · RK-09) | DevOps | ☐ |
-| 2b | **8** connection string + `Cors` origin Prod + OTEL endpoint trong vault; 3 placeholder TBD của `appsettings.Production.json` đã thay | DevOps | ☐ |
+| 2b | **8** connection string + `Cors` origin Prod + OTEL endpoint trong vault. `appsettings.Production.json` hiện còn **`Authority: TBD-LARK-OIDC-ISSUER` + `Audience`** — hai dòng này **xoá**, không "thay"; thay `TBD-PROD-HOST/TBD` bằng vault (**Dev sửa template — nợ**) | DevOps + Dev | ☐ |
+| 2e | **`Hrm:HostRole`** = `Standby` trên node Standby, `Active` trên Active. Mặc định code là **Active** khi rỗng (`HostRoleGate.cs`) → node Standby quên key sẽ chạy job song song. Failover phải **lật** key trên cả hai node | DevOps | ☐ |
 | 2c | Luồng login Prod **đã code** (CR-002) — chính sách DOC-13 S07…S10 chốt, IAM DOC-06/07 có | Dev / PGD | ☐ |
 | 2d | Hosting **SPA** frontend (static + reverse proxy `/v1` → host) — sản phẩm TBD | DevOps | ☐ |
 | 3 | Secrets Git/CRM/SMTP vault — không HR | IT | ☐ |
@@ -104,7 +106,7 @@ Backend **không có** `BackgroundService`/`IHostedService` nào (soi code 2026-
 | Mục | Giá trị |
 |-----|---------|
 | **Cơ chế** | Username/password **HRM tự quản** → JWT **HRM ký**. Không IdP, không JWKS, không `Authority` |
-| **Vault** | `IssuerSigningKeys` · `Issuer` · `Audience` — **không** commit repo; xoay khoá = mọi token cũ hết hạn (chấp nhận) |
+| **Vault** | `Authentication:Jwt:Bearer:IssuerSigningKeys[]` · `ValidIssuers[]` · `ValidAudiences[]` — **không** commit repo. **Không có `Authority`.** Xoay khoá = mọi token cũ hết hạn (chấp nhận; TTL/logout/xoay → nợ NFR-S13 DOC-13) |
 | **Map IAM** | JWT `sub` → `iam_identity_account.IdpSubject` (tên cột giữ); roles từ schema `iam` |
 | **Cấm trên Prod** | `POST /dev/login` · `GET /dev/token` — phải trả **404** (kiểm §7). Không bao giờ dùng `DevAuth:Accounts` ngoài Development |
 | **Chưa có** | `POST /v1/iam/auth/login` / `change-password` / `reset-password` — CR-002. **Không go-live được** khi chưa có |
@@ -128,7 +130,7 @@ Bộ lập lịch (ngoài) → LBS → POST /v1/…/jobs/…   (chỉ Active —
 | 2 | Backup DB `hrm` trên Active (một DB) | TBD | DBA | Backup ID |
 | 3 | Deploy **Standby**: `Hrm.Host` + `dotnet ef database update --context AppDbContext` bằng `hrm_migrator`; nếu GRANT đổi → chạy `w1-roles.sql` phần thay đổi | TBD CI | DevOps / DBA | `/health` readiness 7 `db-*` Healthy |
 | 4 | Smoke Standby **nội bộ** (không cắt user) | TC-smoke | QC | Pass |
-| 5 | Failover LBS → node mới Active | TBD | DevOps | `/iam/me` 200 |
+| 5 | Failover LBS → node mới Active; **lật `Hrm:HostRole`** (mới = Active, cũ = Standby) | TBD | DevOps | `GET /v1/iam/me` 200 · job trên node cũ trả 422 Standby |
 | 6 | Job ON chỉ Active mới; OFF cũ | TBD | DevOps | 0 job trên Standby |
 | 7 | Smoke Prod: phép, phiếu mình, 403 lương LM, 0 INT-006 | DOC-16 smoke | QC | Pass |
 | 8 | Tắt bảo trì | TBD | DevOps | |
@@ -154,7 +156,7 @@ Quy tắc as-is **động** (DEC-DIS-014) — không đóng file nguồn trên r
 | NFR-002 (DB) | `psql -U hrm_app_lev -c 'select 1 from pay.pay_line limit 1'` → *permission denied*; `pg_stat_activity` thấy **7** role `hrm_app_*`, **không** thấy `hrm_migrator` từ app | ☐ |
 | INT-004/005 | Dry-run lock **UAT** trước Prod | ☐ |
 | INT-006 | 0 request CRM sales | ☐ |
-| Job trên Standby | Count = 0 | ☐ |
+| Job trên Standby | `POST /v1/prb/jobs/reminders/run` vào node Standby → **422** `Host Standby`; `pg_stat_activity` không có job từ Standby | ☐ |
 | APM | Không spike 5xx | ☐ |
 
 ## 8. Rollback

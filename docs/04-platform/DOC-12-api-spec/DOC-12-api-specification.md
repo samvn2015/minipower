@@ -6,6 +6,7 @@
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4 sinh lại từ Swagger runtime, đóng doc-review **B3** (PGD ký · DEC-ARC-021) |
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.3 đánh dấu hợp đồng liên service theo **ADR-005** (DEC-ARC-026) |
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-012** (bỏ SSO, thêm auth endpoint — chưa code) và **ADR-013** (một host, không Gateway; §4.3 hết là hợp đồng liên service); §3 phân trang đã hiện thực (S1) |
+| 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — §3 envelope viết lại theo `BaseResponse` Jarvis thật (doc-review pass 3 **M3**); §2/§7 trỏ NFR-S10 đã chốt (**M2**); §4 sắp lại thứ tự mục |
 
 **OAS 3.0.1** *(Swashbuckle sinh — khớp dòng đầu `openapi.yaml`)* · DOC-08 v0.4 · DOC-11 · **ADR-012** · **ADR-013** · ADR-005.  
 **SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. ⚠️ **Chưa sinh lại sau S1 phân trang (2026-09-15)** — 4 endpoint list đã có `page`/`size` + `X-Total-Count` mà file chưa phản ánh; nợ sinh lại. Nợ khác: Base URL thật; auth endpoint ADR-012 (chưa code); full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
@@ -44,31 +45,45 @@ Mọi path công khai đi **LBS → `Hrm.Host`** — **một** host, **không** 
 |------------|-------|
 | Content-Type | `application/json` |
 | Date | ISO 8601 |
-| PK | **Guid** — chốt trong code, 56 migration đã áp (đóng TBD của v0.1) |
-| Pagination | `page` (từ 1), `size` (mặc định **200**, tối đa **500**, clamp) → body là **mảng** (không đổi shape), tổng ở header **`X-Total-Count`**. Đã hiện thực S1 (2026-09-15) trên `GET /v1/emp/employees`, `GET /v1/lif/onboarding`, `GET /v1/prb/reminders`, `GET /v1/prb/evaluations`; `audit-logs` cap 200 sẵn. |
+| PK | **Guid** — chốt trong code, 29 migration đã áp (đóng TBD của v0.1) |
+| Pagination | `page` (từ 1), `size` (mặc định **200**, tối đa **500**, clamp) → `data` là **mảng** (không đổi shape so với trước khi phân trang), tổng ở header **`X-Total-Count`**. Đã hiện thực S1 (2026-09-15) trên `GET /v1/emp/employees`, `GET /v1/lif/onboarding`, `GET /v1/prb/reminders`, `GET /v1/prb/evaluations`; `audit-logs` cap 200 sẵn. |
 | Correlation | trace-id OpenTelemetry trong host. `X-Request-Id` **chưa hiện thực** — không có GW gắn |
 
-Lỗi:
+**Envelope** — mọi response đi qua `ApiResponseWrapperMiddleware` (Jarvis) và có hình `BaseResponse`. **Không** có envelope `{"error":{"code"…}}` như v0.1–v0.4 ghi — đó là viết tay, chưa từng đúng.
+
+Thành công (`2xx`):
 
 ```json
 {
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "Human readable",
-    "details": []
-  }
+  "traceId": "…", "spanId": "…", "traceParent": "00-…-01", "timestamp": "2026-09-18T…Z",
+  "code": "Hrm.Host:Success",
+  "data": [ … ]
 }
 ```
 
-| Code | Usage |
-|------|-------|
-| 200 / 201 | OK / created |
-| 400 | Validation |
-| 401 | Không/hết hạn JWT |
-| 403 | Sai role / cô lập lương |
-| 404 | Not found |
-| 409 | Conflict (unique CCCD, chốt kỳ) |
-| 500 | Internal |
+Lỗi (`4xx`/`5xx`):
+
+```json
+{
+  "traceId": "…", "spanId": "…", "traceParent": "…", "timestamp": "…",
+  "code": "Hrm.Host:<mã nghiệp vụ>",
+  "error": { "message": "Human readable", "systemMessage": null, "details": null }
+}
+```
+
+`code` ở **top-level**, dạng `Hrm.Host:{suffix}` (`BaseResponse.GenerateCode`). Client unwrap `.data` (`frontend/src/api/client.ts`). `traceId` là cái để đối chiếu log/OTEL — không có `X-Request-Id`.
+
+| HTTP | Khi nào | Nguồn |
+|------|---------|-------|
+| 200 / 201 | OK / created | — |
+| 400 | Validation, `BadRequestException` | Jarvis |
+| 401 | Không/hết hạn JWT; token không `sub` (`RequireIdpSubject`) | Jarvis Auth · host |
+| 403 | Sai role / cô lập lương — `ForbiddenException` | host guard |
+| 404 | `NotFoundException`; **và** `/dev/*` ngoài Development | Jarvis · host |
+| 409 | `ConflictException` (unique CCCD, chốt kỳ) | Jarvis |
+| **422** | **Mọi từ chối nghiệp vụ** — `BusinessException` mặc định `UnprocessableEntity` (quỹ không đủ, kỳ chưa chốt, Standby từ chối job…). Kèm log warning `BusinessRefusalLoggingMiddleware` | Jarvis |
+| 429 | Rate limit login (NFR-S10) — **chưa có đường trả**: Jarvis `RateLimitedException` đang comment trong wrapper; mở khi code CR-002 | — |
+| 500 | Internal — `code: Hrm.Host:Error` | Jarvis |
 
 ## 4. Danh mục endpoint
 
@@ -101,7 +116,7 @@ v0.1 mô tả path **không trùng chữ** với route thật. Ghi lại để n
 | `GET /prb/cases/{employeeId}` | `GET /v1/prb/cases` — list, **không** tham số employeeId |
 | `POST /prb/cases/{id}/propose\|decide` | `POST /v1/prb/evaluations/{employeeId}/propose\|decide` |
 
-### 4.3 Guard TIM↔PAY (ADR-005) — **không còn là hợp đồng liên service**
+### 4.2 Guard TIM↔PAY (ADR-005) — **không còn là hợp đồng liên service**
 
 v0.3 đánh dấu hai endpoint dưới là *hợp đồng giữa hai service* cho W3. **ADR-013 bỏ W3**: guard đọc chéo chạy **trong process** qua interface Application, không qua HTTP. Hai endpoint **giữ** cho client, là API thường:
 
@@ -112,7 +127,7 @@ v0.3 đánh dấu hai endpoint dưới là *hợp đồng giữa hai service* ch
 
 **Fail-closed** giữ nguyên: guard lỗi ⇒ từ chối, không đoán. Không có hop mạng ⇒ **không** timeout/retry (OQ-ARC-018 đóng). Đổi shape hai endpoint này là breaking change **với client**, như mọi endpoint khác.
 
-### 4.2 Nợ còn lại
+### 4.3 Nợ còn lại
 
 - **`openapi.yaml` chưa sinh lại** sau S1 phân trang — 4 endpoint list thiếu `page`/`size`/`X-Total-Count`. Sinh lại từ Swagger runtime, đổi title.
 - **Auth endpoint ADR-012** (`/v1/iam/auth/*`) chưa code, chưa có trong OAS — vào cùng CR-002.
@@ -135,7 +150,7 @@ v0.3 đánh dấu hai endpoint dưới là *hợp đồng giữa hai service* ch
 |-------|-------|
 | Rate | **TBD** (không bịa 100 req/min) |
 | Timeout LBS → host | **TBD** DOC-17 |
-| Rate limit login | **TBD** DOC-13 (OQ-DLV-010) — bắt buộc trước khi code `POST /v1/iam/auth/login` |
+| Rate limit login | **NFR-S10 đã chốt** (DOC-13 v0.3): 10 req/phút/IP + 5 req/phút/username → 429. Cần forwarded headers từ LBS (DOC-17 §4) để có IP thật |
 | NFR-001 | 1000 dòng import/tính đo sau **LBS** (không có GW) |
 
 ## 8. Truy vết

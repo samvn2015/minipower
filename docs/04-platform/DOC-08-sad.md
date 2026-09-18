@@ -6,10 +6,11 @@
 | 0.2 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.4 bỏ DC-DR theo **ADR-010** (DEC-ARC-017/018) |
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — bỏ "saga TIM→PAY" và broker theo **ADR-005** (DEC-ARC-026) |
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-030 · PGD Dư Hùng) — viết lại theo **ADR-013** (modular monolith, không Gateway) và **ADR-012** (bỏ SSO). Kiến trúc đích = kiến trúc đang chạy |
+| 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — doc-review pass 3: **M2** §1.3/§5/R-004/R-012 trỏ DOC-11/12/13 bản đã ký; **M13** adapter ra ghi *chưa code*; **M10** `Hrm:HostRole`; Minor: 163 test, RK-07 đóng |
 
 **SEI** Views and Beyond · **Kruchten 4+1**.  
 **Tiền đề:** DOC-03 / 7× DOC-06 / DOC-13 **Chốt** (chưa `02-baseline/`). EVT + RPT **chưa SRS**. Mobile **chưa có code**.  
-**Cổng SAD đã chốt** (PGD · v0.1 DEC-ARC-005 · v0.4 DEC-ARC-030). DOC-10/11/12 **Chốt** — DOC-11/12 phải sửa theo ADR-012/013 (xem §7). Nợ: RTO phút; sản phẩm LBS; chính sách mật khẩu + MFA (DOC-13); Ban HR ☐; **văn bản khách chưa vào `assets/`** (RK-08). ADR còn hiệu lực: **013** · **012** · **010** · **009** · **005** · 001 *(chỉ §3, §5 .NET 9, §6)* · 011 *(W1/W2)*. **Không** tự DOC-17.
+**Cổng SAD đã chốt** (PGD · v0.1 DEC-ARC-005 · v0.4 DEC-ARC-030). DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 **Chốt** (DEC-ARC-031). **DOC-10 / DOC-14 / DOC-16 còn mô tả GW/Lark/DR — chưa sửa** (doc-review pass 3 **B2**). Nợ: RTO phút; sản phẩm LBS; MFA (OQ-ARC-007); reset mật khẩu (OQ-DLV-011); Ban HR ☐; **văn bản khách chưa vào `assets/`** (RK-08). ADR còn hiệu lực: **013** · **012** · **010** · **009** · **005** · 001 *(chỉ §3, §5 .NET 9, §6)* · 011 *(W1/W2)*. **Không** tự DOC-17.
 
 > **Mô tả một kiến trúc, không phải hai.** Từ v0.4, SAD không còn phân biệt "hiện tại" và "đích đến" (ADR-011 hệ quả tiêu cực) — hai cái trùng nhau. Mọi sơ đồ dưới đây soi từ `hrm/` ngày 2026-09-16.
 
@@ -36,10 +37,11 @@ Mô tả kiến trúc HRM nội bộ mInvoice đủ để chốt ADR và mở DO
 |-----|----------|
 | DOC-03 | BRD Chốt — scope, CN-001…006 |
 | DOC-06 | SRS 7 module Chốt |
-| DOC-13 | NFR-001…012 Chốt v0.2; NFR mật khẩu **trống** (ADR-012) |
-| DOC-10 | **Chốt** v0.1 — INT-001 (IdP) **không còn** (ADR-012) |
-| DOC-11 | **Chốt** v0.2 (DEC-ARC-021) — §1.2 *"FK xuyên service"*, §3.1 *"không lưu password hash"* phải sửa |
-| DOC-12 | **Chốt** v0.3 — §1 *"API per service + gateway"*, §2 *"cấm password"* phải sửa |
+| DOC-13 | **Chốt v0.3** (DEC-ARC-031) — NFR-S07…S12 mật khẩu/khoá/hash/rate/reset/MFA, số đã chốt |
+| DOC-10 | Chốt v0.1 — **còn INT-001 Lark + API Gateway, chưa sửa** theo ADR-012/013 (B2) |
+| DOC-11 | **Chốt v0.3** (DEC-ARC-031) — schema/role theo context; cột password chưa migration |
+| DOC-12 | **Chốt v0.4** (DEC-ARC-031) — không GW/OIDC; auth endpoint chưa code; `openapi.yaml` chưa sinh lại sau S1 |
+| DOC-17 | **Chốt v0.4** (DEC-ARC-031) — 8 connection string, secret ký JWT, kiểm `/dev/*` 404 |
 | ADR-013 | Modular monolith có hàng rào là đích; không Gateway; giữ LBS |
 | ADR-012 | Bỏ SSO; HRM tự quản username/password |
 | ADR-011 | W1 (schema + role) · W2 (test kiến trúc) — **đã xong**, giữ; W3/W4+ bỏ |
@@ -82,7 +84,7 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | Ban HR / C&B | SoT chốt phép/công/lương/TV | Logic + Process |
 | NV / LM | Self-service 2 kênh | Logic + Process |
 | Dev / Tester | Module boundary **đo được**, test NFR | Development |
-| IT / IAM | Git/CRM N+3, không credential HR; **reset mật khẩu** (OQ-DLV-009) | Process + Physical |
+| IT / IAM | Git/CRM N+3, không credential HR; **reset mật khẩu** (OQ-DLV-011) | Process + Physical |
 | Ops | 24/7, A/S một DC, backup/restore, **một** process để vận hành | Physical · **ADR-010** · ADR-013 |
 
 ## 4. Các góc nhìn kiến trúc
@@ -113,7 +115,8 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
             MỘT instance PostgreSQL 16 (ADR-009)
 
 [Job]      bộ lập lịch NGOÀI hệ thống → POST /v1/…/jobs/… (chỉ Active — ADR-010 §5)
-[Adapter]  từ LIF / Job / Notif → SMTP, Excel, Git, CRM sản phẩm · KHÔNG → CRM bán hàng
+[Adapter]  từ LIF / Job / Notif → SMTP, Git, CRM sản phẩm · KHÔNG → CRM bán hàng
+           ⚠️ CHƯA CODE — outbox (LeaveNotification, PayExportOutbox, LifAccessLockOutbox) mới GHI, chưa có consumer/adapter gửi đi
 ```
 
 | Lớp | Trách nhiệm | Không làm |
@@ -131,10 +134,10 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | `Hrm.Host` | Composition root; pipeline §4.0; 13 controller `/v1/{ctx}/…`; `/dev/*` **chỉ Development** | .NET 9 · Jarvis Mvc/Auth/Health/OTEL |
 | IAM | Tài khoản, role, 403; **đăng nhập username/password, hash, khoá, reset** (ADR-012 — **chưa code**, CR-002) | `IamDbContext` · role `hrm_app_iam` |
 | EMP · LEV · TIM · PAY · PRB · LIF | SoT module theo DOC-06 | mỗi context một `DbContext` + role riêng |
-| Audit | `shared.emp_audit_log` — mọi context INSERT, không UPDATE/DELETE | DEC-ARC-024 (phương án A) |
+| Audit | `shared.emp_audit_log` — **5/7** context INSERT (EMP, TIM, PAY, PRB, LIF); **LEV, IAM chưa** (R-017 · B1); không UPDATE/DELETE | DEC-ARC-024 (phương án A) |
 | Notification | In-app + email — **trong process** (bảng `LeaveNotification`, outbox PAY export) | Không service riêng |
-| Job | T-15, T-7, N+3 — endpoint idempotent theo ngày | Bộ lập lịch ngoài (OQ-ARC-017) · **không** broker |
-| Adapters | Excel / mail / Git / CRM lock | Trên LIF/Job — DOC-10 |
+| Job | T-15, T-7, N+3 — endpoint idempotent theo ngày (PRB: unique + `ExistsAsync`, RK-07 đóng; LIF: bỏ qua case đã khoá) | Bộ lập lịch ngoài (OQ-ARC-017) · **không** broker · node Standby từ chối 422 theo `Hrm:HostRole` (mặc định **Active** khi rỗng — DOC-17 §3 #2e) |
+| Adapters | mail / Git / CRM lock — **chưa code**: không package mail/HTTP client, không consumer outbox (soi 2026-09-16) | Trên LIF/Job — DOC-10 · **R-015** |
 | Web client | SPA React + Vite; gọi API qua LBS | Hosting **TBD** DOC-17 |
 
 ### 4.2 Góc nhìn tiến trình (Runtime)
@@ -146,7 +149,7 @@ Xây **2026** / dùng **2027** (NFR-011). CAPEX ~1 tỷ (CN-004).
 | LEV C1→C2 trừ quỹ | Client → LBS → host LEV; notify in-process | LEV đọc `emp` **4 cột** qua GRANT (OQ-ARC-015) |
 | TIM import → chốt | LBS → host TIM; NFR-001 đo sau LBS | 1 mẫu master |
 | PAY sau công chốt | PAY **đọc guard** trạng thái kỳ TIM **trong process**; TIM đọc ngược PAY | **Không phải saga** — ADR-005; fail-closed. Hai endpoint `GET /v1/{tim,pay}/periods/{ym}` giữ cho client, **không còn là hợp đồng liên service** (DOC-12 §4.3 sửa) |
-| PRB T-15/T-7 | Bộ lập lịch → `POST /v1/prb/jobs/reminders/run` → PRB/EMP | Không LM → HR · RK-07 idempotency chưa kiểm |
+| PRB T-15/T-7 | Bộ lập lịch → `POST /v1/prb/jobs/reminders/run` → PRB/EMP | Không LM → HR · idempotent (RK-07 đóng) · **xác thực của bộ lập lịch chưa có cơ chế** sau ADR-012 (R-016) |
 | PRB HR chốt | LBS → host PRB → EMP hoặc LIF | 403 LM/NV chốt |
 | LIF N+3 | Job → LIF adapter Git/CRM | Secret IT |
 | Từ chối nghiệp vụ | `BusinessException` → `BusinessRefusalLoggingMiddleware` ghi log warning (actor, code, lý do) → wrapper trả lỗi | NFR-005 kênh log |
@@ -166,7 +169,7 @@ Cấu trúc thật `hrm/` (không phải nháp):
 | `Hrm.Infrastructure/Persistence/AppDbContext.cs` | **chỉ** migration owner (`hrm_migrator`); không repository nào dùng |
 | `backend/scripts/w1-roles.sql` | **SoT** của schema, role, GRANT — sửa GRANT phải qua review (RK-12) |
 | `unittest/Hrm.Architecture.Tests` | Test kiến trúc: chặn reference chéo context; allowlist closure `emp` cho LEV |
-| `unittest/Hrm.Domain.Tests` · `Hrm.Application.Tests` | 163 test (2026-09-16) |
+| `unittest/Hrm.Domain.Tests` · `Hrm.Application.Tests` | 11 + 143 = 154 test; cộng 9 kiến trúc = **163** (2026-09-16) |
 | `frontend/` | React + Vite; `pages/` theo module |
 | `autotest/` | Playwright API + UI |
 | `docs/03-modules/{id}/` | Artifact req |
@@ -204,12 +207,12 @@ Cấu hình Prod bắt buộc (DOC-17): **8** connection string (7 context + mig
 |----------|-------|-----------|
 | Login username/password web = mobile → JWT | LBS + Host IAM | NFR-003, AG-012 · **chưa code** |
 | Token giả / không `sub` → 401 tại biên | Host pipeline | AG-012 · đã kiểm (forged token 401) |
-| LEV C2 trừ quỹ | Logic + Process | NFR-005 |
+| LEV C2 trừ quỹ | Logic + Process — **audit LEV chưa có** (R-017), kịch bản mới kiểm được C1/C2 in-row | NFR-005 *(đứt)* |
 | TIM/PAY 1000 dòng &lt;5s sau LBS | Process + Physical | NFR-001 |
 | NV xem phiếu; LM 403 lương | Logic | NFR-002, 004 |
 | **`psql` bằng role `hrm_app_lev` không đọc được `pay.*`** | Physical (DB) | NFR-002, AG-002, AG-015 · đã kiểm 8/8 |
 | PRB T-15/T-7 + HR chốt | Process + Job | NFR-009 (PRB) |
-| LIF N+3 khóa Git/CRM | Process + Adapter | NFR-006 |
+| LIF N+3 khóa Git/CRM | Process + Adapter *(adapter chưa code — chỉ kiểm được tới outbox)* | NFR-006 |
 | Failover A/S trong DC · restore từ backup khi mất DC | Physical + Process | NFR-012a–d, AG-010, 014 |
 | Một `DbContext` mất DB → readiness 503, LBS rút node | Physical | AG-010 · đã kiểm |
 | Không notify CRM sales | Process | NFR-007 |
@@ -219,7 +222,7 @@ Cấu hình Prod bắt buộc (DOC-17): **8** connection string (7 context + mig
 | Concern | Approach | ADR ref |
 |---------|----------|---------|
 | Xác thực | **Username/password HRM tự quản** → JWT HRM ký; fail-closed; không IdP ngoài; `/dev/*` chỉ Development | **ADR-012** |
-| Chính sách mật khẩu / khoá / reset | **TBD DOC-13** (OQ-DLV-010) · quy trình reset HR/IT (OQ-DLV-009) — **chặn code login** | ADR-012 §6 · CR-002 |
+| Chính sách mật khẩu / khoá / reset | **DOC-13 NFR-S07…S11 đã chốt** (OQ-DLV-010 đóng) · quy trình reset HR/IT **còn mở** (OQ-DLV-011) — cùng IAM DOC-06/07 delta là thứ còn chặn code login | ADR-012 §6 · CR-002 |
 | MFA | Chưa bắt — *"MFA sau password?"* TOTP tự làm hay không có | OQ-ARC-007 *(phát biểu lại)* |
 | RBAC | IAM DB = SoT role; 403 màn HR; cô lập lương | ADR-013 §7(a) |
 | Ranh giới dữ liệu | Schema + role + GRANT theo cột; `AppDbContext` chỉ migrate | **ADR-011 W1** · ADR-013 |
@@ -256,7 +259,7 @@ Cấu hình Prod bắt buộc (DOC-17): **8** connection string (7 context + mig
 | R-001 | EVT/RPT chưa SRS → SAD thiếu luồng cảnh báo/báo cáo | Giữ chỗ; không API bịa |
 | R-002 | RTO-failover / RTO-restore **phút** chưa chốt | OQ-DLV-004; pattern A/S một DC đã có ADR-010 |
 | R-003 | Sản phẩm LBS, Git/CRM API vendor chưa IT cung cấp | DOC-10 **Chốt** kèm nợ; LBS → DOC-17 (OQ-DLV-002) |
-| R-004 | Chưa `02-baseline/` req | SAD v0.4 Chốt; DOC-11/12 lệch ADR-012/013 — **sửa trước baseline** (RK-13) |
+| R-004 | Chưa `02-baseline/` req | DOC-08/11/12/13/17 đã đồng bộ ADR-012/013; **doc-review pass 3 (2026-09-16) BLOCK** — B1 NFR-005 LEV/IAM, B2 DOC-10/14/16 chưa sửa |
 | R-005 | Ban HR chưa ký | Nợ cổng nghiệp vụ |
 | R-006 | HTML MCP / DOC-16 trống | Không chặn SAD |
 | R-007 | ~~Saga TIM→PAY~~ — **đóng hẳn**: guard trong process, không hop mạng (ADR-005 · ADR-013) | — |
@@ -264,9 +267,12 @@ Cấu hình Prod bắt buộc (DOC-17): **8** connection string (7 context + mig
 | **R-009** | **Văn bản khách chưa vào `assets/`** — ADR-010/012/013 đứng trên lời PGD; thư đang qua bưu điện | **RK-08** — khi nhận: đối chiếu *"không cần"* cả ba mục + RK-01 |
 | **R-010** | Blast radius một process: module rò bộ nhớ kéo cả host | **RK-11** — A/S failover + readiness theo context; không thêm gì ở MVP |
 | **R-011** | GRANT "tiện tay" hoặc chạy app bằng `hrm_migrator` → hàng rào NFR-002 biến mất **im lặng** | **RK-12** — `w1-roles.sql` là SoT; review PR soi GRANT; test kiến trúc vào CI (**CI chưa có**) |
-| **R-012** | Login Prod **chưa code**; chính sách mật khẩu, reset, MFA trống | CR-002 gated: IAM DOC-06/07 + DOC-13 trước (OQ-DLV-009/010, OQ-ARC-007) |
+| **R-012** | Login Prod **chưa code**; vòng đời tài khoản sau ADR-012 (tạo/cấp mật khẩu đầu/unlock/audit đăng nhập) chưa có trong DOC-11/12; code còn **JIT-provision** tại `GET /v1/iam/me` thời IdP (IAM-FR-017) phải bỏ | CR-002 gated: IAM DOC-06/07 **delta** (BA) + OQ-DLV-011 + OQ-ARC-007. Policy đã có (DOC-13 v0.3) |
 | **R-013** | Mobile chưa có code; SAD chỉ giữ chỗ | Cùng API/JWT — không thiết kế riêng cho tới khi có FR |
-| **R-014** | Prod chưa chạy được: 8 connection string, secret, CORS, OTEL collector, hosting SPA, bộ lập lịch — toàn TBD | DOC-17 v0.4 slice riêng; guard khởi động chặn placeholder |
+| **R-014** | Prod chưa chạy được: 8 connection string, secret, CORS, OTEL collector, hosting SPA, bộ lập lịch — toàn TBD; template Prod còn `Authority` Lark phải xoá | DOC-17 v0.4.1; guard khởi động chặn placeholder (chưa code) |
+| **R-015** | **Adapter ra chưa code** — mail, Git, CRM lock: outbox ghi nhưng không gì gửi đi → NFR-006/009, INT-002/004/005 chưa kiểm được đầu-cuối | Slice riêng khi có DOC-10 sửa; không vẽ như đã có |
+| **R-016** | **Bộ lập lịch xác thực bằng gì** — job handler đòi JWT của IT/PGD; sau ADR-012 JWT chỉ cấp qua mật khẩu người → scheduler giữ mật khẩu người (trái S07/NFR-006) | Cần cơ chế service account / secret nội bộ — OQ-ARC-019, PGD |
+| **R-017** | **NFR-005 đứt ở LEV và IAM** — SAD §4.1 nói "mọi context INSERT"; thật LEV/IAM không map `EmpAuditLog`; C1/C2 lưu in-row, role LEV có UPDATE | **B1** doc-review pass 3 — PGD chọn: chấp nhận nợ có deadline, hay code trước baseline |
 
 ## 8. Phê duyệt
 
