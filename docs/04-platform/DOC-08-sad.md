@@ -11,7 +11,7 @@
 
 **SEI** Views and Beyond · **Kruchten 4+1**.  
 **Tiền đề:** DOC-03 / 7× DOC-06 / DOC-13 **Chốt** (chưa `02-baseline/`). EVT + RPT **chưa SRS**. Mobile **chưa có code**.  
-**Cổng SAD đã chốt** (PGD · v0.1 DEC-ARC-005 · v0.4 DEC-ARC-030). DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 **Chốt** (DEC-ARC-031). DOC-10 v0.2 · DOC-14 v0.2 · DOC-16 v0.2 **Draft chờ ký** (B2). Nợ: RTO phút; sản phẩm LBS; MFA (OQ-ARC-007); reset mật khẩu (OQ-DLV-011); Ban HR ☐; **văn bản khách chưa vào `assets/`** (RK-08). ADR còn hiệu lực: **013** · **012** · **010** · **009** · **005** · 001 *(chỉ §3, §5 .NET 9, §6)* · 011 *(W1/W2)*. **Không** tự DOC-17.
+**Cổng SAD đã chốt** (PGD · v0.1 DEC-ARC-005 · v0.4 DEC-ARC-030). DOC-11 v0.3 · DOC-12 v0.4 · DOC-13 v0.3 · DOC-17 v0.4 **Chốt** (DEC-ARC-031). DOC-10 v0.2 · DOC-14 v0.2 · DOC-16 v0.2 **Chốt** (DEC-ARC-035). Nợ: RTO phút; sản phẩm LBS; MFA (OQ-ARC-007); reset mật khẩu (OQ-DLV-011); Ban HR ☐; **văn bản khách chưa vào `assets/`** (RK-08). ADR còn hiệu lực: **013** · **012** · **010** · **009** · **005** · 001 *(chỉ §3, §5 .NET 9, §6)* · 011 *(W1/W2)*. **Không** tự DOC-17.
 
 > **Mô tả một kiến trúc, không phải hai.** Từ v0.4, SAD không còn phân biệt "hiện tại" và "đích đến" (ADR-011 hệ quả tiêu cực) — hai cái trùng nhau. Mọi sơ đồ dưới đây soi từ `hrm/` ngày 2026-09-16.
 
@@ -39,7 +39,7 @@ Mô tả kiến trúc HRM nội bộ mInvoice đủ để chốt ADR và mở DO
 | DOC-03 | BRD Chốt — scope, CN-001…006 |
 | DOC-06 | SRS 7 module Chốt |
 | DOC-13 | **Chốt v0.3** (DEC-ARC-031) — NFR-S07…S12 mật khẩu/khoá/hash/rate/reset/MFA, số đã chốt |
-| DOC-10 | Chốt v0.1 — **còn INT-001 Lark + API Gateway, chưa sửa** theo ADR-012/013 (B2) |
+| DOC-10 | **Chốt v0.2** (DEC-ARC-035) — INT-001 bỏ; adapter ra chưa code (R-015) |
 | DOC-11 | **Chốt v0.3** (DEC-ARC-031) — schema/role theo context; cột password chưa migration |
 | DOC-12 | **Chốt v0.4** (DEC-ARC-031) — không GW/OIDC; auth endpoint chưa code; `openapi.yaml` chưa sinh lại sau S1 |
 | DOC-17 | **Chốt v0.4** (DEC-ARC-031) — 8 connection string, secret ký JWT, kiểm `/dev/*` 404 |

@@ -3,11 +3,11 @@
 | Phiên bản | Ngày | Tác giả | Trạng thái |
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (QC/BA soạn) | **Chốt** (DEC-DLV-004) |
-| 0.2 | 2026-09-18 | soạn nháp QC (trợ lý) | **Draft — chờ PGD ký** — theo **ADR-013** (một host, không GW/DB-per-service), **ADR-012** (login HRM — TC SSO bỏ, TC password thêm), **ADR-010** (không DR); ghi thực trạng test đã có trong `hrm/` (doc-review pass 3 B2) |
+| 0.2 | 2026-09-18 | soạn nháp QC (trợ lý) | **Chốt** (DEC-ARC-035 · PGD) — theo **ADR-013** (một host, không GW/DB-per-service), **ADR-012** (login HRM — TC SSO bỏ, TC password thêm), **ADR-010** (không DR); ghi thực trạng test đã có trong `hrm/` (doc-review pass 3 B2) |
 
 **ISTQB** levels/types. Phạm vi: 7 module Must đã có DOC-07 **Chốt**.  
 **Gói DOC-16 Chốt:** chương trình + 7 file module (DEC-DLV-004). EVT/RPT chưa SRS — không TC.  
-**Cổng:** PGD chốt v0.1; v0.2 chờ ký. Sửa catalog/chiến lược đã chốt = CR. **Không** tự code. **Chưa** `02-baseline/`. EVT/RPT: chưa SRS → chưa TC Must.
+**Cổng:** PGD chốt v0.1 (DEC-DLV-004) · v0.2 (DEC-ARC-035). Sửa catalog/chiến lược đã chốt = CR. **Không** tự code. **Chưa** `02-baseline/`. EVT/RPT: chưa SRS → chưa TC Must.
 
 > **Thực trạng 2026-09-18** (soi `hrm/`): unit **163** (Domain 11 · Application 143 · **Architecture 9**) · Playwright autotest API + UI (login DEV, luồng đăng nhập → dashboard) · script e2e API theo module (`memory/delivery/tc-run-*`). **Chưa có CI** — test chạy tay. Module `identity/DOC-16` còn TC OIDC Lark (Partial) → **phải sửa theo ADR-012** (ngoài slice này, owner QC).
 
@@ -97,6 +97,6 @@ Theo glossary DOC-16 (Blocker/Major/Minor). Blocker 403 lương / role đọc ch
 | Vai trò | Họ tên | Ngày | Kết quả |
 |---------|--------|------|---------|
 | Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-08-26 | ☑ Chốt v0.1 (DEC-DLV-004) |
-| Sponsor **(A)** | Mr. Dư Hùng, PGD | | ☐ **ký v0.2** |
+| Sponsor **(A)** | Mr. Dư Hùng, PGD | 2026-09-18 | ☑ **Chốt v0.2** (DEC-ARC-035) |
 | QC | | | Catalog Chốt; chưa execute |
 | BA | Trịnh Yên | 2026-08-26 | Soạn |
