@@ -151,9 +151,12 @@ internal sealed class LeaveRequestRepository(LevDbContext db) : ILeaveRequestRep
         bool deductsAnnualBalance,
         CancellationToken cancellationToken = default)
     {
-        await using var transaction = await db.Database
-            .BeginTransactionAsync(cancellationToken)
-            .ConfigureAwait(false);
+        // Handler bọc cả lệnh trong ILevAtomicScope; chỉ tự mở transaction khi bị gọi trần.
+        var ownsTransaction = db.Database.CurrentTransaction is null;
+        var transaction = ownsTransaction
+            ? await db.Database.BeginTransactionAsync(cancellationToken).ConfigureAwait(false)
+            : null;
+        await using var _ = transaction;
 
         var entity = await db.LeaveRequests
             .FirstOrDefaultAsync(x => x.Id == id, cancellationToken)
@@ -180,7 +183,8 @@ internal sealed class LeaveRequestRepository(LevDbContext db) : ILeaveRequestRep
         entity.C2ReviewNote = null;
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
-        await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
+        if (transaction is not null)
+            await transaction.CommitAsync(cancellationToken).ConfigureAwait(false);
         return true;
     }
 

@@ -1,3 +1,4 @@
+using Hrm.Application.Tests.Common;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Employees;
 using Hrm.Application.Leave.Commands;
@@ -22,7 +23,8 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
             new FakeLeaveRequestRepo(),
             new FakeLeaveTypeRepo(),
             new FakeNotify(),
-            audit);
+            audit,
+            new FakeAtomicScope());
 
         var result = await handler.HandleAsync(new ApproveLeaveRequestC2Command("local-dev", RequestId));
 
@@ -43,7 +45,8 @@ public sealed class ApproveLeaveRequestC2CommandHandlerTests
             new FakeLeaveRequestRepo(),
             new FakeLeaveTypeRepo(),
             new FakeNotify(),
-            audit);
+            audit,
+            new FakeAtomicScope());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new ApproveLeaveRequestC2Command("local-lm", RequestId)));

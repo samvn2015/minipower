@@ -1,3 +1,4 @@
+using Hrm.Application.Tests.Common;
 using Hrm.Domain.Employees.Repositories;
 using Hrm.Domain.Employees;
 using Hrm.Application.Identity.Admin.Commands;
@@ -15,7 +16,8 @@ public sealed class DisableIdentityAccountCommandHandlerTests
         var handler = new DisableIdentityAccountCommandHandler(
             new FakeReadRepo(HrActor),
             new FakeAdminRepo(),
-            new FakeAudit());
+            new FakeAudit(),
+            new FakeAtomicScope());
 
         await Assert.ThrowsAsync<ForbiddenException>(() =>
             handler.HandleAsync(new DisableIdentityAccountCommand(Guid.NewGuid(), "local-dev")));
@@ -30,7 +32,8 @@ public sealed class DisableIdentityAccountCommandHandlerTests
         var handler = new DisableIdentityAccountCommandHandler(
             new FakeReadRepo(ItActor),
             admin,
-            audit);
+            audit,
+            new FakeAtomicScope());
 
         var result = await handler.HandleAsync(
             new DisableIdentityAccountCommand(targetId, "it-dev"));
@@ -71,23 +74,23 @@ public sealed class DisableIdentityAccountCommandHandlerTests
     {
         public IdentityAccountStatus? LastStatus { get; private set; }
 
-        public Task AssignRoleAsync(Guid accountId, string roleCode, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
+        public Task<bool> AssignRoleAsync(Guid accountId, string roleCode, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
 
         public Task<IdentityAccountSnapshot?> FindByIdAsync(Guid id, CancellationToken cancellationToken = default)
             => Task.FromResult<IdentityAccountSnapshot?>(new IdentityAccountSnapshot(
-                id, "target", "Target", null, null, IdentityAccountStatus.Disabled, []));
+                id, "target", "Target", null, null, IdentityAccountStatus.Active, []));
 
         public Task<IReadOnlyList<IdentityAccountSnapshot>> ListAsync(CancellationToken cancellationToken = default)
             => Task.FromResult<IReadOnlyList<IdentityAccountSnapshot>>([]);
 
-        public Task RemoveRoleAsync(Guid accountId, string roleCode, CancellationToken cancellationToken = default)
-            => Task.CompletedTask;
+        public Task<bool> RemoveRoleAsync(Guid accountId, string roleCode, CancellationToken cancellationToken = default)
+            => Task.FromResult(true);
 
-        public Task SetStatusAsync(Guid accountId, IdentityAccountStatus status, CancellationToken cancellationToken = default)
+        public Task<bool> SetStatusAsync(Guid accountId, IdentityAccountStatus status, CancellationToken cancellationToken = default)
         {
             LastStatus = status;
-            return Task.CompletedTask;
+            return Task.FromResult(true);
         }
     }
 

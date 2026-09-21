@@ -43,7 +43,7 @@ internal sealed class IdentityAccountAdminRepository(IamDbContext db)
             .FirstOrDefaultAsync(cancellationToken);
     }
 
-    public async Task AssignRoleAsync(
+    public async Task<bool> AssignRoleAsync(
         Guid accountId,
         string roleCode,
         CancellationToken cancellationToken = default)
@@ -58,7 +58,7 @@ internal sealed class IdentityAccountAdminRepository(IamDbContext db)
                       && ar.RoleCode == roleCode,
                 cancellationToken);
         if (exists)
-            return;
+            return false;
 
         var roleExists = await db.Roles.AnyAsync(r => r.RoleCode == roleCode, cancellationToken);
         if (!roleExists)
@@ -71,9 +71,10 @@ internal sealed class IdentityAccountAdminRepository(IamDbContext db)
         });
 
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
     }
 
-    public async Task RemoveRoleAsync(
+    public async Task<bool> RemoveRoleAsync(
         Guid accountId,
         string roleCode,
         CancellationToken cancellationToken = default)
@@ -83,13 +84,14 @@ internal sealed class IdentityAccountAdminRepository(IamDbContext db)
                 ar => ar.AccountId == accountId && ar.RoleCode == roleCode,
                 cancellationToken);
         if (link is null)
-            return;
+            return false;
 
         db.AccountRoles.Remove(link);
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
     }
 
-    public async Task SetStatusAsync(
+    public async Task<bool> SetStatusAsync(
         Guid accountId,
         IdentityAccountStatus status,
         CancellationToken cancellationToken = default)
@@ -97,9 +99,12 @@ internal sealed class IdentityAccountAdminRepository(IamDbContext db)
         var account = await db.IdentityAccounts
             .FirstOrDefaultAsync(a => a.Id == accountId, cancellationToken);
         if (account is null)
-            return;
+            return false;
+        if (account.Status == status)
+            return false;
 
         account.Status = status;
         await db.SaveChangesAsync(cancellationToken).ConfigureAwait(false);
+        return true;
     }
 }

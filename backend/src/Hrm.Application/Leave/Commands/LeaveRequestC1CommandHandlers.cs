@@ -18,7 +18,8 @@ public sealed class ApproveLeaveRequestC1CommandHandler(
     IEmployeeReadRepository employees,
     ILeaveRequestRepository requests,
     ILeaveNotificationOutbox notifications,
-    ILevAuditLogRepository auditLogs)
+    ILevAuditLogRepository auditLogs,
+    ILevAtomicScope scope)
     : IAsyncCommandHandler<ApproveLeaveRequestC1Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -42,31 +43,35 @@ public sealed class ApproveLeaveRequestC1CommandHandler(
             throw new ConflictException(HrmErrorCodes.Conflict, "Đơn không còn chờ duyệt C1.");
         }
 
-        var approved = await requests
-            .ApproveC1Async(command.RequestId, command.ActorIdpSubject!, cancellationToken)
-            .ConfigureAwait(false);
-        if (!approved)
-            throw new NotFoundException(HrmErrorCodes.NotFound, "Không duyệt C1 được đơn.");
+        // M1 (pass 4): nghiệp vụ + outbox + audit trong MỘT transaction — audit fail thì rollback cả.
+        return await scope.RunAsync(async ct =>
+        {
+            var approved = await requests
+                .ApproveC1Async(command.RequestId, command.ActorIdpSubject!, ct)
+                .ConfigureAwait(false);
+            if (!approved)
+                throw new NotFoundException(HrmErrorCodes.NotFound, "Không duyệt C1 được đơn.");
 
-        await LeaveNotify.EmitAsync(
-                notifications,
-                request.Id,
-                request.EmployeeId,
-                LeaveNotificationEvents.C1Approved,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.LeaveRequestC1Approved,
-                    request.EmployeeId,
+            await LeaveNotify.EmitAsync(
+                    notifications,
                     request.Id,
-                    command.ActorIdpSubject!,
-                    null),
-                cancellationToken)
-            .ConfigureAwait(false);
+                    request.EmployeeId,
+                    LeaveNotificationEvents.C1Approved,
+                    ct)
+                .ConfigureAwait(false);
 
-        return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.PendingC2.ToString());
+            await auditLogs.AppendAsync(
+                    new EmpAuditLogEntry(
+                        EmpAuditActions.LeaveRequestC1Approved,
+                        request.EmployeeId,
+                        request.Id,
+                        command.ActorIdpSubject!,
+                        null),
+                    ct)
+                .ConfigureAwait(false);
+
+            return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.PendingC2.ToString());
+        }, cancellationToken).ConfigureAwait(false);
     }
 }
 
@@ -79,7 +84,8 @@ public sealed class RejectLeaveRequestC1CommandHandler(
     IIdentityAccountReadRepository accounts,
     IEmployeeReadRepository employees,
     ILeaveRequestRepository requests,
-    ILevAuditLogRepository auditLogs)
+    ILevAuditLogRepository auditLogs,
+    ILevAtomicScope scope)
     : IAsyncCommandHandler<RejectLeaveRequestC1Command, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -103,22 +109,26 @@ public sealed class RejectLeaveRequestC1CommandHandler(
             throw new ConflictException(HrmErrorCodes.Conflict, "Đơn không còn chờ duyệt C1.");
         }
 
-        var rejected = await requests
-            .RejectC1Async(command.RequestId, command.ActorIdpSubject!, command.ReviewNote, cancellationToken)
-            .ConfigureAwait(false);
-        if (!rejected)
-            throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối C1 được đơn.");
+        // M1 (pass 4): nghiệp vụ + outbox + audit trong MỘT transaction — audit fail thì rollback cả.
+        return await scope.RunAsync(async ct =>
+        {
+            var rejected = await requests
+                .RejectC1Async(command.RequestId, command.ActorIdpSubject!, command.ReviewNote, cancellationToken)
+                .ConfigureAwait(false);
+            if (!rejected)
+                throw new NotFoundException(HrmErrorCodes.NotFound, "Không từ chối C1 được đơn.");
 
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.LeaveRequestC1Rejected,
-                    request!.EmployeeId,
-                    request.Id,
-                    command.ActorIdpSubject!,
-                    command.ReviewNote),
-                cancellationToken)
-            .ConfigureAwait(false);
+            await auditLogs.AppendAsync(
+                    new EmpAuditLogEntry(
+                        EmpAuditActions.LeaveRequestC1Rejected,
+                        request!.EmployeeId,
+                        request.Id,
+                        command.ActorIdpSubject!,
+                        command.ReviewNote),
+                    cancellationToken)
+                .ConfigureAwait(false);
 
-        return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Rejected.ToString());
+            return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Rejected.ToString());
+        }, cancellationToken).ConfigureAwait(false);
     }
 }

@@ -18,7 +18,8 @@ public sealed class CancelLeaveRequestCommandHandler(
     IEmployeeReadRepository employees,
     ILeaveRequestRepository requests,
     ILeaveNotificationOutbox notifications,
-    ILevAuditLogRepository auditLogs)
+    ILevAuditLogRepository auditLogs,
+    ILevAtomicScope scope)
     : IAsyncCommandHandler<CancelLeaveRequestCommand, LeaveRequestActionResult>
 {
     public async Task<LeaveRequestActionResult> HandleAsync(
@@ -53,30 +54,34 @@ public sealed class CancelLeaveRequestCommandHandler(
             throw new ConflictException(HrmErrorCodes.Conflict, "Đơn không thể hủy ở trạng thái hiện tại.");
         }
 
-        var cancelled = await requests
-            .CancelByEmployeeAsync(command.RequestId, employee.Id, cancellationToken)
-            .ConfigureAwait(false);
-        if (!cancelled)
-            throw new NotFoundException(HrmErrorCodes.NotFound, "Không hủy được đơn.");
+        // M1 (pass 4): nghiệp vụ + outbox + audit trong MỘT transaction — audit fail thì rollback cả.
+        return await scope.RunAsync(async ct =>
+        {
+            var cancelled = await requests
+                .CancelByEmployeeAsync(command.RequestId, employee.Id, ct)
+                .ConfigureAwait(false);
+            if (!cancelled)
+                throw new NotFoundException(HrmErrorCodes.NotFound, "Không hủy được đơn.");
 
-        await LeaveNotify.EmitAsync(
-                notifications,
-                request.Id,
-                employee.Id,
-                LeaveNotificationEvents.Cancelled,
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        await auditLogs.AppendAsync(
-                new EmpAuditLogEntry(
-                    EmpAuditActions.LeaveRequestCancelled,
-                    employee.Id,
+            await LeaveNotify.EmitAsync(
+                    notifications,
                     request.Id,
-                    command.ActorIdpSubject!,
-                    $"FromStatus={request.Status}"),
-                cancellationToken)
-            .ConfigureAwait(false);
+                    employee.Id,
+                    LeaveNotificationEvents.Cancelled,
+                    ct)
+                .ConfigureAwait(false);
 
-        return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Cancelled.ToString());
+            await auditLogs.AppendAsync(
+                    new EmpAuditLogEntry(
+                        EmpAuditActions.LeaveRequestCancelled,
+                        employee.Id,
+                        request.Id,
+                        command.ActorIdpSubject!,
+                        $"FromStatus={request.Status}"),
+                    ct)
+                .ConfigureAwait(false);
+
+            return new LeaveRequestActionResult(command.RequestId, LeaveRequestStatus.Cancelled.ToString());
+        }, cancellationToken).ConfigureAwait(false);
     }
 }

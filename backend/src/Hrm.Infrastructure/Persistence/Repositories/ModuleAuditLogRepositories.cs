@@ -2,8 +2,9 @@ using Hrm.Domain.Employees.Repositories;
 
 namespace Hrm.Infrastructure.Persistence.Repositories;
 
-// ADR-011 W1c phương án A — mỗi bounded context ghi audit bằng DbContext của mình,
-// giữ lệnh nghiệp vụ và dòng audit trong một transaction. Logic ở EmpAuditLogRepositoryBase.
+// ADR-011 W1c phương án A — mỗi bounded context ghi audit bằng DbContext của mình.
+// Một transaction chỉ khi handler bọc IAtomicScope (LEV, IAM đã; 5 context còn lại chưa — pass 4 M1).
+// Logic ở EmpAuditLogRepositoryBase.
 
 internal sealed class EmpAuditLogRepository(EmpDbContext db)
     : EmpAuditLogRepositoryBase(db), IEmpAuditLogRepository;

@@ -1,8 +1,10 @@
 namespace Hrm.Domain.Employees.Repositories;
 
 /// <summary>
-/// ADR-011 W1c — audit ghi bằng DbContext của **chính module đó**, để lệnh nghiệp vụ và
-/// dòng audit nằm trong **một** transaction (NFR-005 "0 sót").
+/// ADR-011 W1c — audit ghi bằng DbContext của **chính module đó**. Cùng DbContext là điều
+/// kiện CẦN cho "một transaction" (NFR-005 "0 sót"), KHÔNG đủ: mỗi repository tự
+/// <c>SaveChanges</c> nên audit vẫn ở transaction riêng trừ khi handler bọc bằng
+/// <c>IAtomicScope</c> (doc-review pass 4 M1). Đã bọc: LEV, IAM. Chưa: EMP, TIM, PAY, PRB, LIF — nợ.
 ///
 /// Bảng <c>emp_audit_log</c> vẫn dùng chung ở schema <c>shared</c> (quyết định ①a,
 /// DEC-DLV-022/024) — mỗi role đã có INSERT sẵn. Chỉ tách *đường vào*, không tách dữ liệu.

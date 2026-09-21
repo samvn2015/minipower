@@ -10,7 +10,7 @@ namespace Hrm.Infrastructure.Persistence;
 ///
 /// IAM ghi <c>EmpAuditLog</c> (schema <c>shared</c>) cho gán/thu role và disable — bổ sung
 /// 2026-09-18 (doc-review pass 3 B1). Đây cũng là chỗ audit đăng nhập/khoá sẽ ghi khi CR-002
-/// mở code (ADR-012, NFR-005). Cùng transaction với lệnh nghiệp vụ, như PAY/TIM.
+/// mở code (ADR-012, NFR-005). Handler bọc bằng <c>IIamAtomicScope</c> — một transaction (pass 4 M1).
 /// </summary>
 public class IamDbContext(DbContextOptions<IamDbContext> options) : DbContext(options)
 {
