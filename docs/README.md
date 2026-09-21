@@ -13,7 +13,7 @@ Khung folder **generic** — không gắn ngành, module hay dự án cụ thể
 
 | Mục | Giá trị ban đầu |
 |-----|-----------------|
-| **Baseline hiện tại** | *(chưa baseline — draft)* |
+| **Baseline hiện tại** | **BL-1.0** (2026-09-21) — scope `04-platform` · [manifest](02-baseline/v1.0/manifest.yaml) · modules/project chưa |
 | **Module list** | *(điền trong `01-project/DOC-03-brd.md`)* |
 
 ## Cấu trúc

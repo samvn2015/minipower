@@ -1,9 +1,80 @@
-# Snapshot manifest — điền khi baseline sign-off
+# Snapshot manifest — BL-1.0
 baseline_id: BL-1.0
-date: null
-signed_by: null
-files: []
-# Ví dụ:
-#   - path: 03-modules/{module-id}/DOC-06-srs.md
-#     version: "1.0"
-#     sha256: "..."
+date: 2026-09-21
+scope: 04-platform (DOC-08, DOC-09 ADR, DOC-10, DOC-11, DOC-12 + openapi.yaml, DOC-13, DOC-14, DOC-16, DOC-17)
+signed_by: Mr. Dư Hùng, PGD (A) — DEC-ARC-037
+gate: doc-review pass 3 (2026-09-16, BLOCK → đóng DEC-ARC-032…036) · pass 4 hẹp (2026-09-18, 0 Blocker; điều kiện M3/M4/M5/M6 đóng)
+excluded: 01-project, 03-modules, 00-governance — chưa baseline (v1.1+)
+files:
+  - path: 04-platform/DOC-08-sad.md
+    version: "0.4.3"
+    sha256: "3cdef76fd88cdb1e17d5babf5f9afdf163d6ed60158e0bb131118e1180aedc47"
+  - path: 04-platform/DOC-09-adr/ADR-001-stack-style-hosting.md
+    version: "0.2"
+    sha256: "5db68e1d0e866ada4228ed912d67767eaa174b7af1d4b355a6d90a2b79e87704"
+  - path: 04-platform/DOC-09-adr/ADR-002-sso-token.md
+    version: "0.1"
+    sha256: "8ba06783904c52cde091057e0ef9821ba37bd5e2b6ba21b1316438c5f21170e0"
+  - path: 04-platform/DOC-09-adr/ADR-003-ha-dr-active-standby.md
+    version: "0.1"
+    sha256: "881fae5aeb70317789cd9bbd342ecafe604d5b5b7b57b0ad9a3db443621b0059"
+  - path: 04-platform/DOC-09-adr/ADR-005-broker-va-coupling-tim-pay.md
+    version: "0.1"
+    sha256: "2bd448f3b8692996c63aa63482f1baf3baf4eebef12538f2038351ecfb895dfe"
+  - path: 04-platform/DOC-09-adr/ADR-007-idp-oidc.md
+    version: "0.2"
+    sha256: "5438cbd67f1ad1a205106e9019055f4e77a4836cbf6ced8cab8bbb5b05d12755"
+  - path: 04-platform/DOC-09-adr/ADR-008-react-go-k8s.md
+    version: "0.1"
+    sha256: "e8d0fb42cc421f12eeee48b6484db46cffb24c3415f3492945621639859f6aa2"
+  - path: 04-platform/DOC-09-adr/ADR-009-postgresql.md
+    version: "0.1"
+    sha256: "cdc978257e4efdf7dd1969689a7875922ca9ec8c547eb2611a7486c1333aa40e"
+  - path: 04-platform/DOC-09-adr/ADR-010-ha-single-dc-active-standby.md
+    version: "0.3"
+    sha256: "e8ab39793fb97da26d97aea3f77035163de044789b588755430135edcdbc27e7"
+  - path: 04-platform/DOC-09-adr/ADR-011-lo-trinh-tach-service.md
+    version: "0.1"
+    sha256: "f13ae3efe8ed6853e881699d3bf510fb30d5f9e72f94fc844bafd33285db8982"
+  - path: 04-platform/DOC-09-adr/ADR-012-bo-sso-password-tu-quan.md
+    version: "0.1"
+    sha256: "45733d70eb7d15fe1b5f3570a035f41e126b229664d16fd8d15a4dbc90e85b7a"
+  - path: 04-platform/DOC-09-adr/ADR-013-modular-monolith-kien-truc-dich.md
+    version: "0.1"
+    sha256: "7604f2bf0ffafdd4764063a8d06133821a734f3690d405b49a60ce847079917f"
+  - path: 04-platform/DOC-09-adr/README.md
+    version: "—"
+    sha256: "7825e761d71516b088c858af69947ceb0fb0d36cd027d730d6c371e70b7149fa"
+  - path: 04-platform/DOC-10-integration-specification.md
+    version: "0.2.1"
+    sha256: "af63fb16bc916683a9f25fe822ec0a0ac4d672c618cf81591eae94f745e979db"
+  - path: 04-platform/DOC-11-data-model/DOC-11-data-model.md
+    version: "0.3.2"
+    sha256: "d2cca99dd4ceb005ace4d423932934b889b781db4028e56e5468ddb177b61fcf"
+  - path: 04-platform/DOC-11-data-model/README.md
+    version: "—"
+    sha256: "640ee98cf52fc5783cc69aaf34dbbcf3efe258da369c792f4bef691fa07b401d"
+  - path: 04-platform/DOC-12-api-spec/DOC-12-api-specification.md
+    version: "0.4.3"
+    sha256: "17b6635ae41bf3098493b3b50ec962af10f21df12aaac81de2eb1eefd8e8f761"
+  - path: 04-platform/DOC-12-api-spec/README.md
+    version: "—"
+    sha256: "d6f444137bc053e9b11fafae5db837305d232d33e762f858b285b29597e2dc78"
+  - path: 04-platform/DOC-12-api-spec/openapi.yaml
+    version: "0.4.3"
+    sha256: "6d0d1e6f10779c643c92888ca91cf8ad8e5041172c0b565907784ec227c6c24b"
+  - path: 04-platform/DOC-13-nfr.md
+    version: "0.3.3"
+    sha256: "4a918f2315330dedb34caa91f3ace0c1c739f1fdbe272fa754b0fe6c266f67d5"
+  - path: 04-platform/DOC-14-wbs-estimate.md
+    version: "0.2.1"
+    sha256: "d35c4740897128fbe3e1b7ed8221adad9907219699ba1df398079e7c63ada155"
+  - path: 04-platform/DOC-16-test-strategy.md
+    version: "0.2.1"
+    sha256: "56124364ac3c81e74ae6f43ce58c5162918749214fc56b5caa90a772ea79ed4f"
+  - path: 04-platform/DOC-17-deployment-guide.md
+    version: "0.4.2"
+    sha256: "f20f20e5cfa6a5454071a3ac5ad5d1476f6270bf83c35476c1b057d9c68f5aab"
+  - path: 04-platform/README.md
+    version: "—"
+    sha256: "5c9479cac92b810aac554d3c881e432493af3546ef3b1f6e794194229b542d57"
