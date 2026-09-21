@@ -307,3 +307,21 @@
 - Affects: identity · CR-002 · DEC-DLV-025 · OQ-DLV-001 *(đóng)* · UAT §1
 - Trace: DEC-ARC-027 · CR-001 · CR-002
 - Confidence: cao
+
+### DEC-DLV-027 — Chốt quy trình reset mật khẩu (OQ-DLV-011) · [2026-09-18]
+- Status: accepted *(PGD Dư Hùng — chọn slice chat OQ-DLV-011)*
+- Context: ADR-012 bỏ SSO; DOC-13 đã chốt policy MK (NFR-S07–S12, reset một lần 24h). OQ-DLV-011 còn mở: ai xác minh danh tính, kênh nào. Code login vẫn chặn IAM DOC-06 FR + DOC-07 AC (DEC-DLV-026). Premise: không chốt quy trình → CR-002 Prod không hoàn chỉnh; làm self-service email = lệch DOC-13/ADR-012 RK-10.
+- Options:
+  - A Self-service “quên MK” gửi link/email — NV tự reset
+  - B **NV ticket + HR/IT xác minh MNV/CCCD/email công ty (trực tiếp hoặc ticket manager) → HR/IT gọi `POST /v1/iam/auth/reset-password` (CR-002) → MK một lần 24h, bắt đổi, audit**
+  - C IT/HR chat gửi MK tạm, không ticket
+- Decision: chọn **B**
+- Why: loại A vì không còn IdP và DOC-13 không mô tả self-service; loại C vì không audit / dễ lộ MK. B khớp RK-10 “quy trình HR” và NFR reset một lần 24h.
+- Consequences:
+  - OQ-DLV-011 **đóng**.
+  - **Không** implement `POST reset-password` trong slice này.
+  - **Không** sửa IAM DOC-06/07 Chốt — BA mở CR FR/AC (xác minh + negative: sai CCCD, hết hạn 24h, tái dùng token).
+  - Gate code login **vẫn chặn** đến khi CR IAM + endpoint.
+- Affects: identity · OQ-DLV-011 · CR-002 · DOC-13
+- Trace: ADR-012 RK-10 · DEC-DLV-026 · CR-002 · `memory/delivery/open-questions.md`
+- Confidence: cao *(quy trình)* · vừa *(chi tiết form xác minh — BA CR)*
