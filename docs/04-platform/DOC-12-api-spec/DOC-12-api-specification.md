@@ -8,9 +8,10 @@
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-012** (bỏ SSO, thêm auth endpoint — chưa code) và **ADR-013** (một host, không Gateway; §4.3 hết là hợp đồng liên service); §3 phân trang đã hiện thực (S1) |
 | 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — §3 envelope viết lại theo `BaseResponse` Jarvis thật (doc-review pass 3 **M3**); §2/§7 trỏ NFR-S10 đã chốt (**M2**); §4 sắp lại thứ tự mục |
 | 0.4.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi)* — pass 4 **M3**: từ chối nghiệp vụ = **400** (`BadRequestException`), 422 chưa từng xuất hiện |
+| 0.4.3 | 2026-09-21 | soạn nháp SA (trợ lý) | **Chốt** *(cập nhật SoT)* — `openapi.yaml` **sinh lại** từ runtime (pass 3 M4 đóng); `X-Total-Count` nợ khai báo |
 
 **OAS 3.0.1** *(Swashbuckle sinh — khớp dòng đầu `openapi.yaml`)* · DOC-08 v0.4 · DOC-11 · **ADR-012** · **ADR-013** · ADR-005.  
-**SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. ⚠️ **Chưa sinh lại sau S1 phân trang (2026-09-15)** — 4 endpoint list đã có `page`/`size` + `X-Total-Count` mà file chưa phản ánh; nợ sinh lại. Nợ khác: Base URL thật; auth endpoint ADR-012 (chưa code); full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
+**SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh lại từ Swagger runtime 2026-09-21** (82 path / 88 op / 34 schema), round-trip verify; chỉ khối `info` đặt tay (ghi ở đầu file). `page`/`size` có trên 4 endpoint list; **`X-Total-Count` chưa khai báo trong OAS** (thiếu `ProducesResponseType` header — nợ Dev). Nợ khác: Base URL thật; auth endpoint ADR-012 (chưa code); full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
 
 ---
 
@@ -18,7 +19,7 @@
 
 | Mục | Giá trị |
 |-----|---------|
-| **API title** | HRM API *(Swagger hiện in "HRM Gateway API" — sửa title khi sinh lại OAS)* |
+| **API title** | HRM API *(runtime Swashbuckle in `Hrm.Host`; `info` trong yaml đặt tay khi sinh — pass 3 M4)* |
 | **Version** | v1 |
 | **Base URL** | `{public-host}/v1` — **TBD** DOC-17 (không bịa DNS) |
 | **OpenAPI file** | `openapi.yaml` |
@@ -132,7 +133,7 @@ v0.3 đánh dấu hai endpoint dưới là *hợp đồng giữa hai service* ch
 
 ### 4.3 Nợ còn lại
 
-- **`openapi.yaml` chưa sinh lại** sau S1 phân trang — 4 endpoint list thiếu `page`/`size`/`X-Total-Count`. Sinh lại từ Swagger runtime, đổi title.
+- **`X-Total-Count`** chưa khai báo trong OAS (4 endpoint phân trang) — thêm `[ProducesResponseType]` header rồi sinh lại. Dev.
 - **Auth endpoint ADR-012** (`/v1/iam/auth/*`) chưa code, chưa có trong OAS — vào cùng CR-002.
 - `/dev/*` xuất hiện trong OAS vì Swagger sinh từ runtime Development. Trên Prod hai path này trả 404.
 
