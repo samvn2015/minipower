@@ -523,3 +523,23 @@
 - Affects: hrm PR #60 · DOC-08 v0.4.3 · DOC-10 v0.2.1 · DOC-12 v0.4.2 · DOC-14 v0.2.1 · DOC-16 v0.2.1 · DOC-17 v0.4.2 · R-018 · DEC-ARC-034 *(đính chính)*
 - Trace: doc-review pass 4 (agent ac52ab0c) · DEC-ARC-032…035
 - Confidence: cao *(rollback kiểm trên DB thật; 400 đếm code 93/0)*
+
+### DEC-ARC-037 — M6 đóng (giữ S08 = 5) · `openapi.yaml` sinh lại · **BL-1.0 baseline `04-platform`** · [2026-09-21]
+- Status: accepted *(PGD «làm tiếp» sau pass 4 — SA lấy phương án (a) như đề xuất; đổi sang (b) = một câu)*
+- Context: Pass 4 để lại một điều kiện: DOC-13 S08/S10 AC1 tự mâu thuẫn. Reviewer: sửa xong grep 3 chỗ là mở baseline được, không cần pass 5. `openapi.yaml` (SoT máy) stale từ S1 (pass 3 M4) — baseline file cũ là baseline sai.
+- Options: M6 **(a)** giữ S08 = 5, AC1 "đã khoá" · (b) S10 = 4 req/phút/username
+- Decision:
+  - **M6 (a)** — DOC-13 v0.3.3: cửa sổ cố định 60 s; 5 lần sai liên tiếp đã qua rate limit = khoá bất kể thời gian; AC1/AC2/AC3 viết lại; Minor 6/7: 4 trường hợp thông báo byte-giống trừ `traceId`, median chênh < 20 ms/100 mẫu; blocklist = **một file SoT** `hrm/backend/resources/password-blocklist.txt` (chưa có) từ HIBP top-100k, ghi ngày + SHA-256.
+  - **`openapi.yaml` sinh lại** từ `GET /swagger/v1/swagger.json` của host đang chạy (ruby JSON→YAML, round-trip OK): 82 path / 88 op / 34 schema; `page`/`size` có trên 4 endpoint; **`X-Total-Count` chưa khai báo** (thiếu `ProducesResponseType` — nợ Dev). Chỉ khối `info` đặt tay, ghi ở đầu file. Pass 3 M4 đóng.
+  - Grep 3 điều kiện pass 4: `422` 0 hit ngoài phủ định · `5/7` 0 hit ngoài lịch sử · "chưa khoá" 0 hit.
+  - **BL-1.0** — `docs/02-baseline/v1.0/04-platform/` = 24 file (DOC-08 v0.4.3, ADR-001…013, DOC-10 v0.2.1, DOC-11 v0.3.2, DOC-12 v0.4.3 + OAS, DOC-13 v0.3.3, DOC-14 v0.2.1, DOC-16 v0.2.1, DOC-17 v0.4.2), `manifest.yaml` có sha256 từng file. `baseline-history` dòng đầu; `doc-registry` 9 dòng platform Status = Baseline; `docs/README` Baseline hiện tại = BL-1.0.
+  - **Ngoài BL-1.0:** `01-project`, `03-modules`, `00-governance` → v1.1+.
+  - Ghi nhận **DEC-DLV-027** (phiên song song, 2026-09-18): quy trình reset = NV ticket → HR/IT xác minh MNV + CCCD/email → `POST reset-password` → MK một lần 24 h; **OQ-DLV-011 đóng**. Khớp DOC-13 S11.
+- Why (điều kiện pass 4 đóng hết; SoT máy phải khớp runtime trước khi đóng băng; scope baseline nêu rõ để không ai đọc BL-1.0 tưởng module đã baseline)
+- Consequences:
+  - **Từ giờ, sửa `04-platform` = CR** (`06-changes/`), theo CLAUDE.md và `02-baseline/README`.
+  - Code login (CR-002) còn chặn bởi **đúng một thứ**: IAM DOC-06/07 delta (BA) — policy, reset, số đều đã chốt.
+  - Nợ code có owner: R-018 atomic 5 context · `X-Total-Count` OAS · blocklist file · JIT-provision bỏ · guard Prod · `ALTER DEFAULT PRIVILEGES` `shared` · forwarded headers.
+- Affects: DOC-13 v0.3.3 · DOC-12 v0.4.3 · `openapi.yaml` · `02-baseline/v1.0` · baseline-history · doc-registry · docs/README · 04-platform/README
+- Trace: DEC-ARC-036 · doc-review pass 4 · DEC-DLV-027
+- Confidence: cao

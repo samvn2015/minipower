@@ -1,6 +1,6 @@
 # DOC Registry — {Tên dự án}
 
-| Cập nhật | 2026-09-05 |
+| Cập nhật | 2026-09-21 |
 |----------|------------|
 
 ## Execute artifacts (HRM — không baseline)
@@ -60,7 +60,15 @@
 
 | Path | DOC | Ver | Người thực hiện tài liệu | Status | Baseline | Sign-off | Người Sign-off | Ngày sign-off |
 |------|-----|-----|-----------------|--------|----------|----------|----------------|---------------|
-| `04-platform/DOC-11-data-model.md` | 11 | — | SA | Draft | — | ☐ | {alias} | — |
+| `04-platform/DOC-08-sad.md` | 08 | 0.4.3 | SA | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-09-adr/` (ADR-001…013) | 09 | — | SA | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-10-integration-specification.md` | 10 | 0.2.1 | SA | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-11-data-model/DOC-11-data-model.md` | 11 | 0.3.2 | SA | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-12-api-spec/DOC-12-api-specification.md` + `openapi.yaml` | 12 | 0.4.3 | SA | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-13-nfr.md` | 13 | 0.3.3 | SA/BA | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-14-wbs-estimate.md` | 14 | 0.2.1 | PM | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-16-test-strategy.md` | 16 | 0.2.1 | QC | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
+| `04-platform/DOC-17-deployment-guide.md` | 17 | 0.4.2 | SA/DevOps | Baseline | BL-1.0 | ☑ | Dư Hùng (PGD) | 2026-09-21 |
 
 ## Legacy (tham chiếu — không baseline mới)
 
