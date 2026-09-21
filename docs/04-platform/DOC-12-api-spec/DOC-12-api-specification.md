@@ -7,6 +7,7 @@
 | 0.3 | 2026-09-07 | soạn nháp SA (trợ lý) | **Chốt** — §4.3 đánh dấu hợp đồng liên service theo **ADR-005** (DEC-ARC-026) |
 | 0.4 | 2026-09-16 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-031 · PGD) — theo **ADR-012** (bỏ SSO, thêm auth endpoint — chưa code) và **ADR-013** (một host, không Gateway; §4.3 hết là hợp đồng liên service); §3 phân trang đã hiện thực (S1) |
 | 0.4.1 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi, không đổi quyết định)* — §3 envelope viết lại theo `BaseResponse` Jarvis thật (doc-review pass 3 **M3**); §2/§7 trỏ NFR-S10 đã chốt (**M2**); §4 sắp lại thứ tự mục |
+| 0.4.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** *(sửa lỗi)* — pass 4 **M3**: từ chối nghiệp vụ = **400** (`BadRequestException`), 422 chưa từng xuất hiện |
 
 **OAS 3.0.1** *(Swashbuckle sinh — khớp dòng đầu `openapi.yaml`)* · DOC-08 v0.4 · DOC-11 · **ADR-012** · **ADR-013** · ADR-005.  
 **SoT machine:** [`openapi.yaml`](openapi.yaml) — **sinh từ Swagger runtime 2026-09-07**, round-trip đã verify. ⚠️ **Chưa sinh lại sau S1 phân trang (2026-09-15)** — 4 endpoint list đã có `page`/`size` + `X-Total-Count` mà file chưa phản ánh; nợ sinh lại. Nợ khác: Base URL thật; auth endpoint ADR-012 (chưa code); full body FR. *(kiểu PK đã chốt **Guid** trong code — xem §3.)* **Không** tự DOC-17. **Chưa** `02-baseline/`.
@@ -78,12 +79,12 @@ Lỗi (`4xx`/`5xx`):
 | HTTP | Khi nào | Nguồn |
 |------|---------|-------|
 | 200 / 201 | OK / created | — |
-| 400 | Validation, `BadRequestException` | Jarvis |
+| **400** | Validation **và hầu hết từ chối nghiệp vụ** — code ném `BadRequestException` (93 chỗ, đếm 2026-09-18): quỹ không đủ, kỳ chưa chốt, Standby từ chối job… Kèm log warning `BusinessRefusalLoggingMiddleware` | Jarvis · host |
 | 401 | Không/hết hạn JWT; token không `sub` (`RequireIdpSubject`) | Jarvis Auth · host |
 | 403 | Sai role / cô lập lương — `ForbiddenException` | host guard |
 | 404 | `NotFoundException`; **và** `/dev/*` ngoài Development | Jarvis · host |
 | 409 | `ConflictException` (unique CCCD, chốt kỳ) | Jarvis |
-| **422** | **Mọi từ chối nghiệp vụ** — `BusinessException` mặc định `UnprocessableEntity` (quỹ không đủ, kỳ chưa chốt, Standby từ chối job…). Kèm log warning `BusinessRefusalLoggingMiddleware` | Jarvis |
+| 422 | Chỉ khi ném `BusinessException` **trần** (mặc định Jarvis `UnprocessableEntity`) — hiện **0 chỗ** trong `Hrm.Application`/`Hrm.Host`; hệ **chưa bao giờ trả 422**. *(v0.4.1 ghi "mọi từ chối = 422" — sai, suy từ lớp cơ sở, không đếm code.)* | Jarvis |
 | 429 | Rate limit login (NFR-S10) — **chưa có đường trả**: Jarvis `RateLimitedException` đang comment trong wrapper; mở khi code CR-002 | — |
 | 500 | Internal — `code: Hrm.Host:Error` | Jarvis |
 

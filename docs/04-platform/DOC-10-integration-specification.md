@@ -4,6 +4,7 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (soạn nháp SA) | **Chốt** (INT · DEC-ARC-006) |
 | 0.2 | 2026-09-18 | soạn nháp SA (trợ lý) | **Chốt** (DEC-ARC-035 · PGD) — **INT-001 (Lark IdP) bỏ** theo ADR-012; bỏ API Gateway, DR, "service" theo ADR-010/013; **adapter ra ghi rõ chưa code** (doc-review pass 3 B2/M13) |
+| 0.2.1 | 2026-09-18 | soạn nháp SA/QC (trợ lý) | **Chốt** *(sửa lỗi)* — pass 4: mã 422 → **400**; định tính trạng thái test; cột `GitLockedAtUtc` thuộc case |
 
 **Hohpe EIP** · Adjunct DOC-08 **v0.4** · **ADR-013** (một host, không GW) · **ADR-012** (không IdP) · **ADR-010** (một DC) · ADR-005.  
 **Cổng:** PGD chốt v0.1 (DEC-ARC-006) · v0.2 (DEC-ARC-035). Nợ: Git/CRM API vendor; SMTP host; RTO phút; Ban HR ☐; **toàn bộ adapter ra chưa code** (R-015). **Chưa** `02-baseline/`. **Không** tự DOC-17. **Không còn INT xác thực** — đăng nhập là nội bộ HRM (ADR-012), không phải tích hợp.
@@ -127,7 +128,7 @@ Chi tiết field → **DOC-12** khi mở. DOC-10 chỉ khóa **hướng, hệ, c
 |-----|-----------------|
 | INT-002 | to, template-id, ids nghiệp vụ (không full phiếu lương trên bus) |
 | INT-003 | file + version mẫu master |
-| INT-004/005 | `EmployeeId`, `EmployeeCode`, `AsOfDate` (N), `Channel`, `TargetSystems` — theo `LifAccessLockOutbox` (DOC-11 §3.7); idempotency = bỏ qua case đã `GitLockedAtUtc && CrmSpLockedAtUtc`, **không** có cột idempotency-key |
+| INT-004/005 | `EmployeeId`, `EmployeeCode`, `AsOfDate` (N), `Channel`, `TargetSystems` — theo `LifAccessLockOutbox` (DOC-11 §3.7); idempotency = bỏ qua case đã `LifOffboardingCase.GitLockedAtUtc && CrmSpLockedAtUtc` (hai cột trên **case**, không phải outbox), **không** có cột idempotency-key |
 
 ## 5. Bảo mật
 
@@ -144,10 +145,10 @@ Chi tiết field → **DOC-12** khi mở. DOC-10 chỉ khóa **hướng, hệ, c
 
 | Metric | Threshold | Alert |
 |--------|-----------|-------|
-| Login fail spike | 401/429 `POST /v1/iam/auth/login` bất thường (credential stuffing) | Ops + IAM |
+| Login fail spike | 401/429 `POST /v1/iam/auth/login` bất thường (credential stuffing) — *endpoint và 429 chưa code (CR-002)* | Ops + IAM |
 | INT-004/005 lock fail | 1 fail sau retry | IT |
 | INT-006 probe | Mọi call CRM sales | **P1** vi phạm NFR-007 |
-| Job trên Standby | 422 `Host Standby` hoặc job chạy từ node Standby | P1 ADR-010 |
+| Job trên Standby | **400** `Host Standby` (`BadRequestException`) hoặc job chạy từ node Standby | P1 ADR-010 |
 
 Số ngưỡng % **TBD** (không bịa).
 

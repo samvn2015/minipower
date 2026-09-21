@@ -487,6 +487,7 @@
 - Affects: hrm PR #57 · DOC-08 · DOC-11 · DOC-12 · R-017
 - Trace: DEC-ARC-033 · doc-review-2026-09-16-platform B1
 - Confidence: cao *(smoke trên DB thật)*
+- **Đính chính 2026-09-18 (pass 4 M1):** vế *"cùng transaction"* ở trên **sai** khi ghi — cùng DbContext nhưng mỗi repo tự `SaveChanges`, audit ở transaction riêng. Sửa bằng `IAtomicScope` ở DEC-ARC-036; 5 context còn lại vẫn mang lỗi này (R-018).
 
 ### DEC-ARC-035 — Ký DOC-10 v0.2 · DOC-14 v0.2 · DOC-16 v0.2 theo ADR-010/012/013 (B2 đóng) · [2026-09-18]
 - Status: accepted *(PGD «merge ký»)*
@@ -502,3 +503,23 @@
 - Affects: DOC-10 · DOC-14 · DOC-16 · DOC-08 §1.3
 - Trace: DEC-ARC-033 · doc-review-2026-09-16-platform B2
 - Confidence: cao
+
+### DEC-ARC-036 — Doc-review pass 4: 0 Blocker; audit LEV/IAM atomic (PR #60); 422 chưa từng có; M6 chờ PGD · [2026-09-18]
+- Status: accepted *(PGD «chạy pass 4» → sửa phần không cần quyết)*
+- Context: Pass 4 hẹp xác nhận B1/B2 đóng thật về "có ghi" và "hết kiến trúc cũ", nhưng tìm ra **7 Major mới**, ba cái là lỗi của SA khi viết: (M1) DEC-ARC-034 nói *"cùng transaction"* — sai, mỗi repo tự `SaveChanges`; (M3) DOC-12 v0.4.1 nói *"mọi từ chối = 422"* — sai, code ném `BadRequestException` = **400**, `BusinessException` trần **0 chỗ**; (M2) IAM audit no-op (gán role đã có → vẫn ghi audit).
+- Options: *(sửa lỗi; M6 là lựa chọn số, thuộc PGD)*
+- Decision:
+  - **M1 code** — `IAtomicScope` (Domain.Shared) + `ILevAtomicScope`/`IIamAtomicScope`, `EfAtomicScope` mở transaction trên DbContext scoped, dùng lại nếu đã có; 8 handler LEV/IAM bọc nghiệp vụ + outbox + audit. **Chứng minh rollback live:** revoke INSERT audit khỏi `hrm_app_lev` → C1 reject 500, đơn vẫn PendingC1, 0 audit; restore → 200 + audit. **5 context còn lại chưa bọc — R-018**, comment code ghi rõ.
+  - **M2 code** — IAM admin repo trả `bool`; audit chỉ khi thay đổi thật; disable tài khoản ma → 404 trước audit.
+  - **M7 code** — +10 test (RejectC1/C2, Cancel, wrong-state, Assign/Remove changed/no-op, Disable unknown/already). **173/173**.
+  - **M3 docs** — DOC-12 v0.4.2, DOC-10/16/17 v0.x.1/2: từ chối nghiệp vụ = **400**; 422 chỉ khi `BusinessException` trần (0 chỗ).
+  - **M4/M5 docs** — DOC-14 v0.2.1: audit 7/7; *"UAT DEV Pass"* → *smoke 09-04 qua `/dev/token`, chưa PGD ký, TC chưa rollup*; DOC-16 §5 cùng chữ. Minor 2 (cột `GitLockedAtUtc` thuộc `LifOffboardingCase`), 4, 8, 10 sửa.
+  - **M6 — chưa đóng, chờ PGD:** AC1 dòng S08/S10 tự mâu thuẫn (10 sai trong 5 s → 5×401 đã đủ ngưỡng khoá 5). Chọn **(a)** giữ S08 = 5, sửa AC1 thành *"đã khoá"* và bỏ câu "≥ 1 phút"; hoặc **(b)** S10 = 4 req/phút/username để khoá luôn cần > 1 phút.
+- Why (M1/M3 là lỗi "suy từ tên lớp, không đọc code" — cùng lớp với `Mst`/`TaxId`; quy tắc mở rộng: **mã HTTP và tính chất transaction phải trích từ code** (`grep new .*Exception`, `SaveChanges`), không suy)
+- Consequences:
+  - Gate: **0 Blocker**; điều kiện mở `02-baseline/` còn **M6** (một câu, PGD chọn a/b). Sau đó không cần pass 5 đầy đủ — grep 3 chỗ là đủ (theo reviewer).
+  - Nợ code có owner Dev: R-018 atomic 5 context · Minor 9 JIT-provision không audit (bỏ theo R-012) · `ALTER DEFAULT PRIVILEGES` thiếu schema `shared` (Minor 1) · Swagger Prod.
+  - `hrm_migrator` có UPDATE/DELETE trên audit — ghi vào DOC-08 §4.1; quản trị credential migrator là kiểm soát duy nhất.
+- Affects: hrm PR #60 · DOC-08 v0.4.3 · DOC-10 v0.2.1 · DOC-12 v0.4.2 · DOC-14 v0.2.1 · DOC-16 v0.2.1 · DOC-17 v0.4.2 · R-018 · DEC-ARC-034 *(đính chính)*
+- Trace: doc-review pass 4 (agent ac52ab0c) · DEC-ARC-032…035
+- Confidence: cao *(rollback kiểm trên DB thật; 400 đếm code 93/0)*

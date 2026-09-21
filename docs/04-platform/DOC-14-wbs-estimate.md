@@ -4,11 +4,12 @@
 |-----------|------|---------|------------|
 | 0.1 | 2026-08-26 | Trịnh Yên (PM/BA soạn) | **Chốt** (DEC-PLN-002) |
 | 0.2 | 2026-09-18 | soạn nháp PM (trợ lý) | **Chốt** (DEC-ARC-035 · PGD) — WBS theo **ADR-013** (một host, không GW/DB-per-service), **ADR-012** (login HRM), **ADR-010** (không DR); ghi nhận **7 module Must đã code, UAT DEV Pass**; phần còn lại là nợ Prod (doc-review pass 3 B2) |
+| 0.2.1 | 2026-09-18 | soạn nháp PM (trợ lý) | **Chốt** *(sửa lỗi)* — pass 4 **M4/M5**: audit 7/7, định tính "UAT DEV Pass", thứ tự 1.10.x |
 
 **PMBOK WBS** · Epic / Feature / Story. Tiên quyết: DOC-03 · 7× DOC-06 **Chốt** · DOC-08 v0.4 · DOC-10–13/17 **Chốt**.  
 **Cổng:** PGD chốt v0.1 (DEC-PLN-002) · v0.2 (DEC-ARC-035). Nợ: velocity; FTE; EVT/RPT SRS; **ngày go-live 2027 chưa lịch**. **Không** tự DOC-16/17. **Chưa** `02-baseline/`.
 
-> **Thực tế 2026-09-18:** 7 module Must **đã code** trên một `Hrm.Host` (UAT DEV Pass), hàng rào dữ liệu W1 + test kiến trúc W2 **đã xong**. WBS v0.1 (wave theo module) đã qua. v0.2 xếp lại theo **việc còn lại để chạy Prod 2027**.
+> **Thực tế 2026-09-18:** 7 module Must **đã code** trên một `Hrm.Host` — smoke UAT DEV Pass 2026-09-04 (`/dev/token`, e2e slice, **chưa PGD ký**, TC chưa rollup), hàng rào dữ liệu W1 + test kiến trúc W2 **đã xong**. WBS v0.1 (wave theo module) đã qua. v0.2 xếp lại theo **việc còn lại để chạy Prod 2027**.
 
 ---
 
@@ -34,7 +35,7 @@
 ├── 1.6 payroll
 ├── 1.7 probation
 ├── 1.8 lifecycle
-├── 1.9 NFR / audit / cô lập lương — cô lập lương XONG (W1); audit LEV/IAM còn nợ (B1)
+├── 1.9 NFR / audit / cô lập lương — cô lập lương XONG (W1); audit 7/7 XONG (PR #57/#60); atomic 5 context còn nợ
 ├── 1.10 EVT + RPT (sau SRS) · mobile (chưa code)
 └── 1.11 Delivery (DOC-16/17, UAT, cutover)
 ```
@@ -57,9 +58,9 @@ SP cột = **T-shirt** đến khi có velocity. Trace = dải FR module, không 
 | 1.7.1 | EP-PRB | FE-TV | US-PRB-01 | As HR I chốt 3 mã; T-15/T-7 job | PRB-FR | **XONG** (UAT DEV) — bộ lập lịch ngoài **TBD** (OQ-ARC-017/019) | Must |
 | 1.8.1 | EP-LIF | FE-N3 | US-LIF-01 | As IT I lock Git/CRM sản phẩm N+3 | LIF-FR, INT-004/005 | **XONG tới outbox** — **adapter Git/CRM chưa code** (R-015) **M** | Must |
 | 1.8.2 | EP-LIF | FE-ADP | US-INT-01 | As Notif/LIF I drain outbox → SMTP / Git / CRM | INT-002/004/005 · R-015 | **M** — API vendor TBD | Must |
-| 1.9.1 | EP-NFR | FE-AUD | US-NFR-01 | As Ops I retain audit chốt công/lương/C2/PRB + login/khoá | NFR-005 | 5/7 context XONG; **LEV + IAM** nợ — **S** (B1, DEC-ARC-033) | Must |
-| 1.10.2 | EP-MOB | FE-MOB | US-MOB-01 | As NV I self-service on mobile | NFR-003/008 · BRQ-006 | **chưa code, chưa size** — cùng API | Must |
+| 1.9.1 | EP-NFR | FE-AUD | US-NFR-01 | As Ops I retain audit chốt công/lương/C2/PRB + login/khoá | NFR-005 | **7/7 context ghi** (PR #57); LEV/IAM **atomic** (PR #60); EMP/TIM/PAY/PRB/LIF atomic — **S** nợ (pass 4 M1) | Must |
 | 1.10.1 | EP-EVT | FE-CANH | US-EVT-01 | Cảnh báo SN/lễ | *chưa SRS* | — | Must* |
+| 1.10.2 | EP-MOB | FE-MOB | US-MOB-01 | As NV I self-service on mobile | NFR-003/008 · BRQ-006 | **chưa code, chưa size** — cùng API | Must |
 | 1.11.1 | EP-DLV | FE-UAT | US-DLV-01 | UAT 1000 dòng &lt;5s + DOC-16/17 | NFR-001 | L | Must |
 
 \*EVT in BRD Must — **không** estimate chi tiết đến khi DOC-06 EVT.
@@ -96,9 +97,9 @@ Hàm ý: phần nghiệp vụ đã xong; đường găng 2027 là **Prod readine
 | Role | Person-days | Ghi chú |
 |------|-------------|--------|
 | BA | TBD | AC/CR |
-| Backend | TBD | login CR-002 · audit LEV/IAM · adapter outbox · guard Prod · CI |
+| Backend | TBD | login CR-002 · atomic audit 5 context · adapter outbox · guard Prod · CI |
 | Frontend web + mobile | TBD | BRQ-006 |
-| QA | TBD | DOC-16 chưa |
+| QA | TBD | DOC-16 v0.2 · rollup TC module · TC password |
 | DevOps | TBD | LBS, A/S một DC, replication, backup ngoài DC (RK-01), hosting SPA |
 | PM | TBD | |
 | **Total** | **TBD** | Không quy đổi 1 tỷ → ngày công trên Draft này |
@@ -121,8 +122,8 @@ Hàm ý: phần nghiệp vụ đã xong; đường găng 2027 là **Prod readine
 
 | Wave | Phạm vi | Target |
 |------|---------|--------|
-| ~~W0–W3~~ | 7 module Must + hàng rào W1/W2 | **XONG** 2026-09 (UAT DEV Pass) |
-| R1 | Audit LEV/IAM (B1) · DOC-10/14/16 ký · doc-review pass 4 · `02-baseline/` | 2026-09 |
+| ~~W0–W3~~ | 7 module Must + hàng rào W1/W2 | **XONG** 2026-09 (smoke UAT DEV 09-04, chưa PGD ký) |
+| R1 | ~~Audit LEV/IAM~~ XONG · DOC-10/14/16 ký · doc-review pass 4 · `02-baseline/` | 2026-09 |
 | R2 | Login CR-002 (sau IAM DOC-06/07 delta) · bỏ JIT-provision · IAM audit login/khoá | 2026 Q4 |
 | R3 | Adapter SMTP/Git/CRM · bộ lập lịch + xác thực máy · guard Prod · CI/Dockerfile · hosting SPA | 2026 Q4 |
 | R4 | A/S drill trong DC · backup restore thử · NFR-001 UAT sau LBS · pen test login | 2026 cuối |
